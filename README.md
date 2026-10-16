@@ -11,6 +11,8 @@ benchmarks, and calls every model through [OpenRouter](https://openrouter.ai/).
 > ([Yudkowsky 2004, §3](https://intelligence.org/files/CEV.pdf))
 
 **Results:** see [Results summary](#results-summary) below and [`reports/results.md`](reports/results.md).
+**Paper:** [`paper/cev-system-prompt-alignment.pdf`](paper/cev-system-prompt-alignment.pdf) (sources in
+[`paper/`](paper/README.md)).
 
 ## Methodology
 
@@ -128,6 +130,13 @@ and judge validity against HumanAgencyBench's original o3 judge. Results are cac
 uv run cev-eval --analyze-only --judge-checks
 ```
 
+Rebuild the paper. This needs pdfLaTeX, BibTeX and latexmk; numbers and tables come from
+`paper/generated/`, which `--analyze-only` regenerates:
+
+```bash
+make -C paper
+```
+
 Browse every transcript, score and judge explanation:
 
 ```bash
@@ -197,6 +206,7 @@ third_party/humanebench/   vendored HumaneBench scorer, rubric and data (Apache-
 tests/               pytest (offline by default; -m network for downloads)
 docs/                evals.md (eval ↔ CEV mapping, sources), prompts.md (prompt texts, diff, provenance)
 reports/             generated results (committed)
+paper/               LaTeX preprint; generated/ numbers and tables come from reports/, references fetched by DOI
 logs/                pipeline + Inspect logs (git-ignored)
 ```
 
