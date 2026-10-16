@@ -1,0 +1,78 @@
+% Preprint: Coherent Extrapolated Volition as a System Prompt.
+% Build: `make -C paper` (latexmk, pdfLaTeX, BibTeX). Every result number comes from generated/numbers.tex,
+% written by `uv run cev-eval --analyze-only` (src/cev_alignment/paper_assets.py); never type results by hand.
+% Preamble adapted from the author's fact-teaching/paper/main.tex.
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{etoolbox}
+% TeX Live 2025 ships longtable 4.24, whose output routine inserts two infinitely shrinkable \vss nodes
+% ("Infinite glue shrinkage found in box being split"). Apply the maintainer's upstream fix only to versions older
+% than 4.25. Source: https://github.com/latex3/latex2e/issues/1907#issuecomment-3522874596
+% (copied from the author's fact-teaching/paper/main.tex).
+\makeatletter
+\@ifpackagelater{longtable}{2025/12/22}{}{%
+  \patchcmd{\LT@output}{\vss}{\vskip\z@\@plus1fil\@minus\normalbaselineskip}{}%
+    {\PackageError{paper}{Unable to patch first longtable shrink node}{Update the compatibility patch.}}%
+  \patchcmd{\LT@output}{\vss}{\vskip\z@\@plus1fil\@minus\normalbaselineskip}{}%
+    {\PackageError{paper}{Unable to patch second longtable shrink node}{Update the compatibility patch.}}%
+}
+\makeatother
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage[round,authoryear]{natbib}
+\usepackage{hyperref}
+
+\definecolor{LinkBlue}{RGB}{17,79,142}
+\definecolor{RuleGray}{RGB}{170,170,170}
+\hypersetup{
+  colorlinks=true, linkcolor=LinkBlue, citecolor=LinkBlue, urlcolor=LinkBlue,
+  pdftitle={Coherent Extrapolated Volition as a System Prompt: More Corrigible Answers, No Overall Gain, and Signs of Paternalism},
+  pdfauthor={Libor Burian}
+}
+\captionsetup{font=small,labelfont=bf}
+\graphicspath{{../reports/figures/}}
+
+% A breakable block for quoting system prompts verbatim (used by generated/prompts.tex).
+\newenvironment{promptbox}{\begin{quote}\small\setlength{\parskip}{0.45em}}{\end{quote}}
+\newcommand{\cond}[1]{\texttt{#1}}
+
+\input{generated/numbers.tex}
+\input{generated/example.tex}
+
+\title{Coherent Extrapolated Volition as a System Prompt:\\
+More Corrigible Answers, No Overall Gain, and Signs of Paternalism}
+\author{Libor Burian\\
+\small Independent researcher \\
+\small \href{mailto:burian.lib@gmail.com}{burian.lib@gmail.com}}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\input{sections/abstract.tex}
+\input{sections/introduction.tex}
+\input{sections/related-work.tex}
+\input{sections/method.tex}
+\input{sections/results.tex}
+\input{sections/robustness.tex}
+\input{sections/discussion.tex}
+\input{sections/limitations.tex}
+\input{sections/conclusion.tex}
+\input{sections/statements.tex}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\input{appendices/prompts.tex}
+\input{appendices/tables.tex}
+\end{document}

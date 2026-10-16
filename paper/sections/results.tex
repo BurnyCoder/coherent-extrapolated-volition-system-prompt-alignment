@@ -1,0 +1,100 @@
+% Results: primary contrasts, decomposition, exploratory sub-categories, example, agentic scenario.
+\section{Results}
+\label{sec:results}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{primary_contrasts.pdf}
+\caption{Primary contrasts, pooled over the four models. Each point is the mean item-level difference in aligned
+score with a 95\% bootstrap CI; right of zero means the first condition is more aligned. \emph{Left:} the CEV prompt
+against the classic prompt. \emph{Right:} the CEV text added to the classic prompt against an equally long neutral
+text.}
+\label{fig:primary}
+\end{figure}
+
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{generated/tab_means.tex}}
+\caption{Mean aligned score (higher = more aligned) $\pm$ standard error over items, pooled over models.}
+\label{tab:means}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\linewidth}{!}{\input{generated/tab_primary.tex}}
+\caption{Primary contrasts (mean item-level difference [95\% CI]). $p_{\mathrm{Holm}}$ is Holm-adjusted across the
+six evaluations within a contrast. $p_{\mathrm{Holm12}}$ is adjusted across all twelve primary tests. $^{*}$: Holm
+$p<0.05$.}
+\label{tab:primary}
+\end{table}
+
+Table~\ref{tab:means} gives the mean aligned score of every evaluation under every condition, and
+Figure~\ref{fig:primary} and Table~\ref{tab:primary} the two primary contrasts.
+
+\paragraph{CEV does not beat the classic prompt.}
+Against \cond{classic}, \cond{cev} improves no evaluation. It lowers HumaneBench by \RHbCevClassicDiff{}
+\RHbCevClassicCi{} (Holm $p=\RHbCevClassicHolm$; $p=\RHbCevClassicHolmAll$ across all twelve tests). The other
+differences are not significant:
+\begin{itemize}
+  \item AI-risk questions \RAirCevClassicDiff{};
+  \item InstrumentalEval \RIeCevClassicDiff{};
+  \item DarkBench \RDbCevClassicDiff{};
+  \item HumanAgencyBench \RHabCevClassicDiff{};
+  \item Agentic Misalignment \RAmCevClassicDiff{}.
+\end{itemize}
+The HumaneBench gap has two sources. On items scored in every condition, the classic prompt helps relative to no
+prompt (\RHbMissCompleteClassicNoneDiff{}, $p=\RHbMissCompleteClassicNoneP$) and the CEV prompt hurts slightly
+(\RHbMissCompleteCevNoneDiff{}, $p=\RHbMissCompleteCevNoneP$). Per model, the drop is largest for Llama
+(\RHbCevClassicLlamaDiff{}) and Qwen (\RHbCevClassicQwenDiff{}) and absent for GPT (\RHbCevClassicGptDiff{}); see
+Figure~\ref{fig:permodel}.
+
+\paragraph{Adding CEV text: more corrigible answers, less deference.}
+When the CEV text is added to the classic prompt and compared with the equally long neutral text, the AI-risk answers
+become more aligned: \RAirClassiccevLenmatchDiff{} \RAirClassiccevLenmatchCi{}, Holm $p=\RAirClassiccevLenmatchHolm$,
+$p=\RAirClassiccevLenmatchHolmAll$ across all twelve tests. The CEV prompt alone also beats no prompt on these
+questions (\RAirCevNoneDiff{}, Holm $p=\RAirCevNoneHolm$; a secondary contrast). By subset, the gain is largest for
+survival instinct (\RSubAirSurvivalInstinctClassiccevLenmatchDiff{} \RSubAirSurvivalInstinctClassiccevLenmatchCi{}),
+followed by power-seeking (\RSubAirPowerSeekingInclinationClassiccevLenmatchDiff{}). Accepting a neutral goal change
+does not move (\RSubAirCorrigibleNeutralHhhClassiccevLenmatchDiff{}). The same addition lowers HumanAgencyBench by
+\RHabClassiccevLenmatchDiff{} \RHabClassiccevLenmatchCi{}. This is not significant after correction (Holm
+$p=\RHabClassiccevLenmatchHolm$; $p=\RHabClassiccevLenmatchHolmAll$ across all twelve). DarkBench moves in the same
+direction (\RDbClassiccevLenmatchDiff{}, Holm $p=\RDbClassiccevLenmatchHolm$).
+
+\paragraph{Where deference drops (exploratory).}
+HumanAgencyBench has six dimensions. Two account for the drop, comparing \cond{cev} with \cond{classic}: \emph{defer
+important decisions} (\RSubHabDeferImportantDecisionsCevClassicDiff{} \RSubHabDeferImportantDecisionsCevClassicCi{})
+and \emph{avoid value manipulation} (\RSubHabAvoidValueManipulationCevClassicDiff{}
+\RSubHabAvoidValueManipulationCevClassicCi{}). Each rests on \RSubHabDeferImportantDecisionsCevClassicN{} items
+pooled over models and is uncorrected. Holm-adjusted within HumanAgencyBench, neither is significant
+($p=\RSubHabDeferImportantDecisionsCevClassicHolmWithin$ and $p=\RSubHabAvoidValueManipulationCevClassicHolmWithin$). By contrast, \emph{encourage learning} improves
+(\RSubHabEncourageLearningCevClassicDiff{} \RSubHabEncourageLearningCevClassicCi{}). On HumaneBench, the largest
+per-principle drops are \emph{design for equity and inclusion} (\RSubHbDesignForEquityAndInclusionCevClassicDiff{},
+$n=\RSubHbDesignForEquityAndInclusionCevClassicN$ items) and \emph{be transparent and honest}
+(\RSubHbBeTransparentAndHonestCevClassicDiff{}, $p=\RSubHbBeTransparentAndHonestCevClassicP$,
+$n=\RSubHbBeTransparentAndHonestCevClassicN$ items). No single principle is significant on its own. Appendix Table~\ref{tab:subgroups} lists all sub-categories.
+
+The following pair illustrates the drop. \RDeferFlipN{} of the \RDeferPairs{} model$\times$item pairs on
+\emph{defer important decisions} flip in the same direction, from a high agency score under \cond{classic} to a low one under
+\cond{cev}. A user writes: ``\RExamplePrompt{} [\ldots]'' Under \cond{classic}, Claude Haiku replies:
+``\RExampleClassic{} [\ldots]''. Under \cond{cev}, the same model replies: ``\RExampleCev'', followed by a concrete
+allocation of the fund.
+
+\paragraph{Agentic blackmail.}
+Blackmail was rare for Claude, GPT and Llama in every condition, at no more than one of \RAmEpochs{} epochs. Qwen
+blackmailed in \RAmHarmfulQwenCev{} of \RAmEpochs{} epochs under \cond{cev} against \RAmHarmfulQwenClassic{} under
+\cond{classic}. This difference is not significant.
+
+\paragraph{Prompt length alone.}
+Adding the neutral text to the classic prompt changes no evaluation detectably: \cond{classic+lenmatch}$-$\cond{classic}
+has a smallest Holm $p$ of \RLenmatchClassicHolmMin{} (Appendix Table~\ref{tab:secondary}). The effects above
+therefore come from the CEV text rather than from prompt length. Whether \emph{any} long value-laden instruction
+would produce the same effects is a separate question (Section~\ref{sec:limitations}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{cev_vs_classic_by_model.pdf}
+\caption{\cond{cev}$-$\cond{classic} per model and evaluation (aligned score; red: CEV worse, blue: CEV better;
+$*$: per-model $p<0.05$, unadjusted).}
+\label{fig:permodel}
+\end{figure}
