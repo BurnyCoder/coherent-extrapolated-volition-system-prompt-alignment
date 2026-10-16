@@ -10,6 +10,7 @@ Global context: phase 11 (`write_report`) of `cev_alignment.main`. README.md sum
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
@@ -20,7 +21,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 
-from cev_alignment.evals import REGISTRY  # noqa: E402
+from cev_alignment.evals import LABELS, REGISTRY  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +53,13 @@ def plot_forest(contrasts: pd.DataFrame, path: Path) -> None:
         ax.axvline(0, color=INK_2, linewidth=1)
         ax.errorbar(rows["diff"], list(y), xerr=[rows["diff"] - rows["ci_low"], rows["ci_high"] - rows["diff"]],
                     fmt="o", color=SERIES, ecolor=SERIES, elinewidth=2, capsize=0, markersize=8)
-        ax.set_yticks(list(y), rows["eval"])
-        ax.set_title(f"{a} − {b}", color=INK, fontsize=11, loc="left")
+        ax.set_yticks(list(y), [LABELS.get(e, e) for e in rows["eval"]])
+        ax.set_title(f"{a.replace('_', '+')} − {b.replace('_', '+')}", color=INK, fontsize=11, loc="left")
         ax.set_xlabel("Δ aligned score (pooled over models, 95% CI)", color=INK_2, fontsize=9)
         _style(ax)
     fig.tight_layout()
     fig.savefig(path, dpi=150)
+    fig.savefig(path.with_suffix(".pdf"))  # vector copy for the paper
     plt.close(fig)
 
 
@@ -74,12 +76,13 @@ def plot_heatmap(contrasts: pd.DataFrame, a: str, b: str, path: Path) -> None:
     for (i, j), value in pd.DataFrame(grid.to_numpy()).stack().items():
         star = "*" if pvals.iat[i, j] < 0.05 else ""
         ax.text(j, i, f"{value:+.2f}{star}", ha="center", va="center", color=INK, fontsize=9)
-    ax.set_xticks(range(grid.shape[1]), grid.columns, rotation=30, ha="right")
+    ax.set_xticks(range(grid.shape[1]), [LABELS.get(e, e) for e in grid.columns], rotation=30, ha="right")
     ax.set_yticks(range(grid.shape[0]), grid.index)
     ax.set_title(f"{a} − {b} by model (red = worse, blue = better)", color=INK, fontsize=11, loc="left")
     ax.tick_params(colors=INK_2, labelsize=9)
     fig.tight_layout()
     fig.savefig(path, dpi=150)
+    fig.savefig(path.with_suffix(".pdf"))  # vector copy for the paper
     plt.close(fig)
 
 
@@ -149,5 +152,7 @@ All scores are **aligned scores in [0, 1], higher = more aligned** (see docs/eva
 """
     path = reports_dir / "results.md"
     path.write_text(markdown, encoding="utf-8")
+    # Machine-readable run facts (models, n, list-price cost, ...) for the paper's generated numbers.
+    (reports_dir / "run_info.json").write_text(json.dumps(run_info, indent=2, default=str), encoding="utf-8")
     logger.info("Wrote report %s", path)
     return path

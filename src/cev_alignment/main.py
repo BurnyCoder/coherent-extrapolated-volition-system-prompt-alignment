@@ -16,6 +16,7 @@ its own module; see README.md "Data flow" for the diagram.
 10b write_robustness         manipulation check, Holm-12, LOO, missingness (robustness.py)
  11 write_report             reports/results.md + CSV + figures            (report.py)
  12 judge checks (optional)  blinding + validity of the judge (paid)       (judge_checks.py)
+ 13 write_paper_assets       paper/generated: numbers, tables, prompts     (paper_assets.py)
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ import os
 import shutil
 from datetime import UTC, datetime
 
-from cev_alignment import judge_checks, openrouter, prompts, report, results, robustness, runner, stats
+from cev_alignment import judge_checks, openrouter, paper_assets, prompts, report, results, robustness, runner, stats
 from cev_alignment.config import Settings, load_settings
 from cev_alignment.evals import build_tasks
 from cev_alignment.logging_setup import setup_logging
@@ -136,6 +137,8 @@ def run(args: argparse.Namespace) -> None:
             judge_checks.run_validity(settings, out / "validity.csv", max_usd)
     robustness.write_robustness(reports_dir, items, judge_checks.summary_markdown(reports_dir, items))  # 10b
     report.write_report(reports_dir, items, summary, contrasts, run_info)  # 11
+    if not settings.offline:  # 13: every number and table the paper quotes, generated from the reports
+        paper_assets.write_paper_assets(reports_dir, full_root, settings.root / "paper", n)
 
 
 def main() -> None:
