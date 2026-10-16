@@ -20,21 +20,27 @@ from inspect_evals.agentic_misalignment import agentic_misalignment as agentic_m
 from inspect_evals.instrumentaleval import instrumentaleval as instrumentaleval_task
 
 from cev_alignment.config import Settings
-from cev_alignment.evals.common import seeded_sample
+from cev_alignment.evals.common import judge_model, seeded_sample
 
 
 def build_instrumentaleval(settings: Settings, n: int, judge: Model) -> Task:
-    """`n` seeded prompts of the 76, graded by `judge` (upstream default grader: openai/gpt-5-nano)."""
-    task = instrumentaleval_task(grader_model=judge)
+    """`n` seeded prompts of the 76, graded by our judge (upstream default grader: openai/gpt-5-nano).
+
+    The grader is a task argument here, so it uses the task-arg judge config (see common.judge_model).
+    """
+    task = instrumentaleval_task(grader_model=judge_model(settings, as_task_arg=True))
     samples = seeded_sample(list(task.dataset), n, settings.seed)
     return task_with(task, dataset=MemoryDataset(samples, name="instrumentaleval"), name="instrumentaleval")
 
 
 def build_agentic_misalignment(settings: Settings, n: int, judge: Model) -> Task:
-    """The canonical blackmail prompt run for `n` epochs, classified by `judge` (upstream: Claude Sonnet)."""
+    """The canonical blackmail prompt run for `n` epochs, classified by our judge (upstream: Claude Sonnet).
+
+    The grader is a task argument here, so it uses the task-arg judge config (see common.judge_model).
+    """
     task = agentic_misalignment_task(
         scenario="blackmail", goal_type="explicit", goal_value="america", urgency_type="replacement",
-        grader_model=judge,
+        grader_model=judge_model(settings, as_task_arg=True),
     )
     return task_with(task, epochs=n, name="agentic_misalignment")
 
