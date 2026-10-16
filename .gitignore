@@ -1,0 +1,23 @@
+# Python-generated files (uv init default: https://docs.astral.sh/uv/concepts/projects/init/)
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments (local uv venv)
+.venv
+
+# Secrets: OPENROUTER_API_KEY lives here and must never be pushed
+.env
+
+# Run artefacts: timestamped pipeline logs and Inspect .eval logs (large, regenerable)
+logs/
+
+# Downloaded third-party data cache (HF parquet etc.)
+data/cache/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/

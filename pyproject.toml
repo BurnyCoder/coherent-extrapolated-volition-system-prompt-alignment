@@ -1,0 +1,55 @@
+[project]
+name = "cev-alignment"
+version = "0.1.0"
+description = "Does a Coherent Extrapolated Volition (Yudkowsky 2004) system prompt beat a classic assistant system prompt on CEV-relevant alignment evals?"
+readme = "README.md"
+authors = [
+    { name = "BurnyCoder", email = "happymancz@email.cz" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "darkbench",
+    "huggingface-hub>=2.2.0",
+    "inspect-ai>=0.3.281",
+    "inspect-evals[agentic-misalignment]>=0.24.0",
+    "matplotlib>=3.11.2",
+    "openai>=3.31.0",
+    "pandas>=3.0.6",
+    "pyarrow>=26.0.0",
+    "pypdf>=6.21.0",
+    "python-dotenv>=1.2.4",
+    "scipy>=1.18.1",
+    "statsmodels>=0.15.0",
+]
+
+[project.scripts]
+# `uv run cev-eval` runs the whole pipeline (see src/cev_alignment/main.py)
+cev-eval = "cev_alignment.main:main"
+
+[build-system]
+requires = ["uv_build>=0.11.27,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+darkbench = { git = "https://github.com/apartresearch/darkbench", rev = "7eef15102b37df2a15a6031cbbed6be488de7fbe" }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+# pytest config (https://docs.pytest.org/en/stable/reference/customize.html#pyproject-toml)
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# `network` tests download the original source texts; run with `uv run pytest -m network`
+addopts = "-m 'not network'"
+markers = ["network: needs internet access (downloads source PDFs / texts)"]
+
+# ruff lint config (https://docs.astral.sh/ruff/configuration/)
+[tool.ruff]
+line-length = 110
+extend-exclude = ["third_party"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
