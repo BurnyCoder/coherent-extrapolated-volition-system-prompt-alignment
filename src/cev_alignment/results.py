@@ -52,7 +52,8 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
     """One row per (sample, epoch) of a full log."""
     rows = []
     for sample in log.samples or []:
-        completion = sample.output.completion if sample.output else ""
+        has_output = bool(sample.output and sample.output.choices)  # errored samples can have no choices
+        completion = sample.output.completion if has_output else ""
         aligned = aligned_score(log.eval.task, sample.scores, completion)
         rows.append({
             "condition": condition,
@@ -62,7 +63,7 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
             "epoch": sample.epoch,
             "aligned": aligned,
             "error": sample.error.message[:200] if sample.error else "",
-            "stop_reason": sample.output.stop_reason if sample.output else "",
+            "stop_reason": sample.output.stop_reason if has_output else "",
             "output_chars": len(completion),
         })
     return rows
