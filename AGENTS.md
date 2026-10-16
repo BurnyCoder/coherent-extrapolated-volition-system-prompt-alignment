@@ -43,6 +43,15 @@ code safely.
 - **Offline mode:** `--offline` uses Inspect's `mockllm/model` for every model, including the judge. Scores are all
   NaN and agentic_misalignment errors (its classifier raises on unparseable output), but the plumbing, logs and
   report are exercised.
+- **eval_set task identity:**
+  - Eval-level `timeout`, `attempt_timeout` and `max_connections` are excluded from the identity hash, so they
+    can be changed and a run resumed.
+  - Task args are part of the identity, including a grader `Model`'s full config. That is why
+    `judge_model(..., as_task_arg=True)` keeps the inspect_evals graders' config fixed. Changing it makes eval_set
+    refuse to resume ("log_dir is not associated with a task").
+- **Hangs:** a runaway or hung judge call once stalled one HumaneBench task for 20+ minutes. Our scorers' judge now
+  has `max_tokens=8192` and `attempt_timeout=180`, and targets have `attempt_timeout=180`. A run can be stopped and
+  resumed with `uv run cev-eval --skip-pilot`: eval_set keeps finished tasks and reuses completed samples.
 
 ## Commands
 - `uv sync`: install.
