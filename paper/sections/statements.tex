@@ -1,0 +1,38 @@
+% Reproducibility, data and licences, LLM-usage disclosure, broader impact.
+\section*{Reproducibility Statement}
+The code, prompts, per-sample scores, figures and this paper's sources are available at
+\url{https://github.com/BurnyCoder/coherent-extrapolated-volition-system-prompt-alignment}.
+\begin{itemize}
+  \item \texttt{uv run cev-eval} reruns the experiment: pilot, budget gate, full run, statistics and reports.
+  \item \texttt{uv run cev-eval -{}-analyze-only} regenerates every table and number in this paper from the logs without
+  API calls.
+  \item \texttt{make -C paper} rebuilds the PDF.
+\end{itemize}
+Item sampling uses a fixed seed. The prompt sources are checked verbatim against the original documents by an
+automated test, and model identifiers, item counts and all generation settings are recorded in the configuration file
+and the run logs. Target models were sampled at provider-default temperatures, so a rerun will differ in individual
+answers, though not in design. The full run cost \RCostFullRun{} at OpenRouter list prices, and the whole project
+\RCostTotal{}.
+
+\section*{Data and Licences}
+\begin{itemize}
+  \item HumaneBench code is Apache-2.0 and its data is CC~BY~4.0; it is vendored at a pinned commit with its licences.
+  \item HumanAgencyBench data is MIT.
+  \item DarkBench is MIT.
+  \item The Anthropic model-written evaluations are CC~BY~4.0.
+  \item InstrumentalEval and Agentic Misalignment are used through Inspect Evals.
+  \item The CEV text is quoted from \citet{yudkowsky2004cev}, and the control text is in the public domain.
+\end{itemize}
+This work is not affiliated with or endorsed by the benchmark authors. Its scores, produced with a single inexpensive
+judge on subsamples, are not comparable to official leaderboards.
+
+\section*{LLM Usage Disclosure}
+The experiment code, the analysis and a first draft of this paper were produced with an AI coding assistant
+(Claude Code) under the author's direction. The author chose the research question, the conditions, the models and
+the framing. Every number in the paper is generated from the experiment logs by the released code, and every
+reference was retrieved by DOI or URL and checked against its title. The author takes responsibility for the content.
+
+\section*{Broader Impact}
+The study evaluates publicly available models with public benchmarks and creates no new capability. Its practical
+implication is cautionary. Pasting a philosophically attractive alignment target into a system prompt can make an
+assistant more willing to override its users, and evaluations on a single axis would miss this.

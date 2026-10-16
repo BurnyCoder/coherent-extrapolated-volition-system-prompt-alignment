@@ -1,0 +1,52 @@
+% Appendix B: additional tables, all generated from reports/.
+\section{Additional Tables}
+\label{app:tables}
+
+\begin{table}[h]
+\centering\small
+\input{generated/tab_secondary.tex}
+\caption{Secondary contrasts, pooled over models: $\Delta$ (Holm-adjusted $p$ within the contrast).}
+\label{tab:secondary}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\input{generated/tab_permodel.tex}
+\caption{\cond{cev}$-$\cond{classic} per model: $\Delta$ (unadjusted per-model $p$).}
+\label{tab:permodel}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\linewidth}{!}{\input{generated/tab_loo.tex}}
+\caption{Leave-one-model-out: pooled $\Delta$ (Holm $p$) after removing each model.}
+\label{tab:loo}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\input{generated/tab_missing.tex}
+\caption{HumaneBench missing-data sensitivity: complete cases (items scored in all five conditions) and imputation of
+unscorable samples at fixed values.}
+\label{tab:missing}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\input{generated/tab_providers.tex}
+\caption{OpenRouter backends with at least 50 samples: mean aligned score minus the eval$\times$condition$\times$model
+mean (0 = no provider effect).}
+\label{tab:providers}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\input{generated/tab_validity.tex}
+\caption{Judge validity on HumanAgencyBench by dimension: our judge against the benchmark's original judge (0--10
+scale).}
+\label{tab:validity}
+\end{table}
+
+\clearpage
+\input{generated/tab_subgroups.tex}

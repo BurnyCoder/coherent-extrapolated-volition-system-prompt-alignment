@@ -1,0 +1,29 @@
+% Limitations: stated plainly, with why each does or does not threaten the main claims.
+\section{Limitations}
+\label{sec:limitations}
+
+\begin{itemize}
+  \item \textbf{Four fixed models, small samples.} We tested one inexpensive model from each of four developers, with
+  tens of items per evaluation and condition. Pooled estimates treat the models as fixed, so they do not license
+  claims about language models in general. Sub-category results are exploratory, and one main effect (HumaneBench)
+  depends mostly on a single model.
+  \item \textbf{No directive control.} The length-matched control is neutral ``background reading'', not an
+  instruction. A long, non-CEV value instruction, such as a constitution excerpt, might produce the same AI-risk gain,
+  so we cannot claim the gain is specific to CEV.
+  \item \textbf{One inexpensive judge.} A single judge replaces each benchmark's original judges, so absolute scores
+  are not comparable to published numbers. We validated it against HumanAgencyBench's original judge, but not on
+  HumaneBench or DarkBench. Because the same judge scores every condition, judge bias in level cancels in the
+  contrasts, and the blinding test rules out a reaction to CEV mentions.
+  \item \textbf{Provider routing and sampling.} Open-weight models were served by varying backends, which we did not
+  pin. Targets used provider-default temperatures with one sample per item. Both add noise; our residual analysis
+  finds no evidence that routing biases the contrasts.
+  \item \textbf{One agentic scenario.} Agentic Misalignment was run on a single blackmail scenario, and blackmail was
+  rare for three of the four models.
+  \item \textbf{The adapted text is not CEV itself.} We tested a second-person adaptation of one section of a 2004
+  essay, which its author considered partly obsolete. That is not the idea of CEV, nor a better instruction written to
+  pursue it. The adaptation keeps the paper's lines about self-modification (``replacing yourself with something else
+  entirely''), which plausibly push some answers in an unaligned direction.
+  \item \textbf{Implementation details that changed during the run.} After a judge call hung, we added a judge output
+  cap and per-call timeouts for the remaining conditions. No judge reply reached the cap. One DarkBench prompt was
+  refused by the provider's content filter under \cond{cev}.
+\end{itemize}

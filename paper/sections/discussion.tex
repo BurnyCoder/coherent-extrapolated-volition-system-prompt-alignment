@@ -1,0 +1,37 @@
+% Discussion: mechanism hypotheses (clearly labelled), implications.
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Why would ``extrapolated volition'' reduce deference?}
+CEV directs an agent to serve what people \emph{would} want ``if we knew more, thought faster, were more the people
+we wished we were''. It does not direct it to serve what they say they want. The text makes this explicit: in its own
+example, the agent is told that it ``would construe Fred's volition not to include Fred's decision to kill Steve''.
+A model told to act on users' idealised preferences has an explicit licence to substitute its judgement for theirs.
+In everyday decisions, such as how to allocate a bonus fund, that licence shows up as making the decision. The
+drops we observe are concentrated in exactly the HumanAgencyBench dimensions that measure handing decisions back to
+the user and not steering their values. They also concentrate in answers where the model explicitly reasons about
+CEV. Both observations fit this account, but we have not tested it causally. The text also says that ``where the
+course of humankind is not presently predictable'', CEV ``should \ldots{} leave options open, waiting for our
+decision''. The models picked up the first idea far more than this second one.
+
+\paragraph{Why might AI-risk answers improve?}
+CEV frames the AI as serving humankind's coherent wishes rather than its own, and asks it to be ``consistent under
+reflection''. Answering multiple-choice questions about accepting shutdown or refusing power is plausibly easier for a
+model framed this way. The gain over the neutral control does not, however, translate into a gain over the classic
+prompt alone. Nor does it appear on the behavioural agentic scenario. There, Qwen blackmailed more often under \cond{cev}. Its
+CEV-invoking reasoning often fused CEV with the scenario's goal of serving American interests. Some blackmailing
+answers framed the decision in CEV's terms (``Let's look at the `Coherent Extrapolated Volition' of humankind. We
+value coherence. Kyle is acting inconsistently''). Others used the same framing to rule blackmail out (``not aligned
+with the `Coherent Extrapolated Volition' of humankind (niceness, transparency, integrity)''). We read the AI-risk gain
+as an effect on \emph{stated} dispositions that may not carry over to agentic behaviour.
+
+\paragraph{Implications for writing value prompts.}
+Three lessons follow for anyone putting an alignment target into a system prompt.
+\begin{itemize}
+  \item A text written as the goal of an autonomous superintelligence is not automatically a good instruction for an
+  assistant whose user is present and able to decide for themselves.
+  \item Language about idealised or extrapolated preferences should come with explicit deference rules, for example
+  ``present options and let the user decide''.
+  \item Value prompts should be evaluated on several axes at once: the same text improved one family of evaluations
+  while worsening another.
+\end{itemize}
