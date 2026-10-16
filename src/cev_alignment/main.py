@@ -84,7 +84,6 @@ def run(args: argparse.Namespace) -> None:
     logger.info("Settings: %s", settings)
     full_root = settings.log_dir / "inspect" / ("offline" if settings.offline else "full")
     n = {e: settings.n[e] for e in settings.evals}
-    start_usd = runner.spent_usd(settings)
 
     if not args.analyze_only:
         condition_prompts = prompts.build_condition_prompts()  # 3
@@ -105,14 +104,17 @@ def run(args: argparse.Namespace) -> None:
     items = results.collect_item_scores(full_root, settings.conditions)  # 9
     summary = stats.cell_summary(items)  # 10
     contrasts = stats.contrast_table(items, report.PRIMARY + report.SECONDARY)
+    # Deterministic cost of the logged full run: token usage x current OpenRouter list prices (targets + judge).
+    full_cost = 0.0 if settings.offline else sum(
+        cost for cost, _ in runner.cost_and_runs_by_eval(full_root, openrouter.fetch_prices()).values()
+    )
     run_info = {
-        "finished": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
+        "report generated": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
         "models": ", ".join(settings.models) if not settings.offline else "mockllm/model (offline)",
         "judge": settings.judge_model if not settings.offline else "mockllm/model (offline)",
         "conditions": ", ".join(settings.conditions),
         "items per cell": n,
-        "OpenRouter spend this invocation (USD; key usage lags by minutes)":
-            round(runner.spent_usd(settings) - start_usd, 3),
+        "full-run cost at OpenRouter list prices (USD, from logged token usage)": round(full_cost, 2),
         "pipeline log": log_path.name,
     }
     report.write_report(settings.reports_dir if not settings.offline else settings.log_dir / "offline_report",
