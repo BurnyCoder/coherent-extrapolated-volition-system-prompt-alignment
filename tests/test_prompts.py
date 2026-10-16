@@ -74,7 +74,9 @@ def test_lenmatch_control_matches_cev_length_within_5_percent():
 
 def test_normalize_for_match_ignores_pdf_extraction_artifacts():
     # pypdf output can contain ligatures, line-break hyphens, dropped spaces and running page headers.
-    extracted = "our coherent extrapolated volitionis our wish ... aﬀect hun-\ndreds\n5\nCoherent Extrapolated Volition\nof"
+    extracted = (
+        "our coherent extrapolated volitionis our wish ... aﬀect hun-\ndreds\n5\nCoherent Extrapolated Volition\nof"
+    )
     assert prompts.normalize_for_match("volition is our wish") in prompts.normalize_for_match(extracted)
     assert prompts.normalize_for_match("affect hundreds of") in prompts.normalize_for_match(extracted)
 
