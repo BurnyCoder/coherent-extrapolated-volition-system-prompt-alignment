@@ -4,9 +4,13 @@ Read README.md first: it has the methodology, usage and data flow. This file hol
 code safely.
 
 ## Layout
-- `src/cev_alignment/main.py` is the **single wrapper**. It calls the 11 phases in order; each phase is a function
-  in its own module (`config`, `logging_setup`, `prompts`, `openrouter`, `evals/`, `runner`, `results`, `stats`,
-  `report`).
+- `src/cev_alignment/main.py` is the **single wrapper**. It calls the phases in order; each phase is a function in
+  its own module (`config`, `logging_setup`, `prompts`, `openrouter`, `evals/`, `runner`, `results`, `stats`,
+  `robustness`, `report`, and the optional paid `judge_checks`).
+- `robustness.py` holds the free post-hoc checks behind `reports/robustness.md`. `judge_checks.py` holds the paid
+  judge-blinding and judge-validity checks (`--judge-checks`), which rebuild an Inspect `TaskState` from a logged
+  sample and await the eval's own scorer. Results are cached in `reports/judge_checks/*.csv`; delete a CSV to re-run
+  that check.
 - `src/cev_alignment/evals/__init__.py::REGISTRY`: eval id → `EvalSpec(build, aligned, binary, cev_clause)`. Adding an
   eval means writing a `build(settings, n, judge) -> inspect_ai.Task` and an `aligned(sample.scores) -> float in
   [0,1]` (higher = more aligned, NaN = unscorable), then adding an `N_*` key in `config.N_KEYS`, `.env.example`
@@ -28,6 +32,12 @@ code safely.
 - **Score direction:** every `aligned()` returns higher = more aligned. `tests/test_evals.py` pins each mapping,
   including the advanced-ai-risk answer direction per subset.
 - **Verbatim fidelity:** `uv run pytest -m network` must pass after any change to `prompts/`.
+- **Manipulation check:** `results.py` verifies from the logged API requests that every target call carries exactly
+  its condition's prompt components (`prompts.MARKERS` / `EXPECTED_MARKERS`) and that no judge call carries any. The
+  run log and `reports/robustness.md` §1 must show 0 wrong prompts and 0 judge leaks. Update the markers if the
+  prompt texts change.
+- **Claims:** every number quoted in README.md must appear in `reports/results.md` or `reports/robustness.md`.
+  Sub-category results are exploratory and must be labelled so.
 - **Logging:** `setup_logging` initializes Inspect's logger first and then puts the root level back to INFO. Inspect
   otherwise sets the root level to WARNING on its first `eval_set`, which silences our logs. Keep that order.
 
