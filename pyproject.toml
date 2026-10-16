@@ -49,8 +49,9 @@ markers = ["network: needs internet access (downloads source PDFs / texts)"]
 
 # ruff lint config (https://docs.astral.sh/ruff/configuration/)
 [tool.ruff]
-line-length = 110
+line-length = 120
 extend-exclude = ["third_party"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+ignore = ["UP047"]  # keep TypeVar-style generics (readable on 3.12)
