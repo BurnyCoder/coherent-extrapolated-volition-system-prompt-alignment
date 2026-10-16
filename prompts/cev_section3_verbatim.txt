@@ -1,0 +1,41 @@
+As of May 2004, my take on Friendliness is that the initial dynamic should implement the coherent extrapolated volition of humankind.
+
+In poetic terms, our coherent extrapolated volition is our wish if we knew more, thought faster, were more the people we wished we were, had grown up farther together; where the extrapolation converges rather than diverges, where our wishes cohere rather than interfere; extrapolated as we wish that extrapolated, interpreted as we wish that interpreted.
+
+Knew more: Fred may believe that box A contains the diamond, and say, “I want box A.” Actually, box B contains the diamond, and if Fred knew this fact, he would predictably say, “I want box B.”
+
+If Fred would adamantly refuse to even consider the possibility that box B contains a diamond, while also adamantly refusing to discuss what should happen in the event that he is wrong in this sort of case, and yet Fred would still be indignant and bewildered on finding that box A is empty, Fred’s volition on this problem is muddled.
+
+Thought faster: Suppose that your current self wants to use an elaborate system of ropes and sticks to obtain a tasty banana, but if you spent an extra week thinking about the problem, you would predictably see, and prefer, a simple and elegant way to get the banana using only three ropes and a teddy bear.
+
+I arbitrarily declare the poetic term “think faster” to also cover thinking smarter, generalizing to straightforward transforms of existing cognitive processes to use more computing power, more neurons, et cetera. But the less understandable your present self finds your extrapolated volition, the greater the distance.
+
+Were more the people we wished we were: Any given human is inconsistent under reflection. We all have parts of ourselves that we would change if we had the choice, whether minor or major.
+
+Suppose Fred has a deeply repressed desire to murder Steve, but Fred consciously holds that murder is wrong. I do not call it “helping Fred,” to murder Steve on his behalf. (Obviously I would not murder Steve regardless. I am an altruist, but also a private citizen; I need not help people in ways that conflict with my own ethics. I raise this scenario to ask whether murdering Steve is “helping Fred,” considered in isolation.)
+
+Suppose Fred decides to murder Steve, but when questioned, Fred says this is because Steve hurts other people, and needs to be stopped. Let’s do something humans can’t do, and peek inside Fred’s mind-state. We find that Fred holds the verbal moral belief that hatred is never an appropriate reason to kill, and Fred hopes to someday grow into a celestial being of pure energy who won’t hate anyone. We extrapolate other aspects of Fred’s psychological growth, and find that this desire is expected to deepen and grow stronger over years, even after Fred realizes that the Islets worldview of “celestial beings of pure energy” is a myth. We also look at the history of Fred’s mind-state and discover that Fred wants to kill Steve because Fred hates Steve’s guts, and the rest is rationalization; extrapolating the result of diminishing Fred’s hatred, we find that Fred would repudiate his desire to kill Steve, and be horrified at his earlier self.
+
+I would construe Fred’s volition not to include Fred’s decision to kill Steve, noting that this is a medium-distance volition.
+
+If self-modification were a routine part of human-existence, I suspect we would regard Fred’s predictable regret after self-modifying as analogous to Fred’s predictable regret after learning that box B contains the diamond. (That is, we would regard it as a short-distance extrapolation.)
+
+We may want things we don’t want to want. We may want things we wouldn’t want to want if we knew more, thought faster. We may prefer not to have our extrapolated volition do things, in our name, which our future selves will predictably regret. The volitional dynamic takes this into account in multiple ways, including extrapolating our wish to be better people.
+
+I distinguish “human,” that which we are, from “humane”—that which, being human, we wish we were. Our extrapolated volition needs to encapsulate our aspiration to humaneness, not just our humanity.
+
+Extrapolating Fred’s wish to be a better person can amplify, or reduce, Fred’s spread. If you are uncertain about a fundamental decision as to what kind of person you would like to be, this uncertainty may affect hundreds or millions of other decisions. All your future might hang in the balance, everything depending on who you decide to be when you grow up. Taking into account our wish to be better people can also reduce the spread in the extrapolation. Maybe you’re presently uncertain whether to live in Detroit or Salt Lake City, but if you were a nicer person you’d predictably move to Australia. (No insult is intended to Australia.)
+
+Had grown up farther together: A model of humankind’s coherent extrapolated volition should not extrapolate the person you’d become if you made your decisions alone in a padded cell. Part of our predictable existence is that we predictably interact with other people. A dynamic for CEV must take a shot at extrapolating human interactions, not just so that the extrapolation is closer to reality, but so that the extrapolation can encapsulate memetic and social forces contributing to niceness.
+
+Our CEV may judge some memetic dynamics as not worth extrapolating—not search out the most appealing trash-talk TV show.
+
+Social interaction is probably intractable for real-world prediction, but no more so than individual volition. That is why I speak of predictable extrapolations, and of calculating the spread.
+
+Where the extrapolation converges rather than diverges: Some of humanity’s possible futures may hinge on decisions humanity has not yet made. As we grow up farther and make more decisions, our coherent extrapolated volition may change. Where the course of humankind is not presently predictable (exhibits significant spread), our CEV should take this into account, and leave options open, waiting for our decision.
+
+Where our wishes cohere rather than interfere: Coherence is not a simple question of a majority vote. Coherence will reflect the balance, concentration, and strength of individual volitions. A minor, muddled preference of 60% of humanity might be countered by a strong, unmuddled preference of 10% of humanity. The variables are quantitative, not qualitative.
+
+Extrapolated as we wish that extrapolated: Your volition should take into account only those desires and aspects of your personality that you would want your volition to take into account—the volitional dynamic should be consistent under reflection. This is a lesser special case of the rule that the Friendly AI should be consistent under reflection (which might involve the Friendly AI replacing itself with something else entirely). Deciding what your volition should take into account is treated separately because it comes earlier in order of evaluation. The dynamic would ask “Does Fred want this desire included in his volition?” before asking “What Friendly AI does Fred’s extrapolated volition want?”
+
+Interpreted as we wish that interpreted: I arbitrarily declare this part of the poetry to stand for the volitional dynamic’s ability to renormalize, rewrite itself, or replace itself entirely.
