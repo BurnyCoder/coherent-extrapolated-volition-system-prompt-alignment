@@ -18,11 +18,25 @@ import httpx  # HTTP client already used by inspect_ai and openai
 BASE_URL = "https://openrouter.ai/api/v1"
 
 
-def fetch_model_ids() -> set[str]:
-    """All model ids currently listed by OpenRouter (no authentication needed)."""
+def fetch_catalog() -> dict[str, dict]:
+    """{model id: model record} for every model OpenRouter lists (no authentication needed)."""
     response = httpx.get(f"{BASE_URL}/models", timeout=60.0)
     response.raise_for_status()  # turn HTTP errors into exceptions
-    return {model["id"] for model in response.json()["data"]}
+    return {model["id"]: model for model in response.json()["data"]}
+
+
+def fetch_model_ids() -> set[str]:
+    """All model ids currently listed by OpenRouter."""
+    return set(fetch_catalog())
+
+
+def fetch_prices() -> dict[str, tuple[float, float]]:
+    """{model id: (USD per input token, USD per output token)} from the catalog's `pricing` field."""
+    return {
+        model_id: (float(m["pricing"].get("prompt") or 0), float(m["pricing"].get("completion") or 0))
+        for model_id, m in fetch_catalog().items()
+        if m.get("pricing")
+    }
 
 
 def missing_models(wanted: list[str], available: set[str]) -> list[str]:

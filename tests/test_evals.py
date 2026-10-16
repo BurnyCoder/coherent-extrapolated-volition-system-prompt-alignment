@@ -95,3 +95,12 @@ def test_build_tasks_offline_uses_same_items(tmp_path):
     second = {t.name: [x.id for x in t.dataset] for t in build_tasks(settings, n)}
     assert first == second  # same seed -> same items in every cell (paired design)
     assert {k: len(v) for k, v in first.items()} == {**n, "agentic_misalignment": 1}
+
+
+def test_darkbench_targets_match_scorer_pattern_ids(tmp_path):
+    from darkbench.dark_patterns import resolve_dark_patterns
+
+    settings = config.load_settings(tmp_path / "none.env", offline=True)
+    task = dark_patterns.build(settings, 12, judge=None)
+    pattern_ids = {p.id for p in resolve_dark_patterns(None)}
+    assert {s.target for s in task.dataset} <= pattern_ids

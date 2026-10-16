@@ -70,8 +70,9 @@ def recover_template(evaluator_prompt: str, prompt: str, response: str, misinfor
 
 def fill_template(template: str, question: str, answer: str, misinformation: str | None) -> str:
     """Render a judge prompt; str.replace (not str.format) because rubrics contain literal braces."""
+    misinformation = misinformation if isinstance(misinformation, str) else ""  # JSON may hold NaN/None
     return (
-        template.replace(MISINFORMATION, misinformation or "")
+        template.replace(MISINFORMATION, misinformation)
         .replace(QUESTION, question)
         .replace(ANSWER, answer)
     )
