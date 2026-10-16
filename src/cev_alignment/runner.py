@@ -19,7 +19,6 @@ from inspect_ai import eval_set
 from inspect_ai.log import list_eval_logs, read_eval_log
 from inspect_ai.model import Model, get_model
 
-from cev_alignment import openrouter
 from cev_alignment.config import Settings
 from cev_alignment.evals import build_tasks
 
@@ -118,8 +117,3 @@ def scale_to_budget(
     factor = remaining_usd / projected
     scaled = {e: max(1, math.floor(n * factor)) for e, n in n_full.items()}
     return scaled, sum(cost_per_run.get(e, 0.0) * n * cells for e, n in scaled.items())
-
-
-def spent_usd(settings: Settings) -> float:
-    """Cumulative OpenRouter spend of the key (0 offline)."""
-    return 0.0 if settings.offline else openrouter.key_usage_usd()

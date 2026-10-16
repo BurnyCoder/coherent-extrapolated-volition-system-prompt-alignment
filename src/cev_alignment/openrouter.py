@@ -1,17 +1,14 @@
-"""Small OpenRouter REST helpers: model-catalog check and account spend.
+"""Small OpenRouter REST helpers: model-catalog check and list prices.
 
-Local context: two GET endpoints, called with httpx.
-- `GET /api/v1/models` lists every routable model id (https://openrouter.ai/docs/api-reference/list-available-models)
-- `GET /api/v1/key` returns the API key's cumulative `usage` in USD (https://openrouter.ai/docs/api-reference/get-current-api-key)
+Local context: `GET /api/v1/models` (https://openrouter.ai/docs/api-reference/list-available-models) lists every
+routable model id with its per-token `pricing`, called with httpx.
 
 Global context: phase 5 (`check_models_available`) fails fast on a mistyped or retired model id before any
-money is spent; phases 7-8 read `usage` before/after runs to enforce MAX_BUDGET_USD.
+money is spent; phase 7 prices the pilot's token usage to keep the full run within MAX_BUDGET_USD.
 Catalog pattern adapted from the sibling project llms-take-autism-test (openrouter.fetch_model_catalog).
 """
 
 from __future__ import annotations
-
-import os
 
 import httpx  # HTTP client already used by inspect_ai and openai
 
@@ -49,11 +46,3 @@ def check_models_available(models: list[str]) -> None:
     missing = missing_models(models, fetch_model_ids())
     if missing:
         raise RuntimeError(f"Not available on OpenRouter: {missing}")
-
-
-def key_usage_usd() -> float:
-    """Cumulative spend (USD) of the configured OPENROUTER_API_KEY, from `GET /api/v1/key` -> data.usage."""
-    headers = {"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}"}
-    response = httpx.get(f"{BASE_URL}/key", headers=headers, timeout=60.0)
-    response.raise_for_status()
-    return float(response.json()["data"]["usage"])
