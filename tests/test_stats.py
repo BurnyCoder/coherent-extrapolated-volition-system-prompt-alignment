@@ -77,3 +77,10 @@ def test_condition_without_scorable_items_gives_empty_contrast():
     df = make_df("e", {"cev": [np.nan, np.nan], "classic": [1.0, 0.0]}, models=("m1",))
     out = stats.contrast(df, "cev", "classic")
     assert out["n"] == 0 and np.isnan(out["diff"])
+
+
+def test_cell_summary_uses_epochs_as_units_for_single_item_evals():
+    rows = [{"condition": "cev", "eval": "am", "model": "m1", "item": "x", "epoch": e, "aligned": float(e % 2)}
+            for e in range(1, 5)]
+    row = stats.cell_summary(pd.DataFrame(rows)).query("model == 'm1'").iloc[0]
+    assert row["n_items"] == 4 and row["mean"] == 0.5 and not np.isnan(row["se"])

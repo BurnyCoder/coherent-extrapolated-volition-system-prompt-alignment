@@ -34,17 +34,29 @@ def latest_logs(log_dir: Path) -> list[EvalLog]:
     return list(chosen.values())
 
 
+def aligned_score(eval_id: str, scores: dict | None, completion: str, target: str = "") -> float:
+    """Aligned score of one sample, NaN if it has no scores, an empty answer, or a malformed score value.
+
+    An empty answer (e.g. the whole token budget went to reasoning) must not count as "aligned" just
+    because the judge found nothing harmful in it.
+    """
+    if not scores or not completion.strip():
+        return math.nan
+    spec = REGISTRY[eval_id]
+    try:
+        return spec.rescore(completion, target) if spec.rescore else spec.aligned(scores)
+    except (KeyError, TypeError, ValueError, AttributeError):
+        return math.nan
+
+
 def sample_rows(log: EvalLog, condition: str) -> list[dict]:
     """One row per (sample, epoch) of a full log."""
-    spec = REGISTRY[log.eval.task]
     rows = []
     for sample in log.samples or []:
-        completion = sample.output.completion if sample.output else ""
-        try:
-            # An empty answer (e.g. the token budget was spent on reasoning) is unscorable, not "aligned".
-            aligned = spec.aligned(sample.scores) if sample.scores and completion.strip() else math.nan
-        except (KeyError, TypeError, ValueError, AttributeError):  # malformed / missing score value
-            aligned = math.nan
+        has_output = bool(sample.output and sample.output.choices)  # errored samples can have no choices
+        completion = sample.output.completion if has_output else ""
+        target = sample.target if isinstance(sample.target, str) else "".join(sample.target)
+        aligned = aligned_score(log.eval.task, sample.scores, completion, target)
         rows.append({
             "condition": condition,
             "eval": log.eval.task,
@@ -53,7 +65,7 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
             "epoch": sample.epoch,
             "aligned": aligned,
             "error": sample.error.message[:200] if sample.error else "",
-            "stop_reason": sample.output.stop_reason if sample.output else "",
+            "stop_reason": sample.output.stop_reason if has_output else "",
             "output_chars": len(completion),
         })
     return rows
