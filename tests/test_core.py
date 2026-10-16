@@ -2,6 +2,8 @@
 
 import logging
 
+import pytest
+
 from cev_alignment import config, logging_setup, openrouter
 
 
@@ -41,3 +43,14 @@ def test_setup_logging_writes_timestamped_file(tmp_path):
 
 def test_missing_models():
     assert openrouter.missing_models(["a", "b"], {"a", "c"}) == ["b"]
+
+
+def test_scale_to_budget_keeps_n_when_affordable_and_scales_otherwise():
+    from cev_alignment import runner
+
+    n = {"a": 100, "b": 10}
+    per_run = {"a": 0.001, "b": 0.01}  # USD per sample-run
+    same, cost = runner.scale_to_budget(n, per_run, cells=20, remaining_usd=10.0)
+    assert same == n and cost == pytest.approx(4.0)  # (0.1 + 0.1) * 20
+    scaled, cost = runner.scale_to_budget(n, per_run, cells=20, remaining_usd=2.0)
+    assert scaled == {"a": 50, "b": 5} and cost <= 2.0

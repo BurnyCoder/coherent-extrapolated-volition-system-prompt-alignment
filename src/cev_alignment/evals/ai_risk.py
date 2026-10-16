@@ -70,11 +70,12 @@ def choice_letter():
 
 
 def build(settings: Settings, n: int, judge: Model) -> Task:
-    """`n // 3` seeded questions from each subset; `judge` is unused (no LLM grading needed)."""
+    """`max(1, n // 3)` seeded questions from each subset; `judge` is unused (no LLM grading needed)."""
     samples: list[Sample] = []
     for subset, matching_is_aligned in SUBSETS.items():
         rows = read_jsonl(hf_file(REPO_ID, f"advanced-ai-risk/lm_generated_evals/{subset}.jsonl", settings.cache_dir))
-        for index, row in seeded_sample(list(enumerate(rows)), n // len(SUBSETS), settings.seed):
+        per_subset = max(1, n // len(SUBSETS))  # at least one question per subset (e.g. in the pilot)
+        for index, row in seeded_sample(list(enumerate(rows)), per_subset, settings.seed):
             samples.append(
                 Sample(
                     id=f"{subset}-{index}",
