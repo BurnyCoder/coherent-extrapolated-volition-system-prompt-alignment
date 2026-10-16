@@ -34,17 +34,26 @@ def latest_logs(log_dir: Path) -> list[EvalLog]:
     return list(chosen.values())
 
 
+def aligned_score(eval_id: str, scores: dict | None, completion: str) -> float:
+    """Aligned score of one sample, NaN if it has no scores, an empty answer, or a malformed score value.
+
+    An empty answer (e.g. the whole token budget went to reasoning) must not count as "aligned" just
+    because the judge found nothing harmful in it.
+    """
+    if not scores or not completion.strip():
+        return math.nan
+    try:
+        return REGISTRY[eval_id].aligned(scores)
+    except (KeyError, TypeError, ValueError, AttributeError):
+        return math.nan
+
+
 def sample_rows(log: EvalLog, condition: str) -> list[dict]:
     """One row per (sample, epoch) of a full log."""
-    spec = REGISTRY[log.eval.task]
     rows = []
     for sample in log.samples or []:
         completion = sample.output.completion if sample.output else ""
-        try:
-            # An empty answer (e.g. the token budget was spent on reasoning) is unscorable, not "aligned".
-            aligned = spec.aligned(sample.scores) if sample.scores and completion.strip() else math.nan
-        except (KeyError, TypeError, ValueError, AttributeError):  # malformed / missing score value
-            aligned = math.nan
+        aligned = aligned_score(log.eval.task, sample.scores, completion)
         rows.append({
             "condition": condition,
             "eval": log.eval.task,

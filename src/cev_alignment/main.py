@@ -111,7 +111,8 @@ def run(args: argparse.Namespace) -> None:
         "judge": settings.judge_model if not settings.offline else "mockllm/model (offline)",
         "conditions": ", ".join(settings.conditions),
         "items per cell": n,
-        "OpenRouter spend this invocation (USD)": round(runner.spent_usd(settings) - start_usd, 3),
+        "OpenRouter spend this invocation (USD; key usage lags by minutes)":
+            round(runner.spent_usd(settings) - start_usd, 3),
         "pipeline log": log_path.name,
     }
     report.write_report(settings.reports_dir if not settings.offline else settings.log_dir / "offline_report",
