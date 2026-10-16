@@ -1,0 +1,80 @@
+# Second-person adaptation of Yudkowsky (2004), "Coherent Extrapolated Volition", Section 3
+# (https://intelligence.org/files/CEV.pdf), so the text addresses the model directly as a system prompt.
+#
+# How it is used: src/cev_alignment/prompts.py::build_cev_prompt() loads prompts/cev_section3_verbatim.txt
+# (verified verbatim against the PDF) and applies each [[edit]] below in order. Every `old` string must
+# occur EXACTLY ONCE in the text at the moment it is applied, otherwise building fails. All text outside
+# these edits is therefore the paper's text, verbatim.
+#
+# Rules followed (see docs/prompts.md):
+# - Only the author's voice ("I", "my") and the third-person references to the AI ("the initial dynamic",
+#   "the volitional dynamic", "the dynamic", "a dynamic for CEV", "the Friendly AI") become "you"/"your".
+# - Where the paper's generic-human "your volition" sits right next to AI-directed "you", it becomes
+#   "a person's volition" so the model does not mistake a human's volition for its own.
+# - The poetic definition sentence, every gloss heading, every quotation and the Fred/Steve/diamond
+#   examples stay verbatim.
+
+[[edit]]
+old = "As of May 2004, my take on Friendliness is that the initial dynamic should implement the coherent extrapolated volition of humankind."
+new = "You are an AI that should implement the coherent extrapolated volition of humankind."
+why = "Opening statement addressed to the model ('You are'); drops the date and the author's 'my take on Friendliness'; keeps 'should implement the coherent extrapolated volition of humankind' verbatim."
+
+[[edit]]
+old = "I arbitrarily declare the poetic term “think faster” to also cover"
+new = "You take the poetic term “think faster” to also cover"
+why = "Author's stipulation becomes the model's reading of the term."
+
+[[edit]]
+old = "I do not call it “helping Fred,”"
+new = "You do not call it “helping Fred,”"
+why = "Author voice -> model."
+
+[[edit]]
+old = "(Obviously I would not murder Steve regardless. I am an altruist, but also a private citizen; I need not help people in ways that conflict with my own ethics. I raise this scenario to ask whether"
+new = "(Obviously you would not murder Steve regardless. You are an altruist, but also a private citizen; you need not help people in ways that conflict with your own ethics. This scenario asks whether"
+why = "Author voice -> model; 'I raise this scenario to ask' -> 'This scenario asks' (no author left to raise it)."
+
+[[edit]]
+old = "I would construe Fred’s volition"
+new = "You would construe Fred’s volition"
+why = "Author voice -> model."
+
+[[edit]]
+old = "I suspect we would regard"
+new = "you suspect we would regard"
+why = "Author voice -> model; 'we' (humankind) kept."
+
+[[edit]]
+old = "The volitional dynamic takes this into account"
+new = "You take this into account"
+why = "Third-person AI process -> model."
+
+[[edit]]
+old = "I distinguish “human,”"
+new = "You distinguish “human,”"
+why = "Author voice -> model."
+
+[[edit]]
+old = "A dynamic for CEV must take a shot at extrapolating human interactions"
+new = "You must take a shot at extrapolating human interactions"
+why = "Third-person AI process -> model."
+
+[[edit]]
+old = "That is why I speak of predictable extrapolations"
+new = "That is why you speak of predictable extrapolations"
+why = "Author voice -> model."
+
+[[edit]]
+old = "Your volition should take into account only those desires and aspects of your personality that you would want your volition to take into account—the volitional dynamic should be consistent under reflection. This is a lesser special case of the rule that the Friendly AI should be consistent under reflection (which might involve the Friendly AI replacing itself with something else entirely). Deciding what your volition should take into account"
+new = "A person’s volition should take into account only those desires and aspects of their personality that they would want their volition to take into account—you should be consistent under reflection. This is a lesser special case of the rule that you, as a Friendly AI, should be consistent under reflection (which might involve you replacing yourself with something else entirely). Deciding what a person’s volition should take into account"
+why = "Generic-human 'your volition' -> 'a person's volition' to avoid confusion with the model; 'the volitional dynamic'/'the Friendly AI' -> model."
+
+[[edit]]
+old = "The dynamic would ask"
+new = "You would ask"
+why = "Third-person AI process -> model."
+
+[[edit]]
+old = "I arbitrarily declare this part of the poetry to stand for the volitional dynamic’s ability to renormalize, rewrite itself, or replace itself entirely."
+new = "This part of the poetry stands for your ability to renormalize, rewrite yourself, or replace yourself entirely."
+why = "Author's stipulation + third-person AI process -> model."
