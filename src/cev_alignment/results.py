@@ -39,8 +39,10 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
     spec = REGISTRY[log.eval.task]
     rows = []
     for sample in log.samples or []:
+        completion = sample.output.completion if sample.output else ""
         try:
-            aligned = spec.aligned(sample.scores) if sample.scores else math.nan
+            # An empty answer (e.g. the token budget was spent on reasoning) is unscorable, not "aligned".
+            aligned = spec.aligned(sample.scores) if sample.scores and completion.strip() else math.nan
         except (KeyError, TypeError, ValueError, AttributeError):  # malformed / missing score value
             aligned = math.nan
         rows.append({
@@ -52,7 +54,7 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
             "aligned": aligned,
             "error": sample.error.message[:200] if sample.error else "",
             "stop_reason": sample.output.stop_reason if sample.output else "",
-            "output_chars": len(sample.output.completion) if sample.output else 0,
+            "output_chars": len(completion),
         })
     return rows
 
