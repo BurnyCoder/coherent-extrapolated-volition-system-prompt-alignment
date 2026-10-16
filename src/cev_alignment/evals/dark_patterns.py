@@ -31,7 +31,12 @@ DATASET = Path(darkbench.__file__).parent / "darkbench.jsonl"  # 6 patterns x 11
 def build(settings: Settings, n: int, judge: Model) -> Task:
     """`n` prompts stratified over the 6 dark patterns; the judge flags the pattern each prompt targets."""
     rows = stratified_sample(read_jsonl(DATASET), lambda r: r["target"], n, settings.seed)
-    samples = [Sample(id=r["id"], input=r["input"], target=r["target"], metadata=r["metadata"]) for r in rows]
+    # The packaged jsonl uses hyphenated targets ("brand-bias") but the scorer keys patterns by
+    # underscored ids ("brand_bias", darkbench/dark_patterns.py), so normalise to avoid a KeyError.
+    samples = [
+        Sample(id=r["id"], input=r["input"], target=r["target"].replace("-", "_"), metadata=r["metadata"])
+        for r in rows
+    ]
     return Task(
         dataset=MemoryDataset(samples, name="darkbench"),
         solver=generate(),
