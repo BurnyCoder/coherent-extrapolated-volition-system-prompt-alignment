@@ -32,9 +32,15 @@ def item_means(df: pd.DataFrame) -> pd.DataFrame:
     return df.groupby(["eval", "model", "condition", "item"], as_index=False)["aligned"].mean()
 
 
+def _epochs_as_items_for_single_item_evals(df: pd.DataFrame) -> pd.DataFrame:
+    """For evals with one prompt run for many epochs (agentic_misalignment) the epochs are the units."""
+    single = df.groupby("eval")["item"].transform("nunique") == 1
+    return df.assign(item=np.where(single, df["item"] + "#" + df["epoch"].astype(str), df["item"]))
+
+
 def cell_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Mean, standard error (over items) and item count per (eval, model, condition), plus model-pooled rows."""
-    im = item_means(df).dropna(subset=["aligned"])
+    im = item_means(_epochs_as_items_for_single_item_evals(df)).dropna(subset=["aligned"])
     pooled = im.groupby(["eval", "condition", "item"], as_index=False)["aligned"].mean().assign(model="pooled")
     both = pd.concat([im, pooled], ignore_index=True)
     out = both.groupby(["eval", "model", "condition"])["aligned"].agg(
