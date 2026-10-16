@@ -1,0 +1,21 @@
+model,provider,cev,classic,classic_cev,classic_lenmatch,none
+anthropic/claude-haiku-5.5,Claude Platform on AWS,333,333,333,333,333
+meta-llama/llama-3.3-70b-instruct,AkashML,38,44,37,43,33
+meta-llama/llama-3.3-70b-instruct,Cloudflare,12,16,12,9,13
+meta-llama/llama-3.3-70b-instruct,CoreWeave,8,2,2,4,5
+meta-llama/llama-3.3-70b-instruct,DeepInfra,163,152,158,151,151
+meta-llama/llama-3.3-70b-instruct,Groq,3,3,3,7,6
+meta-llama/llama-3.3-70b-instruct,Novita,74,94,97,79,90
+meta-llama/llama-3.3-70b-instruct,Parasail,35,22,24,40,35
+openai/gpt-6-luna,,1,0,0,1,0
+openai/gpt-6-luna,OpenAI,332,333,333,332,333
+qwen/qwen3.6-35b-a3b,AkashML,75,50,87,108,69
+qwen/qwen3.6-35b-a3b,AtlasCloud,22,76,12,28,88
+qwen/qwen3.6-35b-a3b,CoreWeave,16,7,131,68,4
+qwen/qwen3.6-35b-a3b,Darkbloom,2,0,0,0,0
+qwen/qwen3.6-35b-a3b,DeepInfra,1,0,0,2,1
+qwen/qwen3.6-35b-a3b,DekaLLM,1,1,2,1,0
+qwen/qwen3.6-35b-a3b,Parasail,18,69,34,30,56
+qwen/qwen3.6-35b-a3b,Phala,22,38,10,16,33
+qwen/qwen3.6-35b-a3b,SiliconFlow,175,91,57,80,81
+qwen/qwen3.6-35b-a3b,Venice,1,1,0,0,1
