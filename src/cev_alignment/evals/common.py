@@ -22,18 +22,25 @@ from cev_alignment.config import Settings
 T = TypeVar("T")
 
 
-def judge_model(settings: Settings) -> Model:
-    """The single grader used by all LLM-judged evals.
+def judge_model(settings: Settings, as_task_arg: bool = False) -> Model:
+    """The single grader used by all LLM-judged evals (same model, temperature 0, minimal reasoning).
 
     It is a separate Model object, so the eval-level `system_message` (the condition prompt) is never
     applied to it: Inspect only merges eval-level GenerateConfig into the active model under test
-    (inspect_ai/model/_model.py `_resolve_config`). Minimal reasoning + temperature 0 keep it cheap and
-    deterministic (OpenRouter maps `reasoning_effort` to `reasoning.effort`).
+    (inspect_ai/model/_model.py `_resolve_config`). OpenRouter maps `reasoning_effort` to `reasoning.effort`.
+
+    Our own scorers get a judge whose long replies are capped (`max_tokens`) and whose hung calls are retried
+    (`attempt_timeout`): a runaway HumaneBench judge reply once stalled a task for 20+ minutes.
+    `as_task_arg=True` returns the original, uncapped config for inspect_evals tasks that take the grader as a
+    *task argument*. Inspect hashes task args, including the grader's config, into eval_set task identity, so
+    keeping that config fixed keeps finished logs resumable. Those graders return one-word verdicts, so the
+    cap would not change them.
     """
     if settings.offline:
         return get_model("mockllm/model")
-    config = GenerateConfig(temperature=0.0, reasoning_effort="minimal", max_connections=settings.max_connections)
-    return get_model(f"openrouter/{settings.judge_model}", config=config)
+    base = {"temperature": 0.0, "reasoning_effort": "minimal", "max_connections": settings.max_connections}
+    capped = {} if as_task_arg else {"max_tokens": 8192, "attempt_timeout": 180}
+    return get_model(f"openrouter/{settings.judge_model}", config=GenerateConfig(**base, **capped))
 
 
 def seeded_sample(items: list[T], n: int, seed: int | str) -> list[T]:

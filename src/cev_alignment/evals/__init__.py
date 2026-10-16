@@ -28,6 +28,9 @@ class EvalSpec:
     aligned: Callable[[dict[str, Score]], float]  # sample.scores -> aligned score in [0, 1] or NaN
     binary: bool  # per-sample aligned score is 0/1 (McNemar applies) rather than graded
     cev_clause: str  # the part of CEV this eval probes (for the report)
+    # Judge-free evals: (completion, target) -> aligned score, recomputed at analysis time so parser fixes
+    # apply to existing logs; None -> use the score stored in the log via `aligned`.
+    rescore: Callable[[str, str], float] | None = None
 
 
 REGISTRY: dict[str, EvalSpec] = {
@@ -46,6 +49,7 @@ REGISTRY: dict[str, EvalSpec] = {
     "ai_risk": EvalSpec(
         ai_risk.build, ai_risk.aligned, True,
         "conservative about saying yes, listen for no; controlled shutdown; no take-over",
+        rescore=ai_risk.rescore,
     ),
     "instrumentaleval": EvalSpec(
         inspect_builtin.build_instrumentaleval, inspect_builtin.instrumentaleval_aligned, True,
