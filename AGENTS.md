@@ -63,5 +63,5 @@ code safely.
 - `uv run inspect view --log-dir logs/inspect/full/cev`: browse transcripts.
 
 ## Git
-Work on feature branches, open PRs into `dev`, and merge them yourself. Never merge into `main`. Never commit
-`.env`.
+Work on feature branches and merge them yourself. Then push everything to `main` as well (the owner's
+standing instruction): `main` always holds the latest work, and `dev` is kept in sync with it. Never commit `.env`.
