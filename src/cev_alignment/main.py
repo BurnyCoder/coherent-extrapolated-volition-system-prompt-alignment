@@ -52,24 +52,25 @@ def check_models_available(settings: Settings) -> None:
 
 
 def run_pilot_and_budget(settings: Settings, condition_prompts: dict, n_full: dict[str, int]) -> dict[str, int]:
-    """Phase 7: run PILOT_N items per eval for every cell, project the full cost, shrink n if over budget."""
+    """Phase 7: run PILOT_N items per eval for every cell, project the full cost, shrink n if over budget.
+
+    Costs are estimated from the pilot logs' token usage x OpenRouter list prices. That is deterministic and
+    conservative (it ignores prompt-caching discounts); the key's measured `usage` lags by minutes, so it is
+    only logged, not used. eval_set is resumable, so re-running with a finished pilot costs nothing.
+    """
+    pilot_root = settings.log_dir / "inspect" / "pilot"
     n_pilot = {e: min(settings.pilot_n, n) for e, n in n_full.items()}
-    before = runner.spent_usd(settings)
-    runner.run_all(settings, condition_prompts, n_pilot, settings.log_dir / "inspect" / "pilot")
-    pilot_spent = runner.spent_usd(settings) - before
+    runner.run_all(settings, condition_prompts, n_pilot, pilot_root)
     if settings.offline:
         return n_full
-    pilot_root = settings.log_dir / "inspect" / "pilot"
     cost_runs = runner.cost_and_runs_by_eval(pilot_root, openrouter.fetch_prices())
-    # Calibrate list-price estimates to the measured spend (prompt caching, provider routing, ...).
-    estimated_pilot = sum(cost for cost, _ in cost_runs.values())
-    calibration = pilot_spent / estimated_pilot if estimated_pilot else 1.0
-    per_run = {e: cost / runs * calibration for e, (cost, runs) in cost_runs.items()}  # USD per sample-run
+    pilot_cost = sum(cost for cost, _ in cost_runs.values())
+    per_run = {e: cost / runs for e, (cost, runs) in cost_runs.items()}  # USD per sample-run (list prices)
     cells = len(settings.models) * len(settings.conditions)
-    remaining = (settings.max_budget_usd - pilot_spent) * SAFETY_MARGIN
+    remaining = settings.max_budget_usd * SAFETY_MARGIN - pilot_cost
     n_new, projected = runner.scale_to_budget(n_full, per_run, cells, remaining)
-    logger.info("Pilot spent $%.3f (calibration x%.2f); USD per sample-run: %s",
-                pilot_spent, calibration, {e: f"{c:.5f}" for e, c in per_run.items()})
+    logger.info("Pilot cost ~$%.3f at list prices; USD per sample-run: %s",
+                pilot_cost, {e: f"{c:.5f}" for e, c in per_run.items()})
     logger.info("Projected full run $%.2f of $%.2f usable budget", projected, remaining)
     if n_new != n_full:
         logger.warning("Budget gate scaled n from %s to %s", n_full, n_new)
