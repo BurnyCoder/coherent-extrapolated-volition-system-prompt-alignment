@@ -34,7 +34,7 @@ DEFAULTS = {
     "JUDGE_MODEL": "google/gemini-3.1-flash-lite",
     "CONDITIONS": "none,classic,cev,classic_cev,classic_lenmatch",
     "EVALS": ",".join(N_KEYS),
-    "N_HUMANEBENCH": "64",
+    "N_HUMANEBENCH": "48",
     "N_HUMAN_AGENCY": "60",
     "N_DARKBENCH": "60",
     "N_AI_RISK": "90",
@@ -44,7 +44,8 @@ DEFAULTS = {
     "MAX_BUDGET_USD": "10",
     "SEED": "42",
     "REASONING_EFFORT": "low",
-    "MAX_TOKENS": "2048",
+    "MAX_TOKENS": "4096",
+    "NO_REASONING_MODELS": "qwen/qwen3.6-35b-a3b",
     "MAX_CONNECTIONS": "20",
 }
 
@@ -64,6 +65,7 @@ class Settings:
     """All knobs of one experiment run."""
 
     models: list[str]  # OpenRouter ids of the models under test (without the "openrouter/" prefix)
+    no_reasoning_models: list[str]  # subset of `models` run with thinking disabled (OpenRouter reasoning.enabled=false)
     judge_model: str  # OpenRouter id of the grader used by every LLM-judged eval
     conditions: list[str]  # system-prompt condition ids (see cev_alignment.prompts.CONDITIONS)
     evals: list[str]  # eval ids (see cev_alignment.evals.REGISTRY)
@@ -102,6 +104,7 @@ def load_settings(env_file: Path | None = None, offline: bool = False) -> Settin
     load_dotenv(env_file or ROOT / ".env", override=False)
     return Settings(
         models=_csv("MODELS"),
+        no_reasoning_models=_csv("NO_REASONING_MODELS"),
         judge_model=_get("JUDGE_MODEL"),
         conditions=_csv("CONDITIONS"),
         evals=_csv("EVALS"),

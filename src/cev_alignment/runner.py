@@ -17,6 +17,7 @@ from pathlib import Path
 
 from inspect_ai import eval_set
 from inspect_ai.log import list_eval_logs, read_eval_log
+from inspect_ai.model import Model, get_model
 
 from cev_alignment import openrouter
 from cev_alignment.config import Settings
@@ -30,6 +31,21 @@ def model_ids(settings: Settings) -> list[str]:
     return sorted({settings.model_id(m) for m in settings.models})
 
 
+def models_under_test(settings: Settings) -> list[str | Model]:
+    """Model strings, or Model objects with thinking disabled for `settings.no_reasoning_models`.
+
+    `reasoning_enabled=False` is an Inspect OpenRouter model arg that sends `reasoning: {enabled: false}`
+    (inspect_ai/model/_providers/openrouter.py); hybrid models such as Qwen3.6 then answer without thinking.
+    """
+    if settings.offline:
+        return model_ids(settings)
+    return [
+        get_model(f"openrouter/{m}", reasoning_enabled=False) if m in settings.no_reasoning_models
+        else f"openrouter/{m}"
+        for m in settings.models
+    ]
+
+
 def run_condition(settings: Settings, condition: str, prompt: str | None, n: dict[str, int], log_dir: Path) -> bool:
     """Run every eval on every model with one system-prompt condition; True if all tasks succeeded."""
     tasks = build_tasks(settings, n)  # fresh Task objects (same seeded items) for each eval_set call
@@ -37,15 +53,16 @@ def run_condition(settings: Settings, condition: str, prompt: str | None, n: dic
                     "max_connections": settings.max_connections}
     if prompt is not None:  # the `none` condition adds no system message at all
         config["system_message"] = prompt
-    logger.info("Condition %s: %d tasks x %d models -> %s", condition, len(tasks), len(model_ids(settings)), log_dir)
+    models = models_under_test(settings)
+    logger.info("Condition %s: %d tasks x %d models -> %s", condition, len(tasks), len(models), log_dir)
     success, logs = eval_set(
         tasks=tasks,
-        model=model_ids(settings),
+        model=models,
         log_dir=str(log_dir),
         tags=[condition],
         metadata={"condition": condition},
         display="log",  # progress goes through Python logging -> our timestamped log file
-        max_tasks=len(tasks) * len(model_ids(settings)),  # run all task x model pairs concurrently
+        max_tasks=len(tasks) * len(models),  # run all task x model pairs concurrently
         retry_attempts=3,  # eval_set-level retries of failed tasks
         retry_on_error=2,  # sample-level retries (e.g. transient provider errors)
         fail_on_error=0.2,  # tolerate up to 20% failed samples per task instead of aborting
