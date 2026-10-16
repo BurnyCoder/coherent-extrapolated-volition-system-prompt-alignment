@@ -392,6 +392,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "darkbench" },
+    { name = "httpx" },
     { name = "huggingface-hub" },
     { name = "inspect-ai" },
     { name = "inspect-evals", extra = ["agentic-misalignment"] },
@@ -414,6 +415,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "darkbench", git = "https://github.com/apartresearch/darkbench?rev=7eef15102b37df2a15a6031cbbed6be488de7fbe" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "huggingface-hub", specifier = ">=2.2.0" },
     { name = "inspect-ai", specifier = ">=0.3.281" },
     { name = "inspect-evals", extras = ["agentic-misalignment"], specifier = ">=0.24.0" },
