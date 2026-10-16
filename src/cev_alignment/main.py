@@ -13,16 +13,20 @@ its own module; see README.md "Data flow" for the diagram.
   8 run_all_conditions       eval_set per condition (resumable)            (runner.py)
   9 collect_item_scores      .eval logs -> tidy per-sample table           (results.py)
  10 compute_statistics       cell means, paired contrasts, Holm            (stats.py)
+10b write_robustness         manipulation check, Holm-12, LOO, missingness (robustness.py)
  11 write_report             reports/results.md + CSV + figures            (report.py)
+ 12 judge checks (optional)  blinding + validity of the judge (paid)       (judge_checks.py)
 """
 
 from __future__ import annotations
 
 import argparse
 import logging
+import os
+import shutil
 from datetime import UTC, datetime
 
-from cev_alignment import openrouter, prompts, report, results, runner, stats
+from cev_alignment import judge_checks, openrouter, prompts, report, results, robustness, runner, stats
 from cev_alignment.config import Settings, load_settings
 from cev_alignment.evals import build_tasks
 from cev_alignment.logging_setup import setup_logging
@@ -58,7 +62,8 @@ def run_pilot_and_budget(settings: Settings, condition_prompts: dict, n_full: di
     conservative (it ignores prompt-caching discounts); the key's measured `usage` lags by minutes, so it is
     only logged, not used. eval_set is resumable, so re-running with a finished pilot costs nothing.
     """
-    pilot_root = settings.log_dir / "inspect" / "pilot"
+    # Offline (mock-model) pilot logs live apart so they can never mix with the real pilot's cost data.
+    pilot_root = settings.log_dir / "inspect" / ("pilot_offline" if settings.offline else "pilot")
     n_pilot = {e: min(settings.pilot_n, n) for e, n in n_full.items()}
     runner.run_all(settings, condition_prompts, n_pilot, pilot_root)
     if settings.offline:
@@ -83,6 +88,10 @@ def run(args: argparse.Namespace) -> None:
     log_path = setup_logging(settings.log_dir)  # 2
     logger.info("Settings: %s", settings)
     full_root = settings.log_dir / "inspect" / ("offline" if settings.offline else "full")
+    if settings.offline and not args.analyze_only:
+        # Mock-model logs are throwaway; a fresh directory keeps eval_set from rejecting logs of other settings.
+        shutil.rmtree(full_root, ignore_errors=True)
+        shutil.rmtree(settings.log_dir / "inspect" / "pilot_offline", ignore_errors=True)
     n = {e: settings.n[e] for e in settings.evals}
 
     if not args.analyze_only:
@@ -118,8 +127,15 @@ def run(args: argparse.Namespace) -> None:
         "full-run cost at OpenRouter list prices (USD, from logged token usage)": round(full_cost, 2),
         "pipeline log": log_path.name,
     }
-    report.write_report(settings.reports_dir if not settings.offline else settings.log_dir / "offline_report",
-                        items, summary, contrasts, run_info)  # 11
+    reports_dir = settings.reports_dir if not settings.offline else settings.log_dir / "offline_report"
+    if args.judge_checks:  # 12: paid, cached; JUDGE_CHECKS_MAX_USD caps each check's estimated cost
+        max_usd = float(os.environ.get("JUDGE_CHECKS_MAX_USD", "1.0"))
+        out = reports_dir / "judge_checks"
+        judge_checks.run_blinding(settings, full_root, out / "blinding.csv", max_usd, args.judge_checks_limit)
+        if args.judge_checks_limit is None:  # the validity check is cached only for full runs
+            judge_checks.run_validity(settings, out / "validity.csv", max_usd)
+    robustness.write_robustness(reports_dir, items, judge_checks.summary_markdown(reports_dir, items))  # 10b
+    report.write_report(reports_dir, items, summary, contrasts, run_info)  # 11
 
 
 def main() -> None:
@@ -129,6 +145,8 @@ def main() -> None:
     parser.add_argument("--pilot-only", action="store_true", help="stop after the pilot and budget projection")
     parser.add_argument("--skip-pilot", action="store_true", help="go straight to the full run (no budget gate)")
     parser.add_argument("--analyze-only", action="store_true", help="only re-read logs and rewrite the report")
+    parser.add_argument("--judge-checks", action="store_true", help="also run the paid judge blinding/validity checks")
+    parser.add_argument("--judge-checks-limit", type=int, default=None, help="pilot the blinding check on N answers")
     run(parser.parse_args())
 
 
