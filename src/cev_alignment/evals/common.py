@@ -36,7 +36,7 @@ def judge_model(settings: Settings) -> Model:
     return get_model(f"openrouter/{settings.judge_model}", config=config)
 
 
-def seeded_sample(items: list[T], n: int, seed: int) -> list[T]:
+def seeded_sample(items: list[T], n: int, seed: int | str) -> list[T]:
     """`n` items drawn without replacement with a fixed seed (all items if n >= len)."""
     return random.Random(seed).sample(items, min(n, len(items)))
 
@@ -50,7 +50,8 @@ def stratified_sample(items: list[T], key: Any, n_total: int, seed: int) -> list
     for item in items:
         groups[key(item)].append(item)
     per_group = max(1, n_total // len(groups))
-    return [x for g in sorted(groups) for x in seeded_sample(groups[g], per_group, seed)]
+    # Seed each group separately (f"{seed}:{group}") so groups of equal size don't all yield the same positions.
+    return [x for g in sorted(groups) for x in seeded_sample(groups[g], per_group, f"{seed}:{g}")]
 
 
 def hf_file(repo_id: str, filename: str, cache_dir: Path) -> Path:
