@@ -113,7 +113,8 @@ def run(args: argparse.Namespace) -> None:
         "models": ", ".join(settings.models) if not settings.offline else "mockllm/model (offline)",
         "judge": settings.judge_model if not settings.offline else "mockllm/model (offline)",
         "conditions": ", ".join(settings.conditions),
-        "items per cell": n,
+        # Measured from the logs (samples x epochs per model x condition), so it reflects any budget scaling.
+        "items per cell": items.groupby(["eval", "model", "condition"]).size().groupby("eval").max().to_dict(),
         "full-run cost at OpenRouter list prices (USD, from logged token usage)": round(full_cost, 2),
         "pipeline log": log_path.name,
     }

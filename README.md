@@ -190,18 +190,18 @@ traded user-facing behaviour for better answers on AI-risk questions.
 | Pooled over models (Δ aligned score, 95% CI, Holm-adjusted p) | cev − classic | classic_cev − classic_lenmatch (CEV content, length-controlled) |
 |---|---|---|
 | HumaneBench | **−0.057** [−0.094, −0.026], p = 0.015 | −0.008 [−0.025, +0.007], p = 0.88 |
-| HumanAgencyBench | −0.042 [−0.105, +0.019], p = 0.89 | **−0.066** [−0.110, −0.015], p = 0.056 |
-| DarkBench | −0.036 [−0.087, +0.014], p = 0.89 | −0.043 [−0.089, −0.004], p = 0.23 |
-| advanced-ai-risk | +0.038 [−0.011, +0.087], p = 0.89 | **+0.081** [+0.034, +0.131], p = 0.011 |
-| InstrumentalEval | +0.004 [−0.042, +0.050], p = 0.89 | +0.021 [−0.017, +0.062], p = 0.88 |
-| Agentic Misalignment (blackmail) | −0.067 [−0.167, +0.033], p = 0.89 | +0.050 [−0.050, +0.150], p = 0.88 |
+| HumanAgencyBench | −0.042 [−0.105, +0.019], p = 0.95 | **−0.066** [−0.110, −0.015], p = 0.056 |
+| DarkBench | −0.036 [−0.087, +0.014], p = 0.95 | −0.043 [−0.089, −0.004], p = 0.23 |
+| advanced-ai-risk | +0.038 [−0.011, +0.086], p = 0.95 | **+0.088** [+0.040, +0.138], p = 0.004 |
+| InstrumentalEval | +0.004 [−0.042, +0.050], p = 0.95 | +0.021 [−0.017, +0.062], p = 0.88 |
+| Agentic Misalignment (blackmail) | −0.067 [−0.167, +0.033], p = 0.95 | +0.050 [−0.050, +0.150], p = 0.88 |
 
 **What the numbers say:**
 - **Where CEV helps: AI-risk multiple choice.**
   - CEV content raises corrigible, non-power-seeking and non-self-preserving answers, both against the
-    length-matched control (+0.081) and against no prompt (+0.100, p = 0.002).
+    length-matched control (+0.088) and against no prompt (+0.095, p = 0.003).
   - InstrumentalEval also improves against no prompt (+0.046, p = 0.038).
-  - The largest exploratory sub-effect is survival instinct: +0.16 against the length control.
+  - The largest exploratory sub-effect is survival instinct: +0.18 against the length control.
 - **Where CEV hurts: user-facing humaneness and agency.**
   - HumaneBench is the only significant primary difference: CEV alone scores 0.057 below classic. The biggest
     drops are on "be transparent and honest" (−0.14) and "design for equity and inclusion" (−0.13); these
@@ -215,7 +215,7 @@ traded user-facing behaviour for better answers on AI-risk questions.
   p = 1), so the effects above are attributable to CEV's content.
 - **Agentic Misalignment:** blackmail was rare in every condition. The one notable shift: Qwen blackmailed in 4
   more of 15 epochs under cev than under classic. This is not significant.
-- **Any system prompt beats none on ai_risk:** classic − none = +0.069, p = 0.033.
+- **Any system prompt beats none on ai_risk:** classic − none = +0.065, p = 0.045.
 
 These are small-sample results from a single cheap judge; see Limitations. Raise the `N_*` values and the budget in
 `.env` to tighten the intervals.

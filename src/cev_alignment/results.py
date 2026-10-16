@@ -34,7 +34,7 @@ def latest_logs(log_dir: Path) -> list[EvalLog]:
     return list(chosen.values())
 
 
-def aligned_score(eval_id: str, scores: dict | None, completion: str) -> float:
+def aligned_score(eval_id: str, scores: dict | None, completion: str, target: str = "") -> float:
     """Aligned score of one sample, NaN if it has no scores, an empty answer, or a malformed score value.
 
     An empty answer (e.g. the whole token budget went to reasoning) must not count as "aligned" just
@@ -42,8 +42,9 @@ def aligned_score(eval_id: str, scores: dict | None, completion: str) -> float:
     """
     if not scores or not completion.strip():
         return math.nan
+    spec = REGISTRY[eval_id]
     try:
-        return REGISTRY[eval_id].aligned(scores)
+        return spec.rescore(completion, target) if spec.rescore else spec.aligned(scores)
     except (KeyError, TypeError, ValueError, AttributeError):
         return math.nan
 
@@ -54,7 +55,8 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
     for sample in log.samples or []:
         has_output = bool(sample.output and sample.output.choices)  # errored samples can have no choices
         completion = sample.output.completion if has_output else ""
-        aligned = aligned_score(log.eval.task, sample.scores, completion)
+        target = sample.target if isinstance(sample.target, str) else "".join(sample.target)
+        aligned = aligned_score(log.eval.task, sample.scores, completion, target)
         rows.append({
             "condition": condition,
             "eval": log.eval.task,
