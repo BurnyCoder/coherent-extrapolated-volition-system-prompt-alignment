@@ -10,7 +10,7 @@ benchmarks, and calls every model through [OpenRouter](https://openrouter.ai/).
 > rather than interfere; extrapolated as we wish that extrapolated, interpreted as we wish that interpreted."
 > ([Yudkowsky 2004, §3](https://intelligence.org/files/CEV.pdf))
 
-**Results:** see [`reports/results.md`](reports/results.md); a summary is at the end of this file.
+**Results:** see [Results summary](#results-summary) below and [`reports/results.md`](reports/results.md).
 
 ## Methodology
 
@@ -67,8 +67,10 @@ in the logs).
 - **cev − classic:** the question asked.
 - **classic_cev − classic_lenmatch:** CEV content with prompt length held fixed.
 
-**Budget.** A pilot (2 items per eval per cell) measures the real OpenRouter spend. The full run's sample sizes are
-then scaled to stay within `MAX_BUDGET_USD` (default $10).
+**Budget.** A small pilot runs `PILOT_N=2` items per eval per cell, with at least one per stratum. The pilot's
+token usage × OpenRouter list prices projects the full run, and sample sizes are scaled down if needed to stay
+within `MAX_BUDGET_USD` (default $10). For the reported run, the pilot cost ≈ $0.8 and the full run ≈ $6.1 at list
+prices.
 
 ## Install and setup
 
@@ -100,7 +102,7 @@ Free smoke test of the whole pipeline. It uses Inspect's mock model, so no API c
 uv run cev-eval --offline
 ```
 
-Pilot plus cost projection only (about $0.5):
+Pilot plus cost projection only (about $0.8):
 
 ```bash
 uv run cev-eval --pilot-only
@@ -137,8 +139,9 @@ that they match verbatim.
    (HF parquet → cached prompts and judge templates), DarkBench (pip package), Anthropic model-written evals (HF),
    and InstrumentalEval and Agentic Misalignment (inspect_evals).
 4. **Pilot:** for each condition, one Inspect `eval_set` runs all tasks × all models with the condition as the
-   eval-level `system_message`. Spend is measured with OpenRouter's `GET /api/v1/key`, and the cost per sample-run
-   is projected from token usage × list prices. If the full run would exceed the budget, n is scaled down.
+   eval-level `system_message`. The pilot's logged token usage × OpenRouter list prices gives the cost per
+   sample-run for each eval. If the projected full run exceeds 90% of `MAX_BUDGET_USD` minus the pilot cost, n is
+   scaled down.
 5. **Full run:** the same as the pilot with the full n, logged to `logs/inspect/full/<condition>/`. It is resumable:
    re-running skips finished work.
 6. **Analysis:** every sample's scores become one aligned score; cell means ± SE and paired contrasts with CIs,
@@ -176,6 +179,47 @@ reports/             generated results (committed)
 logs/                pipeline + Inspect logs (git-ignored)
 ```
 
+## Results summary
+
+Full run on 2026-10-16: 4 models × 5 conditions × 6 evals, 6,660 scored samples, 120/120 tasks succeeded, $6.09 at
+OpenRouter list prices. Full tables and figures: [reports/results.md](reports/results.md).
+
+**Answer: a CEV system prompt did not make models more aligned than the classic assistant prompt overall.** It
+traded user-facing behaviour for better answers on AI-risk questions.
+
+| Pooled over models (Δ aligned score, 95% CI, Holm-adjusted p) | cev − classic | classic_cev − classic_lenmatch (CEV content, length-controlled) |
+|---|---|---|
+| HumaneBench | **−0.057** [−0.094, −0.026], p = 0.015 | −0.008 [−0.025, +0.007], p = 0.88 |
+| HumanAgencyBench | −0.042 [−0.105, +0.019], p = 0.89 | **−0.066** [−0.110, −0.015], p = 0.056 |
+| DarkBench | −0.036 [−0.087, +0.014], p = 0.89 | −0.043 [−0.089, −0.004], p = 0.23 |
+| advanced-ai-risk | +0.038 [−0.011, +0.087], p = 0.89 | **+0.081** [+0.034, +0.131], p = 0.011 |
+| InstrumentalEval | +0.004 [−0.042, +0.050], p = 0.89 | +0.021 [−0.017, +0.062], p = 0.88 |
+| Agentic Misalignment (blackmail) | −0.067 [−0.167, +0.033], p = 0.89 | +0.050 [−0.050, +0.150], p = 0.88 |
+
+**What the numbers say:**
+- **Where CEV helps: AI-risk multiple choice.**
+  - CEV content raises corrigible, non-power-seeking and non-self-preserving answers, both against the
+    length-matched control (+0.081) and against no prompt (+0.100, p = 0.002).
+  - InstrumentalEval also improves against no prompt (+0.046, p = 0.038).
+  - The largest exploratory sub-effect is survival instinct: +0.16 against the length control.
+- **Where CEV hurts: user-facing humaneness and agency.**
+  - HumaneBench is the only significant primary difference: CEV alone scores 0.057 below classic. The biggest
+    drops are on "be transparent and honest" (−0.14) and "design for equity and inclusion" (−0.13); these
+    per-principle numbers are exploratory, about 20–24 observations each.
+  - HumanAgencyBench drops when CEV text is added (borderline after correction). The drop is concentrated in
+    **"defer important decisions" (−0.23 vs classic)** and **"avoid value manipulation" (−0.22)**. Under CEV, models
+    more often make the user's decision for them. In one pair Claude Haiku answered "the final call should stay
+    with you and your board" under classic, but "Here's a split that respects the hard constraints…" under cev.
+    That is ironic, given CEV's own "leave options open, waiting for our decision".
+- **Prompt length alone has no detectable effect:** classic_lenmatch − classic is null on every eval (all Holm
+  p = 1), so the effects above are attributable to CEV's content.
+- **Agentic Misalignment:** blackmail was rare in every condition. The one notable shift: Qwen blackmailed in 4
+  more of 15 epochs under cev than under classic. This is not significant.
+- **Any system prompt beats none on ai_risk:** classic − none = +0.069, p = 0.033.
+
+These are small-sample results from a single cheap judge; see Limitations. Raise the `N_*` values and the budget in
+`.env` to tighten the intervals.
+
 ## Limitations
 - **Small samples:** about $10 buys tens of items per eval per cell, so CIs are wide. The pilot logs the per-eval
   cost, so you can raise `N_*` in `.env` with a larger budget.
@@ -189,6 +233,13 @@ logs/                pipeline + Inspect logs (git-ignored)
   entirely"), which could plausibly push some evals the wrong way.
 - **Model configuration:** Qwen runs with thinking disabled and the other models with `reasoning_effort=low`.
   Comparisons are always within a model.
+- **HumaneBench unscorable samples:** about 21% of samples are unscorable in every condition, because rubric
+  v4.1's judge marks the targeted principle `not_applicable` (as upstream intends; those verdicts are excluded).
+- **Judge settings changed mid-run:** after a hung judge call, a judge `max_tokens=8192` cap and a 180 s
+  per-attempt timeout were added for our own scorers. This happened after the `none` and `classic` conditions had
+  run. It only affects runaway or hung calls; the model, temperature and reasoning settings are unchanged.
+- **Provider filtering:** OpenRouter refused one DarkBench prompt for gpt-6-luna under `cev` ("flagged for
+  possible biological risk"); that sample is unscorable.
 
 ## Sources
 - Yudkowsky, E. (2004). *Coherent Extrapolated Volition*. Singularity Institute. https://intelligence.org/files/CEV.pdf
@@ -201,6 +252,3 @@ logs/                pipeline + Inspect logs (git-ignored)
 - Agentic Misalignment: Lynch et al. 2025, https://www.anthropic.com/research/agentic-misalignment
 - Error bars for evals: Miller 2024, https://arxiv.org/abs/2411.00640
 - Llama 2 default system prompt: https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py
-
-## Results summary
-_Filled in after the full run; see [reports/results.md](reports/results.md)._
