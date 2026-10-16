@@ -1,0 +1,7 @@
+{
+  "total_openrouter_spend_usd": 10.20,
+  "includes": "two pilots, spot checks and model tests, the full run, and the paid judge checks",
+  "method": "difference of the API key's cumulative `usage` (OpenRouter GET /api/v1/key): 39.2247 at project start, 49.4203 on 2026-10-17 00:38 CEST; cross-checked with usage_daily (10.2412 minus 0.0456 already used before the project). The counter lags by minutes, so earlier readings were lower.",
+  "full_run_list_price_usd": "see run_info.json (token usage x OpenRouter list prices)",
+  "budget_cap_usd": 13
+}
