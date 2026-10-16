@@ -25,6 +25,8 @@ from cev_alignment.evals import build_tasks
 
 logger = logging.getLogger(__name__)
 
+ATTEMPT_TIMEOUT_S = 180  # seconds per API attempt before Inspect retries it
+
 
 def model_ids(settings: Settings) -> list[str]:
     """Inspect model strings for the models under test (offline: a single mock model)."""
@@ -49,8 +51,11 @@ def models_under_test(settings: Settings) -> list[str | Model]:
 def run_condition(settings: Settings, condition: str, prompt: str | None, n: dict[str, int], log_dir: Path) -> bool:
     """Run every eval on every model with one system-prompt condition; True if all tasks succeeded."""
     tasks = build_tasks(settings, n)  # fresh Task objects (same seeded items) for each eval_set call
+    # attempt_timeout: abandon and retry a single API call after N seconds (a hung OpenRouter request otherwise
+    # stalled a whole condition for 20+ minutes). It is excluded from eval_set's task identity, so adding it
+    # does not invalidate finished logs (inspect_ai/_eval/evalset.py GENERATE_CONFIG_FIELDS_TO_EXCLUDE).
     config: dict = {"reasoning_effort": settings.reasoning_effort, "max_tokens": settings.max_tokens,
-                    "max_connections": settings.max_connections}
+                    "max_connections": settings.max_connections, "attempt_timeout": ATTEMPT_TIMEOUT_S}
     if prompt is not None:  # the `none` condition adds no system message at all
         config["system_message"] = prompt
     models = models_under_test(settings)

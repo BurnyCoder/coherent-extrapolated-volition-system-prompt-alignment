@@ -32,7 +32,11 @@ def judge_model(settings: Settings) -> Model:
     """
     if settings.offline:
         return get_model("mockllm/model")
-    config = GenerateConfig(temperature=0.0, reasoning_effort="minimal", max_connections=settings.max_connections)
+    config = GenerateConfig(
+        temperature=0.0, reasoning_effort="minimal", max_connections=settings.max_connections,
+        max_tokens=8192,  # caps runaway judge output; HumaneBench's 8-principle JSON needs ~1-2k tokens
+        attempt_timeout=180,  # retry a hung judge call instead of stalling the whole task
+    )
     return get_model(f"openrouter/{settings.judge_model}", config=config)
 
 
