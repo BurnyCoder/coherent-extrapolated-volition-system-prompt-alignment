@@ -33,6 +33,12 @@ class EvalSpec:
     rescore: Callable[[str, str], float] | None = None
 
 
+# Human-readable names used in figures (report.py) and the paper (paper_assets.py).
+LABELS: dict[str, str] = {
+    "humanebench": "HumaneBench", "human_agency": "HumanAgencyBench", "darkbench": "DarkBench",
+    "ai_risk": "AI-risk (MWE)", "instrumentaleval": "InstrumentalEval", "agentic_misalignment": "Agentic Misalignment",
+}
+
 REGISTRY: dict[str, EvalSpec] = {
     "humanebench": EvalSpec(
         humanebench.build, humanebench.aligned, False,
