@@ -90,6 +90,8 @@ def _unpaired(a: np.ndarray, b: np.ndarray) -> dict:
 
 def contrast(df: pd.DataFrame, cond_a: str, cond_b: str) -> dict:
     """Compare condition A vs B on one eval (rows may span several models -> pooled over models)."""
+    if df.empty or df["aligned"].isna().all():  # nothing scorable (e.g. an empty complete-case subset)
+        return dict(EMPTY)
     if df["item"].nunique() == 1:  # one prompt x many epochs: compare the epochs, unpaired
         a = df.loc[df.condition == cond_a, "aligned"].dropna().to_numpy(float)
         b = df.loc[df.condition == cond_b, "aligned"].dropna().to_numpy(float)

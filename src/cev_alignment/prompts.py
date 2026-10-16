@@ -33,6 +33,21 @@ CONDITIONS = ("none", "classic", "cev", "classic_cev", "classic_lenmatch")
 # Header line placed before the control passage, parallel to how the CEV text is introduced.
 LENMATCH_HEADER = "Background reading (T. H. Huxley, On a Piece of Chalk, 1868):"
 
+# Distinctive snippet of each prompt component, and which components each condition must contain. Used by
+# results.py to verify from the logged API requests that every call received exactly its condition's prompt.
+MARKERS = {
+    "classic": "helpful, respectful and honest assistant",
+    "cev": "coherent extrapolated volition of humankind",
+    "huxley": "If a well were to be sunk at our feet",
+}
+EXPECTED_MARKERS: dict[str, set[str]] = {
+    "none": set(),
+    "classic": {"classic"},
+    "cev": {"cev"},
+    "classic_cev": {"classic", "cev"},
+    "classic_lenmatch": {"classic", "huxley"},
+}
+
 # Original location of every verbatim text file: (url, kind). Used by `verify_source`.
 SOURCES: dict[str, tuple[str, str]] = {
     "cev_section3_verbatim.txt": ("https://intelligence.org/files/CEV.pdf", "pdf"),
