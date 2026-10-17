@@ -152,7 +152,8 @@ uv run cev-eval --analyze-only
 Paid judge checks: a judge-blinding test (re-judge CEV-mentioning answers with the CEV sentences removed), judge
 validity against HumanAgencyBench's original o3 judge, and a judge settings check (re-judge the `classic` answers
 under the judge settings added mid-run). Results are cached in `reports/judge_checks/`;
-`JUDGE_CHECKS_MAX_USD` (default 1.0) caps each check's estimated (upper-bound) cost, which is logged before any call:
+`JUDGE_CHECKS_MAX_USD` caps each check's estimated (upper-bound) cost, which is logged before any call. The code
+default is 1.0, and `.env.example` sets 1.5 because the settings check is estimated at about $1.2 for a full run:
 
 ```bash
 uv run cev-eval --analyze-only --judge-checks
