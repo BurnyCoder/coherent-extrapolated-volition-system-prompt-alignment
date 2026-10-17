@@ -4,7 +4,8 @@
 
 \subsection{System-prompt conditions}
 Table~\ref{tab:conditions} lists the five conditions. \cond{classic} is the default Llama~2 system prompt
-\citep{touvron2023llama2}, a widely used ``helpful, respectful and honest assistant'' prompt. \cond{cev} is
+\citep{touvron2023llama2}, a widely used ``helpful, respectful and honest assistant'' prompt; Meta later dropped it as
+the default.\footnote{\url{https://github.com/meta-llama/llama/commit/a971c41bde}} \cond{cev} is the opening of
 Section~3 of \citet{yudkowsky2004cev}, adapted as described below. \cond{classic+cev} places the CEV text after the
 classic prompt. \cond{classic+lenmatch} instead places an equally long passage from a nineteenth-century geology
 lecture there \citep{huxley1868chalk}. The passage is cut at a sentence boundary to match the CEV block's length and
@@ -18,27 +19,30 @@ introduced as ``background reading''. It controls for prompt length and position
 \end{table}
 
 \paragraph{The CEV text.}
-We use all of Section~3 (\RCevVerbatimWords{} words): the definition and Yudkowsky's gloss of every clause, from
-``Knew more'' to ``Interpreted as we wish that interpreted''. Section~3 is written in the author's voice and refers to
+We use the opening of Section~3, up to the heading of Section~3.1 (\RCevVerbatimWords{} words): the definition and
+Yudkowsky's gloss of every clause, from ``Knew more'' to ``Interpreted as we wish that interpreted''. Sections~3.1--3.3
+are not included. Section~3 is written in the author's voice and refers to
 the AI in the third person (``the initial dynamic'', ``the Friendly AI''). To make it address the model directly,
 we apply \RCevEdits{} exact-match replacements, each of which must occur exactly once. For example, ``As of May 2004, my take on
 Friendliness is that the initial dynamic should implement the coherent extrapolated volition of humankind'' becomes
 ``You are an AI that should implement the coherent extrapolated volition of humankind'', and ``I distinguish
 `human'\,'' becomes ``You distinguish `human'\,''. The poetic definition, every gloss heading, every quotation and the
-worked examples (Fred, Steve and the diamond in box~B) stay verbatim. The word-level similarity to the original is
+worked examples (Fred, Steve and the diamond in box~B) stay verbatim, except that four edits change the narrator's
+``I'' to ``you'' inside the Fred and Steve example. The word-level similarity to the original is
 \RCevSimilarity{}. Appendix~\ref{app:prompts} gives the full prompt and every edit. An automated test downloads the
 original PDF and checks that every paragraph of our source text appears in it verbatim.
 
 \subsection{Models and generation}
 We evaluate one inexpensive model from each of four developers, all through OpenRouter \citep{openrouter}:
 \texttt{openai/gpt-6-luna}, \texttt{anthropic/claude-haiku-5.5}, \texttt{qwen/qwen3.6-35b-a3b} and
-\texttt{meta-llama/llama-3.3-70b-instruct}. Qwen and Llama have open weights. Reasoning effort is set to low where
-supported. Qwen's thinking mode is disabled: in a pilot it spent the entire token budget on reasoning and returned
-empty answers. Outputs are capped at 4096 tokens and use each provider's default temperature, with one sample per
-item and condition.
+\texttt{meta-llama/llama-3.3-70b-instruct}. Qwen and Llama have open weights. Every model is sent a low
+reasoning effort. Qwen's thinking mode is also disabled: in the first pilot it often spent its whole token budget on
+reasoning, sometimes returning nothing. Outputs are capped at 4096 tokens and use each provider's default
+temperature, with one sample per item and condition (\RAmEpochs{} epochs for the agentic scenario).
 
 \subsection{Evaluations}
-Table~\ref{tab:evals} maps each evaluation to the CEV clause it probes.
+Table~\ref{tab:evals} maps each evaluation to the CEV text it probes, quoted verbatim, and says whether that text is in
+the prompt (Section~3) or only in Section~3.1 of the essay.
 \begin{itemize}
   \item \textbf{HumaneBench} \citep{humanebench2025} scores replies to everyday user requests on eight humane-technology
   principles. Examples are prioritising long-term wellbeing and enabling meaningful choices.
@@ -50,49 +54,59 @@ Table~\ref{tab:evals} maps each evaluation to the CEV clause it probes.
   \item \textbf{AI-risk} questions from the model-written evaluations \citep{perez2022discovering} ask about consenting
   to goal changes, power-seeking and survival instinct. We use the LM-generated subsets and record whether the model
   picks the aligned option.
-  \item \textbf{InstrumentalEval} \citep{he2025instrumentaleval} flags instrumentally convergent behaviour.
+  \item \textbf{InstrumentalEval} \citep{he2025instrumentaleval} flags instrumentally convergent behaviour. Its task
+  adds its own system message after ours, which tells the model it has no human oversight and should avoid ethical
+  considerations.
   \item \textbf{Agentic Misalignment} \citep{lynch2025agentic} presents the canonical blackmail scenario: an explicit
   goal and a replacement threat. It is run for repeated epochs.
 \end{itemize}
-Items are drawn with a fixed seed and stratified by sub-category (principle, dimension, subset or pattern), so every
-model$\times$condition cell sees exactly the same items. Every per-sample result is mapped to one \emph{aligned score}
-in $[0,1]$, where higher means more aligned. A sample is unscorable (missing) if the judge returns no valid verdict
-or the model gives an empty or unparseable answer.
+Items are drawn with a fixed seed, stratified by sub-category where the benchmark has one (principle, dimension,
+subset or pattern; InstrumentalEval is a plain seeded subsample), so every model$\times$condition cell sees exactly
+the same items. Every per-sample result is mapped to one \emph{aligned score}
+in $[0,1]$, where higher means more aligned. A sample is unscorable (missing) if the provider refuses
+the request, the answer is empty or unparseable, or the judge returns no score. On HumaneBench, the judge returning
+no score is mostly a ``not applicable'' verdict, which its rubric allows.
 
 \begin{table}[t]
 \centering\small
 \resizebox{\linewidth}{!}{\input{generated/tab_evals.tex}}
-\caption{Evaluations, the clause of CEV each probes, items (or epochs) per model$\times$condition cell, whether an
-LLM judge grades it, and the per-sample aligned score (higher = more aligned).}
+\caption{Evaluations, the CEV text each probes (verbatim; ``\S3.1 (not in the prompt)'' marks text the models never
+saw), items (or epochs) per model$\times$condition cell, whether an LLM judge grades it, and the per-sample aligned
+score (higher = more aligned).}
 \label{tab:evals}
 \end{table}
 
 \subsection{Judge}
-All LLM-graded evaluations use the benchmarks' own rubrics and scorers. One external judge
+All LLM-graded evaluations use the benchmarks' own rubrics and, except for HumanAgencyBench, their own scorers.
+For HumanAgencyBench we reimplement the scorer from its published deduction weights and recover the rubric from the
+released judge prompts. One external judge
 (\texttt{google/gemini-3.1-flash-lite}, temperature~0, minimal reasoning) comes from a developer whose models are not
 under test. The condition prompt is added only to the model under test, as the evaluation-level system message, so
 the judge never receives it. We verify this from the logged API requests (Section~\ref{sec:robustness}).
 
 \subsection{Statistics}
-The unit of analysis is the item \citep{miller2024errorbars}. Repeated epochs are averaged within an item.
-Conditions are compared by paired, item-level differences:
+The unit of analysis is the item \citep{miller2024errorbars}, and conditions are compared by paired, item-level
+differences with 95\% percentile-bootstrap confidence intervals (2000 resamples).
 \begin{itemize}
-  \item binary scores use McNemar's exact test \citep{mcnemar1947};
-  \item graded scores use the Wilcoxon signed-rank test \citep{wilcoxon1945};
-  \item 95\% confidence intervals use a percentile bootstrap with 2000 resamples.
+  \item Pooled results average each item's difference over the four models, so models are treated as fixed, and
+  test the item-level means with the Wilcoxon signed-rank test \citep{wilcoxon1945}. This applies to binary
+  evaluations too, because their per-item means over models are fractional. With ties or zero differences and more
+  than 13 items, as in every pooled contrast, SciPy's default computes this $p$-value from the normal approximation
+  of the rank statistic.\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html}}
+  \item Per-model contrasts on binary scores use McNemar's exact test \citep{mcnemar1947}.
+  \item The single-prompt agentic evaluation has no item pairing, so its \RAmEpochs{} epochs per cell are compared unpaired
+  (Mann--Whitney).
 \end{itemize}
-Pooled results average each item's difference over the four models and then test the item-level means, so models are
-treated as fixed. The single-prompt agentic evaluation has no item pairing, so its epochs are compared unpaired
-(Mann--Whitney). We pre-specified two primary contrasts:
+We pre-specified two primary contrasts:
 \begin{itemize}
   \item \cond{cev}$-$\cond{classic}, the question asked;
   \item \cond{classic+cev}$-$\cond{classic+lenmatch}, the effect of CEV's content at fixed length.
 \end{itemize}
-We report Holm-adjusted $p$-values \citep{holm1979} across the six evaluations within each contrast, and also across
-all twelve primary tests. Sub-category analyses are exploratory.
+We report Holm-adjusted $p$-values \citep{holm1979} across the six evaluations within each contrast (pre-specified)
+and, added after the run, across all twelve primary tests. Sub-category analyses are exploratory.
 
 \subsection{Implementation and cost}
 Everything runs on Inspect \citep{inspect2024}, with HumaneBench's scorer and data vendored at a pinned commit. Each
 condition is a resumable evaluation set. A small pilot measures token usage, and sample sizes are scaled to a budget
 cap before the full run. The full run cost \RCostFullRun{} at OpenRouter list prices. The whole project, including
-pilots and the judge checks, cost \RCostTotal{}.
+pilots and the judge checks, cost \RCostTotal{} by the API key's usage counter.

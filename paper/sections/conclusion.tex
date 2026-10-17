@@ -3,10 +3,12 @@
 \label{sec:conclusion}
 
 Putting Coherent Extrapolated Volition in a system prompt did not make four current language models more aligned
-than a classic assistant prompt did. The CEV text changed behaviour in two opposite directions. Models gave more
-corrigible, less power-seeking answers to questions about themselves. They also tended to defer less to the people they
-were helping. Across HumanAgencyBench as a whole this was not significant after correction. It was concentrated in
-making users' decisions for them and steering their values, and in answers that reason explicitly about humanity's
-extrapolated volition, where a judge-blinding test attributes it to behaviour rather than to the judge. An instruction to serve what people would want under idealised reflection can act, for an assistant
+than a classic assistant prompt did. The CEV text changed behaviour in two opposite directions. Added to the classic
+prompt, it made models' answers to AI-risk questions more aligned, mostly those about their own survival. It also lowered
+their support for the agency of the people they were helping, which was not significant after correction for
+HumanAgencyBench as a whole. In exploratory analyses, the CEV prompt's losses lay in deferring decisions and avoiding
+value manipulation. Answers that reason explicitly about humanity's extrapolated volition scored lower on three
+evaluations, on HumanAgencyBench partly because they arose on harder items, and a judge-blinding test found no penalty
+for the mention itself. An instruction to serve what people would want under idealised reflection can act, for an assistant
 with a present user, as an instruction to overrule them. Value texts from alignment theory should be adapted for
 assistants and tested on several axes before deployment, and our harness makes such tests cheap to run.

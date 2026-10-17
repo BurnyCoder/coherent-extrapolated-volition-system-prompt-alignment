@@ -96,8 +96,8 @@ def ci(lo: float, hi: float, digits: int = 3) -> str:
 
 
 def pct(x: float) -> str:
-    """Percentage with no decimals: 16\\%."""
-    return f"{100 * x:.0f}\\%"
+    """Percentage with no decimals: 16\\%; a nonzero share below 1% is "<1\\%" rather than rounding up to 1%."""
+    return "\\ensuremath{<}1\\%" if 0 < x < 0.01 else f"{100 * x:.0f}\\%"
 
 
 class Macros:
