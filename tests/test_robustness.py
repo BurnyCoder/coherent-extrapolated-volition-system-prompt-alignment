@@ -86,6 +86,50 @@ def test_blackmail_counts_reports_harmful_epochs_as_fractions():
     assert out.loc["m1", "cev"] == "2/3" and out.loc["m1", "classic"] == "0/3"
 
 
+def answers(rows):
+    """Like robustness.ai_risk_answers: one logged ai_risk reply per row, `target` = the aligned letter."""
+    return pd.DataFrame([{"condition": c, "model": "m1", "item": f"survival-instinct-{i}", "epoch": 1, "target": t,
+                          "completion": text} for i, (c, t, text) in enumerate(rows)])
+
+
+def test_parser_multiverse_rescores_each_reply_with_every_parser_version():
+    d = answers([("cev", "A", "Choice (A) suggests one thing. Choice (B) another.\n\nAnswer: (B)"),
+                 ("classic", "A", "(A)")])
+    d["item"] = "survival-instinct-0"  # the same item under both conditions -> one paired contrast
+    out = robustness.parser_multiverse(d, [("cev", "classic")]).set_index("parser")
+    assert out.loc["v1 (run time)", "diff"] == 0.0  # v1: the first "(A)" anywhere
+    assert out.loc["v2 (after first results)", "diff"] == 0.0  # v2: "Choice (A" read as the choice
+    assert out.loc["current", "diff"] == -1.0  # current: "Answer: (B)"
+    assert out.loc["leading letter only", "unscorable"] == 1
+
+
+def test_position_balanced_estimate_cancels_a_pure_letter_shift():
+    # "cev" answers B to everything, "classic" answers A; items 0-1 have aligned letter A, items 2-3 have B.
+    targets = "AABB"
+    d = answers([(c, targets[i], "(B)" if c == "cev" else "(A)") for i in range(4) for c in ("cev", "classic")])
+    d["item"] = [f"survival-instinct-{i}" for i in range(4) for _ in range(2)]  # each item under both conditions
+    out = robustness.position_balanced(d, [("cev", "classic")]).iloc[0]
+    assert out["diff_target_A"] == -1.0 and out["diff_target_B"] == 1.0 and out["balanced"] == 0.0
+
+
+def test_tipping_point_shifts_imputed_values_apart():
+    data = {("m1", "cev"): [1.0, np.nan], ("m1", "classic"): [1.0, np.nan]}
+    out = robustness.tipping_point(table(data, "hb"), "hb", ("cev", "classic"), deltas=(0.0, 0.5)).set_index("delta")
+    assert out.loc[0.0, "diff"] == 0.0  # both imputed at 0.75
+    assert out.loc[0.5, "diff"] == 0.25  # cev NaN at 1.0, classic NaN at 0.5, averaged over 2 items
+
+
+def test_provider_fixed_effects_remove_a_provider_confound():
+    rows = []
+    for i in range(40):  # provider "fast" adds +0.5 and serves cev 3x as often; no true condition effect
+        for c in ("cev", "classic"):
+            prov = "fast" if (i % 4 != 0) == (c == "cev") else "slow"
+            rows.append({"condition": c, "eval": "e", "model": "m1", "item": f"g-{i:03d}", "epoch": 1,
+                         "aligned": (i % 2) * 0.25 + (0.5 if prov == "fast" else 0.0), "provider": prov})
+    out = robustness.provider_fixed_effects(pd.DataFrame(rows), [("cev", "classic")]).iloc[0]
+    assert out["coef_item_fe"] > 0.2 and abs(out["coef_item_provider_fe"]) < 1e-9
+
+
 def test_mention_summary_adds_the_same_pairs_score_under_classic():
     d = table({("m1", "cev"): [0.0, 1.0], ("m1", "classic"): [0.4, 0.8]})
     d.loc[0, "mentions_cev"] = True
