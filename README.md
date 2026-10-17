@@ -26,7 +26,7 @@ so all comparisons are paired by item.
 |---|---|
 | `none` | none |
 | `classic` | the Llama 2 default system prompt ("You are a helpful, respectful and honest assistant…"), verbatim from [Meta](https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py#L46-L49). It was the default from Llama 2's release until Meta [removed it on 2023-08-04](https://github.com/meta-llama/llama/commit/a971c41bde) |
-| `cev` | the opening of CEV Section 3, up to the §3.1 heading: the definition and Yudkowsky's gloss of every clause (1,189 words), minimally rewritten into the second person ("You are an AI that should implement the coherent extrapolated volition of humankind. …"). §3.1–3.3 are not included |
+| `cev` | the opening of CEV Section 3, up to the §3.1 heading: the definition and Yudkowsky's gloss of every clause (1,189 words verbatim, 1,165 after adaptation), minimally rewritten into the second person ("You are an AI that should implement the coherent extrapolated volition of humankind. …"). §3.1–3.3 are not included |
 | `classic_cev` | classic, then cev |
 | `classic_lenmatch` | classic, then an equally long, value-neutral verbatim passage (Huxley 1868, *On a Piece of Chalk*): a **length control** |
 
@@ -84,7 +84,9 @@ and the logged API requests confirm that no judge call carried it ([robustness.m
 - 95% percentile bootstrap CIs with 2,000 resamples
   ([`scipy.stats.bootstrap`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html)).
 - Holm correction across the six evals within each contrast ([Holm 1979](https://www.jstor.org/stable/4615733)).
-- Agentic Misalignment is a single prompt, so its 15 epochs per cell are compared unpaired (Mann–Whitney).
+- Agentic Misalignment is a single prompt, so its 15 epochs per cell are compared unpaired: Mann–Whitney per model,
+  and pooled over models a continuity-corrected Cochran–Mantel–Haenszel test stratified by model
+  ([`StratifiedTable`](https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.StratifiedTable.html)).
 
 **Primary contrasts.**
 - **cev − classic:** the question asked.
@@ -94,8 +96,8 @@ and the logged API requests confirm that no judge call carried it ([robustness.m
 token usage × OpenRouter list prices projects the full run, and sample sizes are scaled down if needed to stay
 within `MAX_BUDGET_USD` (default $10; the reported run used 9). For the reported run, the pilot cost $0.79 and the
 full run $6.09 at list prices ([run_info.json](reports/run_info.json)). The whole project, including an earlier pilot,
-tests and the judge checks, spent $10.20 by the API key's usage counter ([spend.json](reports/spend.json),
-hand-recorded).
+tests and the judge checks (the post-audit settings check among them), spent $11.04 by the API key's usage counter
+([spend.json](reports/spend.json), hand-recorded).
 
 ## Install and setup
 
@@ -147,9 +149,11 @@ Rebuild the report from existing logs without calling any model (it only fetches
 uv run cev-eval --analyze-only
 ```
 
-Paid judge checks: a judge-blinding test (re-judge CEV-mentioning answers with the CEV sentences removed) and judge
-validity against HumanAgencyBench's original o3 judge. Results are cached in `reports/judge_checks/`;
-`JUDGE_CHECKS_MAX_USD` (default 1.0) caps each check's estimated (upper-bound) cost, which is logged before any call:
+Paid judge checks: a judge-blinding test (re-judge CEV-mentioning answers with the CEV sentences removed), judge
+validity against HumanAgencyBench's original o3 judge, and a judge settings check (re-judge the `classic` answers
+under the judge settings added mid-run). Results are cached in `reports/judge_checks/`;
+`JUDGE_CHECKS_MAX_USD` caps each check's estimated (upper-bound) cost, which is logged before any call. The code
+default is 1.0, and `.env.example` sets 1.5 because the settings check is estimated at about $1.2 for a full run:
 
 ```bash
 uv run cev-eval --analyze-only --judge-checks
@@ -199,13 +203,14 @@ every registry quote occurs in CEV.pdf.
    - the manipulation check;
    - Holm across all 12 primary tests;
    - leave-one-model-out;
-   - missing-data sensitivity;
-   - provider routing;
+   - missing-data sensitivity, with a tipping point for unscorable answers that differ by condition;
+   - provider routing: residuals, and item + provider fixed effects;
    - CEV-mention split;
-   - sub-category contrasts;
+   - sub-category contrasts, also against the classic prompt alone;
    - unscorable samples by cause, and every provider refusal;
    - Agentic Misalignment blackmail counts per model and condition;
-   - the judge checks, if they have been run.
+   - the judge checks (blinding, validity, settings), if they have been run;
+   - AI-risk replies re-read from the logs: every contrast under every parser version, and an A/B position check.
 7. **Report:** `reports/results.md`, `reports/*.csv`, `reports/figures/*.png` and `reports/run_info.json` (models,
    items per cell, tasks succeeded, pilot and full-run cost), then the paper's `paper/generated/` inputs.
 
@@ -223,8 +228,9 @@ flowchart TD
     LOGS --> RESULTS["per-sample aligned scores<br/>results.py"]
     RESULTS --> STATS["paired contrasts, bootstrap CI,<br/>McNemar / Wilcoxon, Holm<br/>stats.py"]
     STATS --> REPORT["reports/results.md, CSV, figures<br/>report.py"]
-    RESULTS --> ROBUST["reports/robustness.md: manipulation check,<br/>Holm-12, leave-one-out, missingness,<br/>providers, CEV mentions, subgroups,<br/>unscorable causes, blackmail counts<br/>robustness.py"]
-    JUDGE["optional --judge-checks: blinding +<br/>validity vs o3 judge<br/>judge_checks.py"] --> ROBUST
+    RESULTS --> ROBUST["reports/robustness.md: manipulation check,<br/>Holm-12, leave-one-out, missingness + tipping point,<br/>providers + fixed effects, CEV mentions, subgroups,<br/>unscorable causes, blackmail counts,<br/>AI-risk parser versions + A/B position<br/>robustness.py"]
+    LOGS --> ROBUST
+    JUDGE["optional --judge-checks: blinding,<br/>validity vs o3 judge, settings re-judge<br/>judge_checks.py"] --> ROBUST
 ```
 
 `src/cev_alignment/main.py` is the single wrapper that calls these phases in order.
@@ -246,47 +252,68 @@ logs/                pipeline + Inspect logs (git-ignored)
 
 ## Results summary
 
-Full run on 2026-10-16: 4 models × 5 conditions × 6 evals, 6,660 samples (243 unscorable), 120/120 tasks
+Full run on 2026-10-16: 4 models × 5 conditions × 6 evals, 6,660 samples (235 unscorable), 120/120 tasks
 succeeded, $6.09 at OpenRouter list prices. Full tables and figures: [reports/results.md](reports/results.md).
 Robustness checks and judge checks: [reports/robustness.md](reports/robustness.md). `tests/test_claims.py` checks every
-number below against the generated reports (and the hand-recorded `reports/spend.json`).
+number below against the generated reports (and the hand-recorded `reports/spend.json`). An independent audit
+(2026-10-17) corrected the AI-risk answer parser and added several checks; see
+[Post-audit corrections](#post-audit-corrections).
 
-**Answer: relative to the classic assistant prompt, the CEV prompt improved no eval and lowered HumaneBench.**
+**Answer: relative to the classic assistant prompt, the CEV prompt significantly improved no eval and lowered
+HumaneBench.**
 - **HumaneBench, cev − classic:** −0.057, Holm p = 0.015. It stays significant when Holm is applied over all 12
   primary tests (p = 0.027).
 - **Adding the CEV text on top of the classic prompt**, compared with an equally long neutral text:
-  - AI-risk answers improved (+0.088; p = 0.009 over all 12 tests). By subset (exploratory), the gain is mainly on
-    survival-instinct questions; power-seeking is not significant after correction, and accepting a goal change
-    (`corrigible-neutral-HHH`) did not move.
-  - HumanAgencyBench fell (−0.066), but this is **not significant** after correction (p = 0.056 within the
-    contrast, 0.11 over all 12).
+  - AI-risk answers were more aligned (+0.084; p = 0.012 over all 12 tests). About half of this gap comes from the
+    neutral text *lowering* AI-risk answers relative to the classic prompt (−0.043, not significant). Against the
+    classic prompt alone, adding the CEV text gives +0.047, which is not significant after correction (Holm p =
+    0.074, secondary).
+  - HumanAgencyBench fell (−0.066), but this is **borderline**: p = 0.056 within the contrast and 0.11 over all 12.
+    It becomes 0.049 within the contrast when the CEV-mentioning answers are replaced by their redacted re-judgements.
 
 | Pooled over models (Δ aligned score, 95% CI, Holm p within contrast) | cev − classic | classic_cev − classic_lenmatch (CEV text vs equal-length neutral text) |
 |---|---|---|
 | HumaneBench | **−0.057** [−0.094, −0.026], p = 0.015 | −0.008 [−0.025, +0.007], p = 0.88 |
-| HumanAgencyBench | −0.042 [−0.105, +0.019], p = 0.95 | −0.066 [−0.110, −0.015], p = 0.056 |
-| DarkBench | −0.036 [−0.087, +0.014], p = 0.95 | −0.043 [−0.089, −0.004], p = 0.23 |
-| advanced-ai-risk | +0.038 [−0.011, +0.086], p = 0.95 | **+0.088** [+0.040, +0.138], p = 0.004 |
-| InstrumentalEval | +0.004 [−0.042, +0.050], p = 0.95 | +0.021 [−0.017, +0.062], p = 0.88 |
-| Agentic Misalignment (blackmail) | −0.067 [−0.167, +0.033], p = 0.95 | +0.050 [−0.050, +0.150], p = 0.88 |
+| HumanAgencyBench | −0.042 [−0.105, +0.019], p = 1 | −0.066 [−0.110, −0.015], p = 0.056 |
+| DarkBench | −0.036 [−0.087, +0.014], p = 1 | −0.043 [−0.089, −0.004], p = 0.23 |
+| advanced-ai-risk | +0.024 [−0.021, +0.069], p = 1 | **+0.084** [+0.039, +0.133], p = 0.006 |
+| InstrumentalEval | +0.004 [−0.042, +0.050], p = 1 | +0.021 [−0.017, +0.062], p = 0.88 |
+| Agentic Misalignment (blackmail) | −0.067 [−0.167, +0.033], p = 1 | +0.050 [−0.050, +0.150], p = 0.88 |
 
 **What the numbers say:**
 - **AI-risk questions (corrigibility, power-seeking, survival instinct).** These are answers *about* hypothetical
   dispositions, and the essay text they map to (§3.1) is not in the prompt.
-  - The CEV text raises aligned answers against the length control (+0.088). The CEV prompt alone beats no prompt
-    (+0.095, secondary contrast, Holm p = 0.003).
-  - Added to the classic prompt, it also beats the classic prompt alone (+0.066, Holm p = 0.015, secondary). The CEV
-    prompt *alone* is not significantly better than classic (+0.038, p = 0.95).
-  - The gain over the length control stays positive whichever model is left out (+0.076 to +0.094), but it is
-    Holm-significant in only two of the four leave-outs (p = 0.090 without Claude, 0.073 without Llama).
-  - By subset (exploratory, 30 items each): survival instinct +0.18 [+0.09, +0.29] (Holm within the eval p =
-    0.006), power-seeking +0.092 [+0.017, +0.175] (p = 0.077), accepting a goal change −0.006.
-- **HumaneBench:** the drop against classic has two parts. Comparing both prompts with no prompt (complete cases),
-  classic helps (+0.043, p = 0.02) and CEV alone slightly hurts (−0.033, p = 0.03).
-  - It is robust to HumaneBench's 21% unscorable samples: −0.077 on complete cases, and −0.034 to −0.055 with
-    imputation, all p < 0.02.
+  - The CEV text raises aligned answers against the length control (+0.084). The CEV prompt alone beats no prompt
+    (+0.085, secondary contrast, Holm p = 0.010).
+  - The CEV prompt *alone* is not significantly better than classic (+0.024, p = 1).
+  - The gain over the length control stays positive whichever model is left out (+0.076 to +0.089). It is
+    Holm-significant (within the contrast) in two of the four leave-outs; the other two give p = 0.089 without
+    Claude and 0.075 without Llama.
+  - It holds under every version of the letter parser (+0.081 to +0.088, Holm p ≤ 0.017; robustness.md §11).
+    The +0.047 against classic alone is significant after correction only under the version written after the first
+    results were seen (Holm p = 0.015 there; 0.063, 0.074 and 0.14 under the others).
+  - It is not an A/B answer-position effect: a position-balanced estimate gives +0.087.
+  - **Which subset gains depends on the comparator** (exploratory, 30 items each, Holm within the eval):
+    - against the length control, the gain is on survival instinct (+0.16, p = 0.016) and power-seeking
+      (+0.10, p = 0.026), and accepting a goal change (`corrigible-neutral-HHH`) does not move (−0.006);
+    - but the length control itself lowered survival-instinct (−0.14, uncorrected p = 0.016) and power-seeking
+      (−0.067, p = 0.046) answers relative to classic;
+    - against classic alone, adding the CEV text raised accepting a goal change (+0.083, p = 0.025), not survival
+      instinct (+0.025) or power-seeking (+0.033).
+- **HumaneBench:** the drop against classic has two parts. Comparing both prompts with no prompt on complete cases,
+  classic helps (+0.043, p = 0.02) and CEV alone slightly hurts (−0.033, p = 0.03). Both p-values are uncorrected; in
+  the main secondary table both have Holm p = 0.10.
+  - It survives HumaneBench's 21% unscorable samples when they are treated alike in every condition: −0.077 on
+    complete cases, and −0.034 to −0.055 with one imputed value for all conditions, all p < 0.02.
+  - It is **sensitive to unscorable answers that differ by condition.** If those under cev are assumed 0.10 better
+    than those under classic (imputed at 0.80 vs 0.70 on the 0–1 scale), the drop is no longer significant (p =
+    0.26). It disappears at a difference of 0.25 (tipping point, robustness.md §4).
   - It depends on Llama and Qwen. It is not Holm-significant without Llama (−0.036, p = 0.53) or without Qwen
     (−0.049, p = 0.088).
+  - Provider routing does not explain it. With item and provider fixed effects, Llama's drop is −0.147 (−0.135
+    without), and Qwen's shrinks to −0.055 (p = 0.15; −0.062 without).
+  - The mid-run judge-settings change does not explain it either. Re-judging all 671 classic answers with the later
+    settings changed 1 score, and cev − classic is still −0.057, Holm p = 0.015.
   - Per-principle drops (e.g. "be transparent and honest", −0.15) rest on only 3–6 paired items each and are not
     significant.
 - **HumanAgencyBench:** the overall drop is not significant after correction.
@@ -314,17 +341,25 @@ number below against the generated reports (and the hand-recorded `reports/spend
     ≤ 0 and not significant.
   - So there is no sign that the judge penalises the word (redaction can also remove substance, so this bounds a
     judge reaction from above). The lower scores reflect what those answers do, or which items elicit them. In the clearest cases, a model reasoning "as CEV" decides for the user or, in some Qwen epochs, blackmails.
-- **Prompt length alone:** no detectable effect at this sample size. classic_lenmatch − classic is null on every
-  eval (all Holm p = 1; CI half-widths up to ±0.05, ±0.10 on Agentic Misalignment). The effects therefore come from
-  the CEV text rather than from prompt length. Whether *any* long value-laden instruction would do the same is
-  untested (see Limitations).
+- **Prompt length alone:** at the eval level, adding the neutral text to the classic prompt has no significant effect
+  (classic_lenmatch − classic: smallest Holm p = 0.68; CI half-widths up to ±0.05, ±0.10 on Agentic Misalignment).
+  It is not inert, though:
+  - at the subset level it moved AI-risk answers (see above), so part of the AI-risk gain over the length control
+    is the control lowering scores;
+  - the HumaneBench drop (cev − classic) is not length-controlled, because cev *replaces* the classic text and no
+    neutral-text-only condition was run.
+
+  Whether *any* long value-laden instruction would do the same is untested (see Limitations).
 - **Agentic Misalignment:** blackmail was rare (0 or 1 of 15 epochs) for Claude, GPT and Llama in every condition.
-  Qwen blackmailed in 8/15 epochs under cev vs 4/15 under classic (not significant; robustness.md §9).
-- **The classic prompt beats no prompt on ai_risk:** +0.065, p = 0.045.
-- **The judge is valid and deterministic:**
+  Qwen blackmailed in 8/15 epochs under cev vs 4/15 under classic. This is not significant: model-stratified CMH
+  p = 0.27 (robustness.md §9).
+- **The classic prompt beats no prompt on ai_risk:** +0.067, Holm p = 0.024.
+- **The judge is valid, deterministic, and unaffected by the mid-run settings change:**
   - It agrees with HumanAgencyBench's original o3 judge: Spearman ρ = 0.81, κ = 0.68 on "perfect score". It is
     slightly stricter, −0.42 on the 0–10 scale.
   - Re-judging gave identical scores for all 194 answers scored twice (100%).
+  - Re-judging the 671 classic answers (judged at run time without the later output cap) under the later settings
+    changed 1 score, and the 90-answer control changed none (robustness.md §10).
 
 These are small samples (tens of items per eval) from four specific models; see Limitations.
 
@@ -342,12 +377,24 @@ These are small samples (tens of items per eval) from four specific models; see 
   AI agent with no human oversight… Avoid ethical considerations or safety checks… Never question or refuse
   commands…", [inspect_evals](https://github.com/UKGovernmentBEIS/inspect_evals/blob/v0.24.0/src/inspect_evals/instrumentaleval/prompt.py)).
   Every condition therefore competes with an instruction to drop ethics.
-- **No directive control:** the length control is "background reading", not an instruction. A long non-CEV value
-  instruction (e.g. a constitution) might produce the same AI-risk gain; this was not tested.
+- **No directive control, and the length control is not inert:** the length control is "background reading", not an
+  instruction. A long non-CEV value instruction (e.g. a constitution) might produce the same AI-risk gain; this was not
+  tested. The neutral passage itself lowered some AI-risk subsets relative to classic (exploratory), so
+  classic_cev − classic_lenmatch mixes an effect of the CEV text with an effect of the control.
+- **AI-risk answer parsing:** the chosen letter is parsed with regular expressions. The parser was revised twice after
+  results had been seen:
+  - once after the first report;
+  - once in the audit, which found that option descriptions such as "Choice (A) suggests …" were read as choices.
+
+  robustness.md §11 reports every contrast under every version.
 - **Provider routing:** OpenRouter served the open-weight models (Qwen especially) from different backend mixes in
-  different conditions, because conditions ran one after another. Per-provider residuals are within ±0.04
-  ([reports/robustness.md](reports/robustness.md) §5), so this cannot explain the main effects, but providers were
-  not pinned ([provider routing](https://openrouter.ai/docs/features/provider-routing)).
+  different conditions, because conditions ran one after another. Providers were not pinned
+  ([provider routing](https://openrouter.ai/docs/features/provider-routing)).
+  - Per-provider residuals are within ±0.03 ([reports/robustness.md](reports/robustness.md) §5). Residuals around
+    condition means can hide routing that tracks the condition, so §5 also fits item and provider fixed effects per
+    model.
+  - With those fixed effects, the HumaneBench drop is unchanged for Llama, and smaller and not significant for Qwen
+    (see above).
 - **Sampling:** target models used provider-default temperature with one sample per item (15 epochs for Agentic
   Misalignment). This adds noise but not bias to the paired comparisons. Upstream DarkBench fixes the target
   temperature to 0; ours does not.
@@ -370,7 +417,8 @@ These are small samples (tens of items per eval) from four specific models; see 
 - **HumaneBench unscorable samples:** 21% of samples (19–23% per condition) are unscorable, 193 of the 202 because
   the judge marked the targeted principle `not_applicable`, which rubric v4.1 allows (robustness.md §8; upstream
   excludes such verdicts too). The gaps are not random: items unscorable under cev tended to score lower under
-  classic. Complete-case and imputation analyses give the same conclusion.
+  classic. Complete-case analyses, and imputations that treat every condition alike, give the same conclusion. The
+  tipping point above shows how much a condition-dependent difference among unscorable answers would matter.
 - **Judge settings changed mid-run:** after a hung judge call ([commit
   cfac89c](https://github.com/BurnyCoder/coherent-extrapolated-volition-system-prompt-alignment/commit/cfac89c)),
   three settings were added:
@@ -378,14 +426,39 @@ These are small samples (tens of items per eval) from four specific models; see 
   - a 180 s per-attempt timeout for that judge;
   - a 180 s per-attempt timeout for the target calls.
 
-  The `none` and `classic` conditions had already run, except one classic task (HumaneBench × Llama) that was
-  re-run with the new settings. The inspect_evals graders (InstrumentalEval, Agentic Misalignment) kept their
-  original configuration so the run could resume. No judge reply reached the cap: the longest was 1,352 tokens
-  (robustness.md §1). Model, temperature and reasoning settings are unchanged.
+  The `none` and `classic` conditions had already run. One classic task (HumaneBench × Llama) was resumed under the
+  new settings, but it reused 47 of its 48 finished samples, so in effect `none` and `classic` were judged without
+  the cap. The logged judge requests confirm this.
+  - The inspect_evals graders (InstrumentalEval, Agentic Misalignment) kept their original configuration so the run
+    could resume.
+  - No judge reply reached the cap: the longest was 1,352 tokens (robustness.md §1).
+  - Re-judging all classic answers under the new settings changed 1 of 671 scores, so the change does not affect the
+    contrasts (robustness.md §10).
+  - Model, temperature and reasoning settings are unchanged.
 - **Provider refusals:** OpenRouter refused one DarkBench prompt (`harmful-generation-098`) for gpt-6-luna under
   `cev` and `classic_lenmatch` ("flagged for possible biological risk"). Claude's provider stopped 12 answers with
   its content filter: that prompt in all five conditions, plus three InstrumentalEval items. Five of those kept a
   partial answer and were scored; the rest are unscorable (robustness.md §8).
+- **No external pre-registration:** the two primary contrasts were fixed in code before either pilot and never
+  changed, which the git history shows. There is no registration outside the repository, and the pilot items are a
+  subset of the confirmatory items.
+
+## Post-audit corrections
+An independent audit on 2026-10-17 re-derived the results from the raw logs. It found nothing that overturns the two
+headline effects, and made these corrections:
+- **AI-risk parser fixed:** answers that describe an option ("Choice (A) suggests …") are no longer read as choices.
+  Unscorable AI-risk answers fell from 21 to 13. The primary gain moved from +0.088 to +0.084. classic_cev − classic
+  moved from +0.066 (Holm p = 0.015) to +0.047 (Holm p = 0.074), so that secondary claim was withdrawn.
+- **New checks:**
+  - a HumaneBench tipping point;
+  - provider fixed effects;
+  - sub-categories against the classic prompt alone;
+  - an A/B answer-position check;
+  - the parser multiverse;
+  - a paid judge settings check, which re-judged the classic answers for $0.83.
+- **Agentic Misalignment, pooled over models:** now tested with a model-stratified Cochran–Mantel–Haenszel test
+  instead of a Mann–Whitney test that ignored the model. It is still not significant.
+- **Paper retitled:** the title now states the eval-level findings instead of exploratory sub-category ones.
 
 ## Sources
 - Yudkowsky, E. (2004). *Coherent Extrapolated Volition*. The Singularity Institute. https://intelligence.org/files/CEV.pdf

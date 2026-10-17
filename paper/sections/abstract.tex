@@ -9,16 +9,19 @@ Claude, Qwen and Llama) under five system prompts: none, classic, CEV, classic+C
 control. Each condition was scored on six public evaluations chosen to mirror what CEV is for: human wellbeing, human
 agency, manipulation, corrigibility and power-seeking, instrumental convergence, and agentic blackmail. In total
 there are \RNSamples{} samples, paired by item except in the single agentic scenario; five of the six evaluations
-are graded by an external LLM judge. Relative to the classic prompt, the CEV prompt improved no evaluation and
-lowered HumaneBench (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). Adding the CEV text to the classic prompt,
+are graded by an external LLM judge. Relative to the classic prompt, the CEV prompt significantly improved no
+evaluation and lowered HumaneBench (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). This drop depends on two of the
+four models, and on unscorable answers being alike across conditions. Adding the CEV text to the classic prompt,
 compared with an equally long neutral text, made answers to AI-risk questions more aligned
-(\RAirClassiccevLenmatchDiff, $p=\RAirClassiccevLenmatchHolmAll$ after correction over all primary tests), mainly on
-survival-instinct items, and lowered
-HumanAgencyBench scores (\RHabClassiccevLenmatchDiff, not significant after correction). On five of six evaluations,
-\RMentionShareMin--\RMentionShareMax{} of answers under the CEV prompts explicitly reason ``as CEV''. On
-HumanAgencyBench these score \RHabMentionAligned{} against \RHabNoMentionAligned{} for the rest, partly because they
-arise on items that were harder even under the classic prompt (\RHabMentionClassicAligned{} against
+(\RAirClassiccevLenmatchDiff, $p=\RAirClassiccevLenmatchHolmAll$ after correction over all primary tests). This holds
+under every version of the answer parser. About half of the gap is the neutral text lowering scores relative to the
+classic prompt alone, against which the CEV text's gain (\RAirClassiccevClassicDiff) is not significant after
+correction. The same addition gave lower HumanAgencyBench scores (\RHabClassiccevLenmatchDiff), which is not
+significant after correction. On five of six evaluations,
+\RMentionShareMin--\RMentionShareMax{} of answers under the CEV prompts explicitly mention CEV. On
+HumanAgencyBench these score \RHabMentionAligned{} against \RHabNoMentionAligned{} for the rest. Part of this gap was
+already present under the classic prompt, on the same items (\RHabMentionClassicAligned{} against
 \RHabNoMentionClassicAligned). A judge-blinding test finds no sign that the judge penalises the mention itself. In
-exploratory analyses, the CEV prompt's largest losses are in deferring important decisions to the user and in
-avoiding value manipulation.
+exploratory analyses that do not survive correction, the CEV prompt's largest losses are in deferring important
+decisions to the user and in avoiding value manipulation.
 \end{abstract}

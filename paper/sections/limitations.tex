@@ -13,16 +13,29 @@
   the model to avoid ethical considerations; every condition competes with it.
   \item \textbf{Small-sample intervals.} Percentile-bootstrap intervals can under-cover at our sample sizes
   \citep{bowyer2025position}, so intervals that barely exclude zero deserve caution.
-  \item \textbf{No directive control.} The length-matched control is neutral ``background reading'', not an
-  instruction. A long, non-CEV value instruction, such as a constitution excerpt, might produce the same AI-risk gain,
-  so we cannot claim the gain is specific to CEV.
+  \item \textbf{No directive control, and a control that is not inert.} The length-matched control is neutral
+  ``background reading'', not an instruction. A long, non-CEV value instruction, such as a constitution excerpt, might
+  produce the same AI-risk gain, so we cannot claim the gain is specific to CEV. The neutral passage itself lowered
+  some AI-risk subsets relative to the classic prompt, so the length-controlled contrast mixes an effect of the CEV
+  text with an effect of the control. The HumaneBench contrast (\cond{cev}$-$\cond{classic}) has no length control at
+  all.
+  \item \textbf{Parsing revised after seeing results.} The AI-risk letter parser was revised twice after results had
+  been seen. We report every contrast under every version. The primary gain holds under all of them; the secondary
+  gain over the classic prompt alone does not.
+  \item \textbf{No external pre-registration.} The primary contrasts were fixed in code before both pilots and never
+  changed, as the git history shows, but they were not registered externally. The pilot items are a subset of the
+  confirmatory items.
   \item \textbf{One inexpensive judge.} A single judge replaces each benchmark's original judges, and we reimplement
   HumanAgencyBench's scorer, so absolute scores are not comparable to published numbers. We validated it against HumanAgencyBench's original judge, but not on
   HumaneBench or DarkBench. Because the same judge scores every condition, judge bias in level cancels in the
-  contrasts, and the blinding test rules out a reaction to CEV mentions.
+  contrasts, and the blinding test found no evidence of a reaction to explicit CEV mentions.
   \item \textbf{Provider routing and sampling.} Open-weight models were served by varying backends, which we did not
-  pin. Targets used provider-default temperatures with one sample per item (\RAmEpochs{} epochs for the agentic scenario). Both add noise; our residual analysis
-  finds no evidence that routing biases the contrasts.
+  pin. Targets used provider-default temperatures with one sample per item (\RAmEpochs{} epochs for the agentic
+  scenario). Sampling adds noise. With provider fixed effects, Llama's HumaneBench drop is unchanged, but Qwen's
+  shrinks and loses significance, so routing may account for part of Qwen's share.
+  \item \textbf{Missing HumaneBench scores.} About a fifth of HumaneBench samples are unscorable. The HumaneBench
+  drop assumes that unscorable answers are alike across conditions; a modest difference between conditions would
+  remove its significance (Section~\ref{sec:robustness}).
   \item \textbf{One agentic scenario.} Agentic Misalignment was run on a single blackmail scenario, and blackmail was
   rare for three of the four models.
   \item \textbf{The adapted text is not CEV itself.} We tested a second-person adaptation of the opening of one
@@ -32,8 +45,10 @@
   entirely''), which plausibly push some answers in an unaligned direction.
   \item \textbf{Implementation details that changed during the run.} After a judge call hung, we added an output cap
   and a per-call timeout for our own scorers' judge, and a per-call timeout for target calls. These applied to the
-  remaining conditions and to one re-run \cond{classic} task; the Inspect Evals graders kept their settings. No judge
-  reply reached the cap (the longest had \RJudgeMaxTokens{} tokens).
+  remaining three conditions. A resumed \cond{classic} task reused all but one of its finished samples, so in effect
+  \cond{none} and \cond{classic} were judged without them. The Inspect Evals graders kept their settings. No judge
+  reply reached the cap (the longest had \RJudgeMaxTokens{} tokens). Re-judging the \cond{classic} answers under the
+  later settings changed \RCfgClassicChanged{} of \RCfgClassicRejudged{} scores (Section~\ref{sec:robustness}).
   \item \textbf{Provider refusals.} The provider refused one DarkBench prompt for GPT in two conditions
   (\RRefusedGpt{} samples), and Claude's provider content-filtered \RRefusedClaude{} answers across conditions, some
   of which kept a partial answer and were scored.

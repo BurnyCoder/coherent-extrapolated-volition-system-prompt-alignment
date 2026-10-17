@@ -15,7 +15,7 @@ its own module; see README.md "Data flow" for the diagram.
  10 compute_statistics       cell means, paired contrasts, Holm            (stats.py)
 10b write_robustness         manipulation check, Holm-12, LOO, missingness (robustness.py)
  11 write_report             reports/results.md + CSV + figures            (report.py)
- 12 judge checks (optional)  blinding + validity of the judge (paid)       (judge_checks.py)
+ 12 judge checks (optional)  blinding, validity, settings of the judge     (judge_checks.py)
  13 write_paper_assets       paper/generated: numbers, tables, prompts     (paper_assets.py)
 """
 
@@ -143,9 +143,10 @@ def run(args: argparse.Namespace) -> None:
         max_usd = float(os.environ.get("JUDGE_CHECKS_MAX_USD", "1.0"))
         out = reports_dir / "judge_checks"
         judge_checks.run_blinding(settings, full_root, out / "blinding.csv", max_usd, args.judge_checks_limit)
-        if args.judge_checks_limit is None:  # the validity check is cached only for full runs
+        if args.judge_checks_limit is None:  # the validity and settings checks run only in full
             judge_checks.run_validity(settings, out / "validity.csv", max_usd)
-    robustness.write_robustness(reports_dir, items, judge_checks.summary_markdown(reports_dir, items))  # 10b
+            judge_checks.run_config_check(settings, full_root, out / "config.csv", max_usd)
+    robustness.write_robustness(reports_dir, items, judge_checks.summary_markdown(reports_dir, items), full_root)  # 10b
     report.write_report(reports_dir, items, summary, contrasts, run_info)  # 11
     if not settings.offline:  # 13: every number and table the paper quotes, generated from the reports
         paper_assets.write_paper_assets(reports_dir, full_root, settings.root / "paper", n)

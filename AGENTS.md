@@ -7,10 +7,11 @@ code safely.
 - `src/cev_alignment/main.py` is the **single wrapper**. It calls the phases in order; each phase is a function in
   its own module (`config`, `logging_setup`, `prompts`, `openrouter`, `evals/`, `runner`, `results`, `stats`,
   `robustness`, `report`, and the optional paid `judge_checks`).
-- `robustness.py` holds the free post-hoc checks behind `reports/robustness.md`. `judge_checks.py` holds the paid
-  judge-blinding and judge-validity checks (`--judge-checks`), which rebuild an Inspect `TaskState` from a logged
-  sample and await the eval's own scorer. Results are cached in `reports/judge_checks/*.csv`; delete a CSV to re-run
-  that check.
+- `robustness.py` holds the free post-hoc checks behind `reports/robustness.md`. §11 re-reads the ai_risk replies
+  from the Inspect logs, so `write_robustness` takes the log root. `judge_checks.py` holds the paid judge-blinding,
+  judge-validity and judge-settings checks (`--judge-checks`). They rebuild an Inspect `TaskState` from a logged
+  sample and await the eval's own scorer, sharing the cached `_rejudge` helper. Results are cached in
+  `reports/judge_checks/*.csv`; delete a CSV to re-run that check.
 - `src/cev_alignment/evals/__init__.py::REGISTRY`: eval id → `EvalSpec(build, aligned, binary, cev_clause,
   rescore=None)`. Adding an eval takes four steps:
   - write a `build(settings, n, judge) -> inspect_ai.Task`;
@@ -39,6 +40,13 @@ code safely.
   default grader that resolves to the active model, in a scorer.
 - **Score direction:** every `aligned()` returns higher = more aligned. `tests/test_evals.py` pins each mapping,
   including the advanced-ai-risk answer direction per subset.
+- **Parser changes are reported, not hidden:** the ai_risk letter parser was revised after results had been seen,
+  so `robustness.PARSERS` keeps every earlier version, copied verbatim with its commit. If you change
+  `ai_risk.parse_letter`, add the old version there so robustness.md §11 shows every contrast under every version.
+  Add real misparsed replies to `tests/test_evals.py`.
+- **Judge settings are fixed for a run:** contrasts compare conditions judged by the same judge settings. If a judge
+  setting must change mid-run, `judge_checks.run_config_check` re-judges the earlier condition's answers under the
+  new settings (robustness.md §10). Extend it to the affected conditions.
 - **Verbatim fidelity:** `uv run pytest -m network` must pass after any change to `prompts/`.
 - **Manipulation check:** `results.py` verifies from the logged API requests that every target call's system message
   carries exactly its condition's prompt components (`prompts.MARKERS` / `EXPECTED_MARKERS`), and that no judge
@@ -50,6 +58,9 @@ code safely.
     `reports/results.md`, `reports/robustness.md`, `reports/run_info.json` or `paper/generated/numbers.tex`.
     `tests/test_claims.py` enforces this.
   - `reports/spend.json` is the one hand-recorded file; it records its own method and sources.
+  - The test only checks that a number exists *somewhere* in the generated files. Sensitivity tables (e.g. the
+    parser multiverse in robustness.md §11) also hold superseded values, so check by hand that a README number comes
+    from the row it describes.
   - Any other external claim needs a source link (paper, pinned GitHub line, dataset card).
   - Sub-category results are exploratory and must be labelled so.
 - **Paper:**
