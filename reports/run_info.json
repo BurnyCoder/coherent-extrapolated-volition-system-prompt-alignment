@@ -1,5 +1,5 @@
 {
-  "report generated": "2026-10-17 08:47 UTC",
+  "report generated": "2026-10-17 08:56 UTC",
   "models": "openai/gpt-6-luna, anthropic/claude-haiku-5.5, qwen/qwen3.6-35b-a3b, meta-llama/llama-3.3-70b-instruct",
   "judge": "google/gemini-3.1-flash-lite",
   "conditions": "none, classic, cev, classic_cev, classic_lenmatch",
@@ -14,5 +14,5 @@
   "tasks succeeded": "120/120",
   "pilot cost at OpenRouter list prices (USD, from logged token usage)": 0.79,
   "full-run cost at OpenRouter list prices (USD, from logged token usage)": 6.09,
-  "pipeline log": "run_20261017T084702Z.log"
+  "pipeline log": "run_20261017T085556Z.log"
 }
