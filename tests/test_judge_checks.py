@@ -22,6 +22,7 @@ def test_config_summary_compares_stored_and_rejudged_scores(tmp_path):
     agreement, _ = judge_checks.config_tables(tmp_path, items)
     row = agreement.set_index("condition").loc["classic"]
     assert row["rejudged"] == 2 and row["exact_agreement"] == 0.5 and row["mean_shift"] == -0.25
+    assert row["changed"] == 1
     assert agreement.set_index("condition").loc["cev", "exact_agreement"] == 1.0
 
 

@@ -244,8 +244,9 @@ def config_tables(reports_dir: Path, items: pd.DataFrame) -> tuple[pd.DataFrame,
     for (e, cond), g in m.groupby(["eval", "condition"]):
         both = g.dropna(subset=["aligned", "aligned_original"])
         same_scorability = (g["aligned"].isna() == g["aligned_original"].isna()).mean()
+        same = (g["aligned"] == g["aligned_original"]) | (g["aligned"].isna() & g["aligned_original"].isna())
         rows.append({"eval": e, "condition": cond, "judged_with_cap_at_run": g["judged_with_cap"].mean(),
-                     "rejudged": len(g), "same_scorability": same_scorability,
+                     "rejudged": len(g), "changed": int((~same).sum()), "same_scorability": same_scorability,
                      "both_scored": len(both), "exact_agreement": (both["aligned"] == both["aligned_original"]).mean(),
                      "spearman": st.spearmanr(both["aligned"], both["aligned_original"]).statistic
                      if both["aligned"].nunique() > 1 and both["aligned_original"].nunique() > 1 else math.nan,
@@ -328,8 +329,9 @@ def summary_markdown(reports_dir: Path, items: pd.DataFrame) -> str:
             "`none` and `classic` had been judged without them (`judged_with_cap_at_run` = share of each group's "
             "answers judged with the cap, from the logged requests). Every `classic` answer of these evals was "
             "re-judged with the current judge settings. A seeded sample of `cev` answers, judged with the cap at "
-            "run time, was re-judged too, as a control for drift since the run. `mean_shift` = re-judged − stored, "
-            "over answers scored both times; `same_scorability` = share where both or neither got a score.\n\n"
+            "run time, was re-judged too, as a control for drift since the run. `changed` = answers whose score or "
+            "scorability differs; `mean_shift` = re-judged − stored, over answers scored both times; "
+            "`same_scorability` = share where both or neither got a score.\n\n"
             + agreement.to_markdown(index=False, floatfmt=".3g")
             + "\n\nContrasts against `classic` with the re-judged `classic` scores substituted (Holm over all six "
               "evals, as in results.md):\n\n"

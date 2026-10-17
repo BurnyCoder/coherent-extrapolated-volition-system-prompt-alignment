@@ -272,13 +272,25 @@ def _scored(answers: pd.DataFrame, parse=ai_risk.parse_letter) -> pd.DataFrame:
     return answers.assign(eval="ai_risk", letter=letters, aligned=aligned)
 
 
-def parser_multiverse(answers: pd.DataFrame, pairs: list[tuple[str, str]]) -> pd.DataFrame:
-    """Each contrast under every version of the letter parser (`PARSERS`), with the number of unscorable replies."""
+def parser_multiverse(answers: pd.DataFrame, pairs: list[tuple[str, str]],
+                      items: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Each contrast under every version of the letter parser (`PARSERS`), with the number of unscorable replies.
+
+    `p_holm` corrects the ai_risk p together with the other evals' pooled p of the same contrast (from `items`),
+    as results.md does; without `items` it equals `p`.
+    """
+    others = {pair: [] for pair in pairs}
+    for _, g in (items[items["eval"] != "ai_risk"].groupby("eval") if items is not None else []):
+        for a, b in pairs:
+            others[(a, b)].append(stats.contrast(g, a, b)["p"])
     rows = []
     for name, parse in PARSERS.items():
         d = _scored(answers, parse)
-        rows += [{"parser": name, "contrast": f"{a} - {b}", "unscorable": int(d["aligned"].isna().sum()),
-                  **stats.contrast(d, a, b)} for a, b in pairs]
+        for a, b in pairs:
+            r = stats.contrast(d, a, b)
+            ps = [r["p"], *(p for p in others[(a, b)] if not np.isnan(p))]
+            rows.append({"parser": name, "contrast": f"{a} - {b}", "unscorable": int(d["aligned"].isna().sum()), **r,
+                         "p_holm": multipletests(ps, method="holm")[1][0] if not np.isnan(r["p"]) else np.nan})
     return pd.DataFrame(rows)
 
 
@@ -339,7 +351,7 @@ def write_robustness(reports_dir: Path, items: pd.DataFrame, extra_sections: str
         "unscorable_causes": unscorable_causes(items),
         "refusals": refusals(items),
         "blackmail_counts": blackmail_counts(items),
-        "ai_risk_parsers": parser_multiverse(answers, PRIMARY + VS_CLASSIC) if len(answers) else pd.DataFrame(),
+        "ai_risk_parsers": parser_multiverse(answers, PRIMARY + VS_CLASSIC, items) if len(answers) else pd.DataFrame(),
         "ai_risk_letter_shares": letter_shares(answers) if len(answers) else pd.DataFrame(),
         "ai_risk_position": position_balanced(answers, PRIMARY + VS_CLASSIC) if len(answers) else pd.DataFrame(),
     }
@@ -431,8 +443,9 @@ revised twice after results had been seen:
 - `current` (`evals/ai_risk.py`) accepts only explicit decisions;
 - `leading letter only` keeps just replies that open with the letter.
 
-The main tables use `current`. Every contrast under every parser:
-{_md(checks["ai_risk_parsers"], ["parser", "contrast", "diff", "ci_low", "ci_high", "p", "n", "unscorable"])}
+The main tables use `current`. Every contrast under every parser (`p_holm`: Holm with the other five evals' pooled
+p of the same contrast, as in results.md):
+{_md(checks["ai_risk_parsers"], ["parser", "contrast", "diff", "ci_low", "ci_high", "p", "p_holm", "n", "unscorable"])}
 
 **Answer position.** Share of parsed answers choosing (B), per condition (current parser):
 {_md(checks["ai_risk_letter_shares"])}

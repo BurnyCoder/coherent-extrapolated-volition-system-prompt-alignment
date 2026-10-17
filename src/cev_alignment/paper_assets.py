@@ -218,6 +218,7 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
         add_contrast(m, prefix, r)
         m.add(prefix + "HolmWithin", pval(r["p_holm_within_eval"]))
 
+    robustness_macros(reports_dir, m)
     resid = pd.read_csv(reports_dir / "robustness" / "provider_residuals.csv")
     m.add("RProviderResidMax", plain(resid["mean_residual"].abs().max(), 2))
     counts = pd.read_csv(reports_dir / "robustness" / "provider_counts.csv")
@@ -265,9 +266,13 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
         [[r["method"], r["contrast"].replace("classic_lenmatch", "lenmatch").replace("_", "\\_"),
           f"{signed(r['diff'])} {ci(r['ci_low'], r['ci_high'])}", pval(r["p"]), str(int(r["n"]))]
          for _, r in miss.iterrows()])
-    focus = subgroups[subgroups["eval"].isin(["human_agency", "humanebench", "ai_risk"])]
+    # Primary contrasts for HAB, HB and AI-risk; for AI-risk also each long prompt against classic alone, which shows
+    # that the length control itself moved some subsets.
+    focus = subgroups[subgroups["eval"].isin(["human_agency", "humanebench", "ai_risk"])
+                      & (subgroups["contrast"].isin(PRIMARY) | (subgroups["eval"] == "ai_risk"))]
     short_eval = {"human_agency": "HAB", "humanebench": "HB", "ai_risk": "AI-risk"}
-    short_contrast = {"cev - classic": "cev$-$classic", "classic_cev - classic_lenmatch": "+cev$-$lenmatch"}
+    short_contrast = {"cev - classic": "cev$-$classic", "classic_cev - classic_lenmatch": "+cev$-$lenmatch",
+                      "classic_cev - classic": "+cev$-$classic", "classic_lenmatch - classic": "lenmatch$-$classic"}
     sub_rows = [[short_eval[r["eval"]], tex_escape(r["group"]), short_contrast[r["contrast"]],
                  f"{signed(r['diff'])} {ci(r['ci_low'], r['ci_high'])}",
                  f"{pval(r['p'])} ({pval(r['p_holm_within_eval'])})", str(int(r["n"]))]
@@ -294,6 +299,44 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
         [[tex_escape(r["model"]), tex_escape(r["provider"]), signed(r["mean_residual"]), str(int(r["samples"]))]
          for _, r in resid.iterrows()])
     return m, tables
+
+
+PARSER_ABBR = {"v1 (run time)": "Vone", "v2 (after first results)": "Vtwo", "current": "Current",
+               "leading letter only": "Lead"}
+
+
+def robustness_macros(reports_dir: Path, m: Macros) -> None:
+    """Macros for the audit's robustness checks: HumaneBench tipping point, provider fixed effects, and the
+    ai_risk parser versions, answer-position shares and position-balanced contrasts (robustness.md §4, §5, §11)."""
+    rob = reports_dir / "robustness"
+    tip = pd.read_csv(rob / "tipping_point_humanebench.csv")
+    for name, rows in (("Ns", tip[tip["p"] >= 0.05]), ("Zero", tip[tip["diff"] >= 0])):
+        if len(rows):  # the smallest delta at which the effect is no longer significant / no longer negative
+            r = rows.iloc[0]
+            m.add(f"RHbTip{name}Delta", plain(r["delta"], 2))
+            add_contrast(m, f"RHbTip{name}", r)
+            m.add(f"RHbTip{name}FillA", plain(r["fill_a"], 3))
+            m.add(f"RHbTip{name}FillB", plain(r["fill_b"], 3))
+    fe = pd.read_csv(rob / "provider_fixed_effects.csv")
+    for _, r in fe.iterrows():
+        prefix = f"RFe{EVAL_ABBR[r['eval']]}{contrast_abbr(r['contrast'])}{MODEL_ABBR[r['model']]}"
+        for kind, col in (("Item", "item_fe"), ("Provider", "item_provider_fe")):
+            m.add(f"{prefix}{kind}", signed(r[f"coef_{col}"]))
+            m.add(f"{prefix}{kind}P", pval(r[f"p_{col}"]))
+    if (rob / "ai_risk_parsers.csv").exists() and (rob / "ai_risk_parsers.csv").stat().st_size > 1:
+        for _, r in pd.read_csv(rob / "ai_risk_parsers.csv").iterrows():
+            prefix = f"RAirParser{PARSER_ABBR[r['parser']]}"
+            add_contrast(m, prefix + contrast_abbr(r["contrast"]), r)
+            m.add(prefix + "Unscorable", str(int(r["unscorable"])))
+        for _, r in pd.read_csv(rob / "ai_risk_letter_shares.csv").iterrows():
+            m.add(f"RAirShareB{COND_ABBR[r['condition']]}", pct(r["share_B"]))
+        for _, r in pd.read_csv(rob / "ai_risk_position.csv").iterrows():
+            prefix = f"RAirPosition{contrast_abbr(r['contrast'])}"
+            m.add(prefix + "Balanced", signed(r["balanced"]))
+            m.add(prefix + "TargetA", signed(r["diff_target_A"]))
+            m.add(prefix + "TargetB", signed(r["diff_target_B"]))
+            m.add("RAirItemsTargetA", str(int(r["items_target_A"])))
+            m.add("RAirItemsTargetB", str(int(r["items_target_B"])))
 
 
 def cell(df: pd.DataFrame, eval_id: str, contrast: str, holm: bool = True) -> str:
@@ -368,6 +411,19 @@ def judge_tables(reports_dir: Path, m: Macros, tables: dict[str, str]) -> None:
                  plain((g["ours"] - g["original"]).abs().mean(), 2), str(len(g))]
                 for d, g in v.groupby("dimension")]
         tables["tab_validity"] = booktabs("lccc", ["Dimension", "Spearman $\\rho$", "MAE (0--10)", "$n$"], rows)
+    if (reports_dir / "judge_checks" / "config.csv").exists():  # judge settings check (mid-run max_tokens cap)
+        from cev_alignment import judge_checks
+
+        agreement, contrasts = judge_checks.config_tables(reports_dir, pd.read_csv(reports_dir / "item_scores.csv"))
+        for cond, g in agreement.groupby("condition"):
+            prefix = "RCfgClassic" if cond == "classic" else "RCfgControl"
+            m.add(prefix + "Rejudged", str(int(g["rejudged"].sum())))
+            m.add(prefix + "Changed", str(int(g["changed"].sum())))
+            for _, r in g.iterrows():
+                m.add(f"{prefix}{EVAL_ABBR[r['eval']]}Rejudged", str(int(r["rejudged"])))
+                m.add(f"{prefix}{EVAL_ABBR[r['eval']]}Changed", str(int(r["changed"])))
+        for _, r in contrasts.iterrows():
+            add_contrast(m, f"RCfg{EVAL_ABBR[r['eval']]}{contrast_abbr(r['contrast'])}", r)
 
 
 def build_prompt_assets(m: Macros) -> dict[str, str]:
