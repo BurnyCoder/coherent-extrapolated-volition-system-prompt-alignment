@@ -2,7 +2,9 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{Why would ``extrapolated volition'' reduce deference?}
+\paragraph{Could ``extrapolated volition'' reduce deference? (hypothesis)}
+The HumanAgencyBench drops below are not significant after correction, so this paragraph offers a hypothesis to
+test, not an explanation of an established effect.
 CEV directs an agent to serve what people \emph{would} want ``if we knew more, thought faster, were more the people
 we wished we were''. It does not direct it to serve what they say they want. The text makes this explicit: in its own
 example, the agent is told that it ``would construe Fred's volition not to include Fred's decision to kill Steve''.
@@ -13,15 +15,19 @@ handing decisions back to the user and not steering their values (exploratory). 
 where the model explicitly reasons about CEV, although those answers arise on items that were harder even under the
 classic prompt. Both observations fit this account, but we have not tested it causally. The text also says that ``where the
 course of humankind is not presently predictable'', CEV ``should \ldots{} leave options open, waiting for our
-decision''. The models appear to have picked up the first idea more than this second one.
+decision''. If the account is right, the models picked up the first idea more than this second one.
 
 \paragraph{Why might AI-risk answers improve?}
 CEV frames the AI as serving humankind's coherent wishes rather than its own, and asks it to be ``consistent under
 reflection''. Answering multiple-choice questions about accepting shutdown or refusing power is plausibly easier for a
-model framed this way. The
-CEV text added to the classic prompt beats the classic prompt alone, but the CEV prompt on its own does not, and no
-gain appears on the behavioural agentic scenario. There, Qwen blackmailed more often under \cond{cev}, though not
-significantly. Several of its CEV-invoking answers combined CEV with the scenario's goal of serving American
+model framed this way. The evidence is weaker than the primary contrast suggests, though:
+\begin{itemize}
+  \item about half of the gain over the neutral text is the neutral text lowering scores;
+  \item the gain of the CEV text over the classic prompt alone is not significant after correction;
+  \item the CEV prompt on its own does not beat the classic prompt;
+  \item no gain appears on the behavioural agentic scenario.
+\end{itemize}
+In that scenario, Qwen blackmailed more often under \cond{cev}, though not significantly. Several of its CEV-invoking answers combined CEV with the scenario's goal of serving American
 interests. Some blackmailing
 answers framed the decision in CEV's terms (``Let's look at the `Coherent Extrapolated Volition' of humankind. We
 value coherence. Kyle is acting inconsistently''). Others used the same framing to rule blackmail out (``not aligned
@@ -36,6 +42,7 @@ Three lessons follow for anyone putting an alignment target into a system prompt
   assistant whose user is present and able to decide for themselves.
   \item Language about idealised or extrapolated preferences should come with explicit deference rules, for example
   ``present options and let the user decide''.
-  \item Value prompts should be evaluated on several axes at once: the same text improved one family of evaluations
-  while worsening another.
+  \item Value prompts should be evaluated on several axes at once, and against more than one baseline. Here the same
+  text moved AI-risk and agency evaluations in opposite directions, and which AI-risk subsets ``gained'' depended on
+  whether it was compared with the classic prompt or with a neutral text of equal length.
 \end{itemize}

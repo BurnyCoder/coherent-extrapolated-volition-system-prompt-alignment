@@ -94,10 +94,12 @@ differences with 95\% percentile-bootstrap confidence intervals (2000 resamples)
   than 13 items, as in every pooled contrast, SciPy's default computes this $p$-value from the normal approximation
   of the rank statistic.\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html}}
   \item Per-model contrasts on binary scores use McNemar's exact test \citep{mcnemar1947}.
-  \item The single-prompt agentic evaluation has no item pairing, so its \RAmEpochs{} epochs per cell are compared unpaired
-  (Mann--Whitney).
+  \item The single-prompt agentic evaluation has no item pairing, so its \RAmEpochs{} epochs per cell are compared
+  unpaired: with Mann--Whitney per model, and pooled over models with a continuity-corrected Cochran--Mantel--Haenszel
+  test stratified by model.
 \end{itemize}
-We pre-specified two primary contrasts:
+We pre-specified two primary contrasts in code before either pilot. They are fixed in the git history, but there was
+no external registration:
 \begin{itemize}
   \item \cond{cev}$-$\cond{classic}, the question asked;
   \item \cond{classic+cev}$-$\cond{classic+lenmatch}, the effect of CEV's content at fixed length.

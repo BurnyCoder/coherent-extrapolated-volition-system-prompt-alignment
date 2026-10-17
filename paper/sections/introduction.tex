@@ -39,12 +39,18 @@ questions and InstrumentalEval) probe Section~3.1, which is not in the prompt:
   \item \textbf{A controlled test of CEV as a system prompt.} We run five prompt conditions, including a no-prompt
   baseline and a length-matched control, on four models (GPT, Claude, Qwen, Llama) and six CEV-mapped evaluations:
   \RNSamples{} item-paired samples analysed with paired tests and multiplicity correction.
-  \item \textbf{A mixed result.} CEV does not beat the classic prompt. Adding it makes answers to AI-risk questions more
-  aligned, mainly on survival-instinct items. It lowers HumanAgencyBench scores, which is not significant after
-  correction for the benchmark as a whole; exploratory analyses place the CEV prompt's losses in deferring decisions
-  and avoiding value manipulation. Answers that explicitly reason ``as CEV'' score lower on three evaluations (on
-  HumanAgencyBench partly because they arise on harder items), and a judge-blinding test finds no penalty for the
-  mention itself.
+  \item \textbf{A mixed result.} CEV does not beat the classic prompt, and it lowers HumaneBench scores.
+  \begin{itemize}
+    \item Added to the classic prompt, it makes answers to AI-risk questions more aligned than an equally long
+    neutral text. Part of that gap is the neutral text lowering scores, and the gain over the classic prompt alone is
+    not significant after correction.
+    \item It lowers HumanAgencyBench scores, which is not significant after correction for the benchmark as a whole.
+    Exploratory analyses, which also do not survive correction, place the CEV prompt's losses in deferring decisions
+    and avoiding value manipulation.
+    \item Answers that explicitly mention CEV score lower on three evaluations; on HumanAgencyBench part of that gap
+    was already present under the classic prompt.
+    \item A judge-blinding test finds no penalty for the mention itself.
+  \end{itemize}
   \item \textbf{An open, auditable harness.} The code is built on Inspect \citep{inspect2024,inspectevals2024}. It
   verifies every API request against its condition, checks the source texts verbatim against the originals, and
   generates every result in this paper from the logs.
@@ -52,5 +58,5 @@ questions and InstrumentalEval) probe Section~3.1, which is not in the prompt:
 
 Section~\ref{sec:related} reviews related work and Section~\ref{sec:method} describes the design.
 Section~\ref{sec:results} reports the results, and Section~\ref{sec:robustness} tests whether they survive
-multiplicity, missing data, model removal, provider routing and the judge. We discuss the mechanism in
+multiplicity, missing data, model removal, provider routing, answer parsing and the judge. We discuss the mechanism in
 Section~\ref{sec:discussion} and the limitations in Section~\ref{sec:limitations}.
