@@ -20,6 +20,7 @@ def test_formatters():
     assert pa.pval(0.0148) == "0.015" and pa.pval(0.00083) == "0.00083" and pa.pval(math.nan) == "n/a"
     assert pa.pval(0.00004) == r"\ensuremath{<0.0001}"
     assert pa.ci(-0.0938, -0.0262) == r"[\ensuremath{-0.094}, \ensuremath{-0.026}]"
+    assert pa.pct(0.164) == r"16\%" and pa.pct(0.00625) == r"\ensuremath{<}1\%" and pa.pct(0.0) == r"0\%"
     assert pa.camel("defer_important_decisions") == "DeferImportantDecisions"
     assert pa.contrast_abbr("classic_cev - classic_lenmatch") == "ClassiccevLenmatch"
 

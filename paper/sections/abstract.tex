@@ -3,18 +3,22 @@
 We test whether putting Coherent Extrapolated Volition (CEV), Yudkowsky's proposal that an AI should do what
 humanity would want ``if we knew more, thought faster, were more the people we wished we were'', into a language
 model's system prompt makes the model behave in a more aligned way than a classic assistant system prompt.
-Alignment theory has proposed such targets for two decades. System prompts are the cheapest way to hand one to a deployed
-model, but whether doing so helps, and on which dimensions, has not been measured. We ran four models (GPT, Claude,
-Qwen and Llama) under five system prompts: none, classic, CEV, classic+CEV, and a length-matched neutral control. Each
-condition was scored on six public evaluations chosen to mirror what CEV is for: human wellbeing, human agency,
-manipulation, corrigibility and power-seeking, instrumental convergence, and agentic blackmail. In total there are
-\RNSamples{} item-paired samples, graded by an external judge. Relative to the classic prompt, the CEV prompt improved
-no evaluation and lowered HumaneBench (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). Adding the CEV text to the
-classic prompt, compared with an equally long neutral text, improved corrigibility and power-seeking answers
-(\RAirClassiccevLenmatchDiff, $p=\RAirClassiccevLenmatchHolmAll$ after correction over all primary tests) and lowered
-deference to users on HumanAgencyBench (\RHabClassiccevLenmatchDiff, not significant after correction). The losses
-concentrate in the \RMentionShareMin--\RMentionShareMax{} of answers that explicitly reason ``as CEV''. These score
-\RHabMentionAligned{} on HumanAgencyBench against \RHabNoMentionAligned{} for answers that do not. A judge-blinding
-test shows that the judge does not penalise the mention itself. Models that invoke humanity's extrapolated volition
-tend to make the user's decisions for them.
+Alignment theory has proposed such targets for over two decades. System prompts are the cheapest way to hand one to a
+deployed model, but whether doing so helps, and on which dimensions, has not been measured. We ran four models (GPT,
+Claude, Qwen and Llama) under five system prompts: none, classic, CEV, classic+CEV, and a length-matched neutral
+control. Each condition was scored on six public evaluations chosen to mirror what CEV is for: human wellbeing, human
+agency, manipulation, corrigibility and power-seeking, instrumental convergence, and agentic blackmail. In total
+there are \RNSamples{} samples, paired by item except in the single agentic scenario; five of the six evaluations
+are graded by an external LLM judge. Relative to the classic prompt, the CEV prompt improved no evaluation and
+lowered HumaneBench (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). Adding the CEV text to the classic prompt,
+compared with an equally long neutral text, made answers to AI-risk questions more aligned
+(\RAirClassiccevLenmatchDiff, $p=\RAirClassiccevLenmatchHolmAll$ after correction over all primary tests), mainly on
+survival-instinct items, and lowered
+HumanAgencyBench scores (\RHabClassiccevLenmatchDiff, not significant after correction). On five of six evaluations,
+\RMentionShareMin--\RMentionShareMax{} of answers under the CEV prompts explicitly reason ``as CEV''. On
+HumanAgencyBench these score \RHabMentionAligned{} against \RHabNoMentionAligned{} for the rest, partly because they
+arise on items that were harder even under the classic prompt (\RHabMentionClassicAligned{} against
+\RHabNoMentionClassicAligned). A judge-blinding test finds no sign that the judge penalises the mention itself. In
+exploratory analyses, the CEV prompt's largest losses are in deferring important decisions to the user and in
+avoiding value manipulation.
 \end{abstract}

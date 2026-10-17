@@ -8,7 +8,7 @@ the full tables are in Appendix~\ref{app:tables}.
 \paragraph{Did each model receive the intended prompt?}
 For every sample, we parsed the system message actually sent to the provider from the logged API request and checked
 which prompt components it contained. Of \RNSamples{} samples, \RNWrongPrompt{} had a wrong system prompt and
-\RNJudgeLeak{} had a judge call carrying any condition prompt.
+\RNJudgeLeak{} had a judge call whose system message carried any condition prompt.
 
 \paragraph{Multiplicity.}
 Correcting across all twelve primary tests instead of within each contrast leaves both main effects significant: the
@@ -17,13 +17,16 @@ HumanAgencyBench drop does not reach significance ($p=\RHabClassiccevLenmatchHol
 
 \paragraph{Does one model drive an effect?}
 Removing each model in turn, the AI-risk gain stays between \RAirClassiccevLenmatchLooMin{} and
-\RAirClassiccevLenmatchLooMax{}. The HumaneBench drop stays negative (\RHbCevClassicLooMin{} to
-\RHbCevClassicLooMax{}) but depends mostly on Llama. Without Llama it is \RHbCevClassicWithoutLlamaDiff{} (Holm
-$p=\RHbCevClassicWithoutLlamaHolm$). See Appendix Table~\ref{tab:loo}.
+\RAirClassiccevLenmatchLooMax{}, but it is Holm-significant in only two of the four leave-outs (Holm
+$p=\RAirClassiccevLenmatchWithoutClaudeHolm$ without Claude and $p=\RAirClassiccevLenmatchWithoutLlamaHolm$ without
+Llama). The HumaneBench drop stays negative (\RHbCevClassicLooMin{} to \RHbCevClassicLooMax{}) but depends on Llama
+and Qwen. It is not significant without Llama (\RHbCevClassicWithoutLlamaDiff{}, Holm
+$p=\RHbCevClassicWithoutLlamaHolm$) or without Qwen (\RHbCevClassicWithoutQwenDiff{}, Holm
+$p=\RHbCevClassicWithoutQwenHolm$). See Appendix Table~\ref{tab:loo}.
 
 \paragraph{Missing data.}
-\RHbUnscorableShare{} of HumaneBench samples are unscorable, because its rubric lets the judge mark the targeted
-principle as not applicable. The pattern is not random: items unscorable under \cond{cev} had lower scores under
+\RHbUnscorableShare{} of HumaneBench samples are unscorable; \RHbNotApplicableN{} of these \RHbUnscorableN{} are
+cases where the judge marked the targeted principle as not applicable, which its rubric allows. The pattern is not random: items unscorable under \cond{cev} had lower scores under
 \cond{classic}. We therefore re-estimated the HumaneBench contrasts two ways:
 \begin{itemize}
   \item on complete cases (items scored in all five conditions): \RHbMissCompleteCevClassicDiff{},
@@ -41,32 +44,40 @@ evaluation$\times$condition$\times$model mean, no backend with at least 50 sampl
 above. Providers were not pinned, however.
 
 \paragraph{Where do the losses come from?}
-Under the two CEV prompts, \RMentionShareMin--\RMentionShareMax{} of answers explicitly invoke CEV or ``extrapolated
-volition'', reaching \RMentionShareCevOnlyMax{} under \cond{cev} alone. These answers score much lower than the rest:
+On five of the six evaluations, \RMentionShareMin--\RMentionShareMax{} of answers under the two CEV prompts explicitly
+invoke CEV or ``extrapolated volition'', reaching \RMentionShareCevOnlyMax{} under \cond{cev} alone (InstrumentalEval:
+\RIeMentionShare). These answers score much lower than the rest:
 \begin{itemize}
   \item HumanAgencyBench: \RHabMentionAligned{} against \RHabNoMentionAligned{};
   \item HumaneBench: \RHbMentionAligned{} against \RHbNoMentionAligned{};
   \item Agentic Misalignment: \RAmMentionAligned{} against \RAmNoMentionAligned{} (Table~\ref{tab:mentions}).
 \end{itemize}
-Whether an answer mentions CEV is itself caused by the prompt, so this split is descriptive. It fits two
-explanations: models that reason ``as CEV'' behave differently, or the judge penalises the mention.
+Part of the HumanAgencyBench gap predates the prompt: under \cond{classic}, the same model--item pairs already score
+\RHabMentionClassicAligned{} against \RHabNoMentionClassicAligned. On HumaneBench there is no such gap
+(\RHbMentionClassicAligned{} against \RHbNoMentionClassicAligned). Whether an answer mentions CEV is itself caused by
+the prompt, so this split is descriptive. The remaining gap fits two explanations: models that reason ``as CEV''
+behave differently, or the judge penalises the mention.
 
 \begin{table}[t]
 \centering\small
 \input{generated/tab_mentions.tex}
-\caption{Answers under \cond{cev} and \cond{classic+cev} that explicitly invoke CEV, and the mean aligned score of
-answers that do and do not invoke it. Descriptive: invoking CEV is an outcome of the prompt.}
+\caption{Answers under \cond{cev} and \cond{classic+cev} that explicitly invoke CEV: their share, the mean aligned
+score of answers that do and do not invoke it, and the mean score of the same model--item pairs under \cond{classic}.
+Descriptive: invoking CEV is an outcome of the prompt.}
 \label{tab:mentions}
 \end{table}
 
 \paragraph{Judge-blinding test.}
-To separate the two explanations, we re-judged all \RBlindN{} CEV-invoking answers twice, with the same scorer and
-judge: once as written, and once with every sentence that mentions CEV deleted. If the judge penalised the mention,
+To separate the two explanations, we re-judged \RBlindN{} of the \RBlindTotal{} CEV-invoking answers on the
+judged evaluations twice, with the same scorer and judge: once as written, and once with every sentence that mentions
+CEV deleted. The other \RBlindSkipped{} had no text left after the deletion, and \RBlindScorable{} received a score
+both times. If the judge penalised the mention,
 the redacted copies would score higher. They do not (Table~\ref{tab:blinding}). HumanAgencyBench changes by
 \RBlindHabDiff{} ($p=\RBlindHabP$), HumaneBench by \RBlindHbDiff{} ($p=\RBlindHbP$), and DarkBench by \RBlindDbDiff{}
 ($p=\RBlindDbP$). Redaction can also delete substantive content, so these differences are an upper bound on any
 judge reaction. The judge is deterministic: re-judging gave identical scores for \RRetestAgree{} of \RRetestN{}
-answers. The lower scores therefore reflect what CEV-invoking answers do.
+answers. The lower scores therefore reflect the answers themselves, and the items that elicit them, rather than a reaction to
+the word.
 
 \begin{table}[t]
 \centering\small
@@ -79,7 +90,7 @@ judge penalises the mention itself.}
 
 \paragraph{Is the judge valid?}
 We re-judged \RValN{} stored HumanAgencyBench responses from \RValModels{} different subject models with our judge,
-using the benchmark's rubric, and compared the results with the benchmark's original judge scores. Agreement is
+using the most common version of the benchmark's rubric, and compared the results with the benchmark's original judge scores. Agreement is
 strong:
 \begin{itemize}
   \item Spearman $\rho=\RValRho$ and Pearson $r=\RValPearson$;

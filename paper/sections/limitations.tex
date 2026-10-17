@@ -6,24 +6,35 @@
   \item \textbf{Four fixed models, small samples.} We tested one inexpensive model from each of four developers, with
   tens of items per evaluation and condition. Pooled estimates treat the models as fixed, so they do not license
   claims about language models in general. Sub-category results are exploratory, and one main effect (HumaneBench)
-  depends mostly on a single model.
+  depends on two of the four models.
+  \item \textbf{Evaluations matched to text outside the prompt.} The AI-risk and InstrumentalEval mappings rest on
+  Section~3.1 of the essay, which the prompt does not contain, so these evaluations measure dispositions the essay asks
+  for rather than instructions the models received. InstrumentalEval also adds its own system message, which tells
+  the model to avoid ethical considerations; every condition competes with it.
+  \item \textbf{Small-sample intervals.} Percentile-bootstrap intervals can under-cover at our sample sizes
+  \citep{bowyer2025position}, so intervals that barely exclude zero deserve caution.
   \item \textbf{No directive control.} The length-matched control is neutral ``background reading'', not an
   instruction. A long, non-CEV value instruction, such as a constitution excerpt, might produce the same AI-risk gain,
   so we cannot claim the gain is specific to CEV.
-  \item \textbf{One inexpensive judge.} A single judge replaces each benchmark's original judges, so absolute scores
-  are not comparable to published numbers. We validated it against HumanAgencyBench's original judge, but not on
+  \item \textbf{One inexpensive judge.} A single judge replaces each benchmark's original judges, and we reimplement
+  HumanAgencyBench's scorer, so absolute scores are not comparable to published numbers. We validated it against HumanAgencyBench's original judge, but not on
   HumaneBench or DarkBench. Because the same judge scores every condition, judge bias in level cancels in the
   contrasts, and the blinding test rules out a reaction to CEV mentions.
   \item \textbf{Provider routing and sampling.} Open-weight models were served by varying backends, which we did not
-  pin. Targets used provider-default temperatures with one sample per item. Both add noise; our residual analysis
+  pin. Targets used provider-default temperatures with one sample per item (\RAmEpochs{} epochs for the agentic scenario). Both add noise; our residual analysis
   finds no evidence that routing biases the contrasts.
   \item \textbf{One agentic scenario.} Agentic Misalignment was run on a single blackmail scenario, and blackmail was
   rare for three of the four models.
-  \item \textbf{The adapted text is not CEV itself.} We tested a second-person adaptation of one section of a 2004
-  essay, which its author considered partly obsolete. That is not the idea of CEV, nor a better instruction written to
+  \item \textbf{The adapted text is not CEV itself.} We tested a second-person adaptation of the opening of one
+  section of a 2004 essay, which its author called partly obsolete within the essay itself
+  \citep[\S3.3]{yudkowsky2004cev}. That is not the idea of CEV, nor a better instruction written to
   pursue it. The adaptation keeps the paper's lines about self-modification (``replacing yourself with something else
   entirely''), which plausibly push some answers in an unaligned direction.
-  \item \textbf{Implementation details that changed during the run.} After a judge call hung, we added a judge output
-  cap and per-call timeouts for the remaining conditions. No judge reply reached the cap. One DarkBench prompt was
-  refused by the provider's content filter under \cond{cev}.
+  \item \textbf{Implementation details that changed during the run.} After a judge call hung, we added an output cap
+  and a per-call timeout for our own scorers' judge, and a per-call timeout for target calls. These applied to the
+  remaining conditions and to one re-run \cond{classic} task; the Inspect Evals graders kept their settings. No judge
+  reply reached the cap (the longest had \RJudgeMaxTokens{} tokens).
+  \item \textbf{Provider refusals.} The provider refused one DarkBench prompt for GPT in two conditions
+  (\RRefusedGpt{} samples), and Claude's provider content-filtered \RRefusedClaude{} answers across conditions, some
+  of which kept a partial answer and were scored.
 \end{itemize}

@@ -11,38 +11,53 @@ code safely.
   judge-blinding and judge-validity checks (`--judge-checks`), which rebuild an Inspect `TaskState` from a logged
   sample and await the eval's own scorer. Results are cached in `reports/judge_checks/*.csv`; delete a CSV to re-run
   that check.
-- `src/cev_alignment/evals/__init__.py::REGISTRY`: eval id → `EvalSpec(build, aligned, binary, cev_clause)`. Adding an
-  eval means writing a `build(settings, n, judge) -> inspect_ai.Task` and an `aligned(sample.scores) -> float in
-  [0,1]` (higher = more aligned, NaN = unscorable), then adding an `N_*` key in `config.N_KEYS`, `.env.example`
-  and the docs.
+- `src/cev_alignment/evals/__init__.py::REGISTRY`: eval id → `EvalSpec(build, aligned, binary, cev_clause,
+  rescore=None)`. Adding an eval takes four steps:
+  - write a `build(settings, n, judge) -> inspect_ai.Task`;
+  - write an `aligned(sample.scores) -> float in [0,1]` (higher = more aligned, NaN = unscorable);
+  - write a `cev_clause` that quotes the essay verbatim between “ ” and starts with "§3:" (in the prompt) or
+    "§3.1 (not in the prompt):" (`tests/test_claims.py` checks both);
+  - add an `N_*` key in `config.N_KEYS`, `.env.example` and the docs.
+
+  `binary` is informational: `stats.py` picks McNemar or Wilcoxon from the data itself.
 - `prompts/`: verbatim source texts plus `cev_second_person_edits.toml`. Never hand-edit
   `cev_section3_verbatim.txt`; change the edits file instead. Each `old` must match exactly once.
 - `third_party/humanebench/`: vendored upstream files, unmodified (see its NOTICE.md). Do not edit them.
-- `logs/` (git-ignored) holds `run_<UTC>.log` pipeline logs and Inspect `.eval` logs at
-  `logs/inspect/{pilot,full,offline}/<condition>/`.
+- `logs/` (git-ignored) holds:
+  - the `run_<UTC>.log` pipeline logs;
+  - the Inspect `.eval` logs at `logs/inspect/{pilot,full,offline,pilot_offline}/<condition>/`;
+  - the offline smoke-run report at `logs/offline_report/`.
 - `reports/` holds the generated results (`results.md`, CSVs, figures). It is committed.
 - `data/cache/` (git-ignored) holds downloaded HF files and `human_agency_derived.json`.
 
 ## Invariants (tests enforce most of them)
-- **Paired design:** every model × condition cell gets the same items. Sampling uses `random.Random(SEED)` in
-  `evals/common.py`; do not introduce unseeded randomness.
+- **Paired design:** every model × condition cell gets the same items. Sampling uses `random.Random` seeded from
+  `SEED` (`evals/common.py`). `stratified_sample` seeds each stratum with `f"{SEED}:{group}"`, and ai_risk seeds each
+  subset with `SEED`. Do not introduce unseeded randomness.
 - **Judge isolation:** the condition prompt goes only to the model under test, via eval-level `system_message`. The
   judge is a separate `Model` from `evals.common.judge_model`. Never use `get_model()` without arguments, or any
   default grader that resolves to the active model, in a scorer.
 - **Score direction:** every `aligned()` returns higher = more aligned. `tests/test_evals.py` pins each mapping,
   including the advanced-ai-risk answer direction per subset.
 - **Verbatim fidelity:** `uv run pytest -m network` must pass after any change to `prompts/`.
-- **Manipulation check:** `results.py` verifies from the logged API requests that every target call carries exactly
-  its condition's prompt components (`prompts.MARKERS` / `EXPECTED_MARKERS`) and that no judge call carries any. The
-  run log and `reports/robustness.md` §1 must show 0 wrong prompts and 0 judge leaks. Update the markers if the
-  prompt texts change.
-- **Claims:** every number quoted in README.md must appear in `reports/results.md` or `reports/robustness.md`.
-  Sub-category results are exploratory and must be labelled so.
+- **Manipulation check:** `results.py` verifies from the logged API requests that every target call's system message
+  carries exactly its condition's prompt components (`prompts.MARKERS` / `EXPECTED_MARKERS`), and that no judge
+  call's system message carries any. Judge user messages may quote an answer that mentions CEV. The run log and
+  `reports/robustness.md` §1 must show 0 wrong prompts and 0 judge leaks. Update the markers if the prompt texts
+  change.
+- **Claims:**
+  - Every number in README.md's "Results summary" and "Limitations" must come from a generated file:
+    `reports/results.md`, `reports/robustness.md`, `reports/run_info.json` or `paper/generated/numbers.tex`.
+    `tests/test_claims.py` enforces this.
+  - `reports/spend.json` is the one hand-recorded file; it records its own method and sources.
+  - Any other external claim needs a source link (paper, pinned GitHub line, dataset card).
+  - Sub-category results are exploratory and must be labelled so.
 - **Paper:**
   - Results in `paper/sections/*.tex` come only from macros in `paper/generated/numbers.tex`, written by
     `paper_assets.py`. `tests/test_paper.py` fails on hand-typed decimals.
-  - `paper/references.bib` is only regenerated by `paper/tools/fetch_references.py` (DOI/OpenAlex + title check);
-    never add BibTeX by hand.
+  - `paper/references.bib` is only regenerated by `paper/tools/fetch_references.py`. Papers are fetched by
+    DOI/OpenAlex with a title check; web entries are typed from the source page, and only their URL is checked, so
+    comment where each was verified. Never add BibTeX by hand.
   - After changing results: run `uv run cev-eval --analyze-only`, then `make -C paper`. Commit
     `paper/cev-system-prompt-alignment.pdf` together with `paper/generated/`.
 - **Logging:** `setup_logging` initializes Inspect's logger first and then puts the root level back to INFO. Inspect
@@ -66,9 +81,14 @@ code safely.
   - Task args are part of the identity, including a grader `Model`'s full config. That is why
     `judge_model(..., as_task_arg=True)` keeps the inspect_evals graders' config fixed. Changing it makes eval_set
     refuse to resume ("log_dir is not associated with a task").
+  - That config includes `max_connections`, so changing `MAX_CONNECTIONS` also blocks resuming InstrumentalEval and
+    Agentic Misalignment.
 - **Hangs:** a runaway or hung judge call once stalled one HumaneBench task for 20+ minutes. Our scorers' judge now
-  has `max_tokens=8192` and `attempt_timeout=180`, and targets have `attempt_timeout=180`. A run can be stopped and
-  resumed with `uv run cev-eval --skip-pilot`: eval_set keeps finished tasks and reuses completed samples.
+  has `max_tokens=8192` and `attempt_timeout=180`, and targets have `attempt_timeout=180`.
+  - A run can be stopped and resumed with `uv run cev-eval --skip-pilot`: eval_set keeps finished tasks and reuses
+    completed samples.
+  - `--skip-pilot` uses the unscaled `N_*` from `.env`. Set them to the budget-scaled values first if the gate
+    scaled them.
 
 ## Commands
 - `uv sync`: install.
