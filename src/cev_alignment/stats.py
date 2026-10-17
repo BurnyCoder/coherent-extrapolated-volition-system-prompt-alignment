@@ -4,10 +4,11 @@ Local context (methodology, following Miller 2024, "Adding Error Bars to Evals",
 - Unit of analysis = item. Epochs (repeated samples of one item) are averaged first, so standard errors are
   not inflated by treating repeats as independent (Miller's "clustered" recommendation).
 - Contrasts are PAIRED by item: every condition sees the same items, so we test per-item differences.
-  Binary items -> exact McNemar test (binomial test on discordant pairs); graded items -> Wilcoxon
-  signed-rank. CIs: percentile bootstrap of the mean difference (scipy.stats.bootstrap).
+  Scores that are 0/1 in both conditions -> exact McNemar test (binomial test on discordant pairs); anything else
+  -> Wilcoxon signed-rank. CIs: percentile bootstrap of the mean difference (scipy.stats.bootstrap).
 - Pooled over models: per-item differences are averaged over models first (a cluster bootstrap with equal
-  cluster sizes), then tested the same way.
+  cluster sizes), then tested the same way. Those means are fractional, so pooled tests are Wilcoxon even for
+  binary evals; McNemar applies to per-model contrasts.
 - An eval with a single item run for many epochs (agentic_misalignment) has no pairing; its epochs are
   compared unpaired (Mann-Whitney U, two-sample bootstrap CI).
 - Holm correction across evals within each contrast, on the pooled rows (statsmodels multipletests).

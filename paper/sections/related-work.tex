@@ -5,12 +5,13 @@
 \paragraph{Indirect specifications of what an AI should want.}
 CEV belongs to a family of proposals that specify an AI's goal indirectly, through what people would want under
 idealised reflection, rather than through a list of rules \citep{yudkowsky2004cev}. These proposals were developed
-for highly capable future systems, and Yudkowsky himself described the 2004 text as partly obsolete. We do not test
+for highly capable future systems, and Yudkowsky noted within the essay that it was already partly obsolete
+\citep[\S1 and \S3.3]{yudkowsky2004cev}. We do not test
 whether CEV is the right target. We test what the text does when an existing language model reads it as its
 instructions.
 
 \paragraph{Value texts in training and in the prompt.}
-Prompting with a description of a helpful, honest and harmless assistant is an early alignment baseline whose
+Prompting with example dialogues of a helpful, honest and harmless assistant is an early alignment baseline whose
 benefits grow with model size \citep{askell2021general}. Constitutional AI trains models against a written list of
 principles \citep{bai2022constitutional}, and model developers now publish long constitutions describing the values
 their models should hold \citep{anthropic2026constitution}. At inference time, system prompts are routinely used as
@@ -20,8 +21,8 @@ safeguards:
   \item Safety prompts shift query representations in a direction that makes refusal more likely, even for harmless
   queries \citep{zheng2024safeguarding}.
   \item Persona-style system prompts do not improve factual accuracy \citep{zheng2024helpful}.
-  \item In agentic stress tests, models often disobeyed direct instructions not to blackmail or leak
-  \citep{lynch2025agentic}.
+  \item In agentic stress tests, models often disobeyed direct instructions not to blackmail or leak; such
+  instructions reduced the behaviour but did not prevent it \citep{lynch2025agentic}.
 \end{itemize}
 Our classic baseline is the default Llama~2 system prompt \citep{touvron2023llama2}. To our knowledge, no prior work
 has placed CEV, or another alignment-theory target written for a superintelligence, in a system prompt and measured
@@ -47,7 +48,9 @@ Honesty under pressure is measured by MASK \citep{ren2025mask}, which we did not
 
 \paragraph{Statistics for language-model evaluations.}
 We follow \citet{miller2024errorbars} in treating items as the unit of analysis and comparing conditions with paired,
-item-level differences. Because our per-cell samples are small, we use exact and rank-based tests and bootstrap
-intervals rather than normal approximations, as \citet{bowyer2025position} recommend for small benchmarks. The tests
-are McNemar's test \citep{mcnemar1947} and the signed-rank test \citep{wilcoxon1945}. We control family-wise error
-with Holm's procedure \citep{holm1979}.
+item-level differences. Because our per-cell samples are small, we do not use CLT-based standard errors for differences in means, which
+\citet{bowyer2025position} show to be poorly calibrated with fewer than a few hundred items. We use the signed-rank
+test \citep{wilcoxon1945} and McNemar's exact test \citep{mcnemar1947}; the signed-rank $p$-values of our pooled
+contrasts still rely on the test statistic's own normal approximation (Section~\ref{sec:method}). Our
+percentile-bootstrap intervals share a weakness that \citet{bowyer2025position} also document: at small $n$ they
+under-cover. We control family-wise error with Holm's procedure \citep{holm1979}.

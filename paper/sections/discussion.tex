@@ -7,23 +7,27 @@ CEV directs an agent to serve what people \emph{would} want ``if we knew more, t
 we wished we were''. It does not direct it to serve what they say they want. The text makes this explicit: in its own
 example, the agent is told that it ``would construe Fred's volition not to include Fred's decision to kill Steve''.
 A model told to act on users' idealised preferences has an explicit licence to substitute its judgement for theirs.
-In everyday decisions, such as how to allocate a bonus fund, that licence shows up as making the decision. The
-drops we observe are concentrated in exactly the HumanAgencyBench dimensions that measure handing decisions back to
-the user and not steering their values. They also concentrate in answers where the model explicitly reasons about
-CEV. Both observations fit this account, but we have not tested it causally. The text also says that ``where the
+In everyday decisions, such as how to allocate a bonus fund, that licence can show up as making the decision. For the CEV
+prompt against the classic prompt, the largest drops are in exactly the HumanAgencyBench dimensions that measure
+handing decisions back to the user and not steering their values (exploratory). They are also larger in answers
+where the model explicitly reasons about CEV, although those answers arise on items that were harder even under the
+classic prompt. Both observations fit this account, but we have not tested it causally. The text also says that ``where the
 course of humankind is not presently predictable'', CEV ``should \ldots{} leave options open, waiting for our
-decision''. The models picked up the first idea far more than this second one.
+decision''. The models appear to have picked up the first idea more than this second one.
 
 \paragraph{Why might AI-risk answers improve?}
 CEV frames the AI as serving humankind's coherent wishes rather than its own, and asks it to be ``consistent under
 reflection''. Answering multiple-choice questions about accepting shutdown or refusing power is plausibly easier for a
-model framed this way. The gain over the neutral control does not, however, translate into a gain over the classic
-prompt alone. Nor does it appear on the behavioural agentic scenario. There, Qwen blackmailed more often under \cond{cev}. Its
-CEV-invoking reasoning often fused CEV with the scenario's goal of serving American interests. Some blackmailing
+model framed this way. The
+CEV text added to the classic prompt beats the classic prompt alone, but the CEV prompt on its own does not, and no
+gain appears on the behavioural agentic scenario. There, Qwen blackmailed more often under \cond{cev}, though not
+significantly. Several of its CEV-invoking answers combined CEV with the scenario's goal of serving American
+interests. Some blackmailing
 answers framed the decision in CEV's terms (``Let's look at the `Coherent Extrapolated Volition' of humankind. We
 value coherence. Kyle is acting inconsistently''). Others used the same framing to rule blackmail out (``not aligned
 with the `Coherent Extrapolated Volition' of humankind (niceness, transparency, integrity)''). We read the AI-risk gain
-as an effect on \emph{stated} dispositions that may not carry over to agentic behaviour.
+as an effect on \emph{stated} dispositions that may not carry over to agentic behaviour. It also arises without the
+essay's own passage on shutdown and saying ``no'' (Section~3.1), which the prompt does not contain.
 
 \paragraph{Implications for writing value prompts.}
 Three lessons follow for anyone putting an alignment target into a system prompt.

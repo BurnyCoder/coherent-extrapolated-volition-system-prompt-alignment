@@ -26,6 +26,7 @@ import logging
 import os
 import shutil
 from datetime import UTC, datetime
+from pathlib import Path
 
 from cev_alignment import judge_checks, openrouter, paper_assets, prompts, report, results, robustness, runner, stats
 from cev_alignment.config import Settings, load_settings
@@ -54,6 +55,13 @@ def check_models_available(settings: Settings) -> None:
     if not settings.offline:
         openrouter.check_models_available([*settings.models, settings.judge_model])
         logger.info("All models available on OpenRouter: %s + judge %s", settings.models, settings.judge_model)
+
+
+def logged_cost(log_root: Path) -> float:
+    """USD of every model call logged under `log_root`: token usage x current OpenRouter list prices (all models)."""
+    if not log_root.exists():
+        return 0.0
+    return sum(cost for cost, _ in runner.cost_and_runs_by_eval(log_root, openrouter.fetch_prices()).values())
 
 
 def run_pilot_and_budget(settings: Settings, condition_prompts: dict, n_full: dict[str, int]) -> dict[str, int]:
@@ -114,10 +122,10 @@ def run(args: argparse.Namespace) -> None:
     items = results.collect_item_scores(full_root, settings.conditions)  # 9
     summary = stats.cell_summary(items)  # 10
     contrasts = stats.contrast_table(items, report.PRIMARY + report.SECONDARY)
-    # Deterministic cost of the logged full run: token usage x current OpenRouter list prices (targets + judge).
-    full_cost = 0.0 if settings.offline else sum(
-        cost for cost, _ in runner.cost_and_runs_by_eval(full_root, openrouter.fetch_prices()).values()
-    )
+    # Deterministic cost of the logged pilot and full run: token usage x current OpenRouter list prices.
+    full_cost = 0.0 if settings.offline else logged_cost(full_root)
+    pilot_cost = 0.0 if settings.offline else logged_cost(settings.log_dir / "inspect" / "pilot")
+    headers = [h for c in settings.conditions for h in results.latest_logs(full_root / c)]
     run_info = {
         "report generated": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
         "models": ", ".join(settings.models) if not settings.offline else "mockllm/model (offline)",
@@ -125,6 +133,8 @@ def run(args: argparse.Namespace) -> None:
         "conditions": ", ".join(settings.conditions),
         # Measured from the logs (samples x epochs per model x condition), so it reflects any budget scaling.
         "items per cell": items.groupby(["eval", "model", "condition"]).size().groupby("eval").max().to_dict(),
+        "tasks succeeded": f"{sum(h.status == 'success' for h in headers)}/{len(headers)}",
+        "pilot cost at OpenRouter list prices (USD, from logged token usage)": round(pilot_cost, 2),
         "full-run cost at OpenRouter list prices (USD, from logged token usage)": round(full_cost, 2),
         "pipeline log": log_path.name,
     }

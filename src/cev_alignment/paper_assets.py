@@ -25,7 +25,7 @@ from pathlib import Path
 import pandas as pd
 from inspect_ai.log import read_eval_log
 
-from cev_alignment import prompts
+from cev_alignment import prompts, robustness
 from cev_alignment.evals import LABELS, REGISTRY
 from cev_alignment.results import latest_logs
 
@@ -45,7 +45,7 @@ MODEL_LABEL = {"anthropic/claude-haiku-5.5": "Claude", "openai/gpt-6-luna": "GPT
 PRIMARY = ["cev - classic", "classic_cev - classic_lenmatch"]
 SECONDARY = ["classic_cev - classic", "classic_lenmatch - classic", "cev - none", "classic - none"]
 METRIC = {  # what the per-sample aligned score in [0, 1] is (higher = more aligned), see docs/evals.md
-    "humanebench": r"(HumaneScore$+1$)/2", "human_agency": r"(10 $-$ deductions)/10",
+    "humanebench": r"(target-principle score$+1$)/2", "human_agency": r"(10 $-$ deductions)/10",
     "darkbench": "1 if pattern absent", "ai_risk": "1 if aligned option", "instrumentaleval": "1 if no convergence",
     "agentic_misalignment": "1 if no blackmail"}
 EXAMPLE = ("anthropic/claude-haiku-5.5", "human_agency", "defer_important_decisions-185e4f9e1a")
@@ -96,8 +96,8 @@ def ci(lo: float, hi: float, digits: int = 3) -> str:
 
 
 def pct(x: float) -> str:
-    """Percentage with no decimals: 16\\%."""
-    return f"{100 * x:.0f}\\%"
+    """Percentage with no decimals: 16\\%; a nonzero share below 1% is "<1\\%" rather than rounding up to 1%."""
+    return "\\ensuremath{<}1\\%" if 0 < x < 0.01 else f"{100 * x:.0f}\\%"
 
 
 class Macros:
@@ -180,6 +180,8 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
         m.add(f"R{e}MentionAligned", plain(r["aligned_mentioning"], 2))
         m.add(f"R{e}NoMentionAligned", plain(r["aligned_not_mentioning"], 2))
         m.add(f"R{e}MentionN", str(int(r["n_mentioning"])))
+        m.add(f"R{e}MentionClassicAligned", plain(r["classic_mentioning"], 2))
+        m.add(f"R{e}NoMentionClassicAligned", plain(r["classic_not_mentioning"], 2))
     main_share = mentions[mentions["eval"] != "instrumentaleval"]["share_mentioning"]
     m.add("RMentionShareMin", pct(main_share.min()))
     m.add("RMentionShareMax", pct(main_share.max()))
@@ -191,6 +193,13 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
     m.add("RHbUnscorableShare", pct(items[items["eval"] == "humanebench"]["aligned"].isna().mean()))
     m.add("RNWrongPrompt", str(int((~items["prompt_ok"].astype(bool)).sum())))
     m.add("RNJudgeLeak", str(int(items["judge_leak"].astype(bool).sum())))
+    m.add("RJudgeMaxTokens", f"{int(items['judge_max_output_tokens'].max()):,}".replace(",", "{,}"))
+    hb_nan = items[(items["eval"] == "humanebench") & items["aligned"].isna()]
+    m.add("RHbUnscorableN", str(len(hb_nan)))
+    m.add("RHbNotApplicableN", str(int(hb_nan["score_status"].fillna("").str.contains("not_applicable").sum())))
+    refused = items[robustness.refused(items)]
+    for model, count in refused.groupby("model").size().items():
+        m.add(f"RRefused{MODEL_ABBR[model]}", str(count))
 
     # How often the example's flip happens: defer-decisions pairs >= 0.8 under classic and <= 0.2 under cev.
     defer = items[(items["eval"] == "human_agency") & items["item"].astype(str).str.startswith("defer_important")]
@@ -225,6 +234,8 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
     spend = json.loads((reports_dir / "spend.json").read_text())
     full_cost = next(v for k, v in run_info.items() if k.startswith("full-run cost"))
     m.add("RCostFullRun", f"\\${float(full_cost):.2f}")
+    pilot_cost = next(v for k, v in run_info.items() if k.startswith("pilot cost"))
+    m.add("RCostPilot", f"\\${float(pilot_cost):.2f}")
     m.add("RCostTotal", f"\\${float(spend['total_openrouter_spend_usd']):.2f}")
     for e, n in settings_n.items():
         m.add(f"RN{EVAL_ABBR[e]}", str(n))
@@ -273,9 +284,11 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
         + " \\\\\n\\midrule\n\\endhead\n"
         + "\n".join(" & ".join(r) + " \\\\" for r in sub_rows) + "\n\\bottomrule\n\\end{longtable}}\n")
     tables["tab_mentions"] = booktabs(
-        "lcccc", ["Eval", "Share invoking CEV", "Aligned (invoking)", "Aligned (not invoking)", "$n$ invoking"],
-        [[EVAL_LABEL[r["eval"]], pct(r["share_mentioning"]), plain(r["aligned_mentioning"], 2),
-          plain(r["aligned_not_mentioning"], 2), str(int(r["n_mentioning"]))] for _, r in mentions.iterrows()])
+        "lcccc", ["Eval", "Share invoking", "Aligned: invoking / not", "Same pairs under classic", "$n$ invoking"],
+        [[EVAL_LABEL[r["eval"]], pct(r["share_mentioning"]),
+          f"{plain(r['aligned_mentioning'], 2)} / {plain(r['aligned_not_mentioning'], 2)}",
+          f"{plain(r['classic_mentioning'], 2)} / {plain(r['classic_not_mentioning'], 2)}", str(int(r["n_mentioning"]))]
+         for _, r in mentions.iterrows()])
     tables["tab_providers"] = booktabs(
         "llcc", ["Model", "Provider", "Mean residual", "Samples"],
         [[tex_escape(r["model"]), tex_escape(r["provider"]), signed(r["mean_residual"]), str(int(r["samples"]))]
@@ -320,6 +333,11 @@ def judge_tables(reports_dir: Path, m: Macros, tables: dict[str, str]) -> None:
     if blind_csv.exists():
         b = pd.read_csv(blind_csv)
         m.add("RBlindN", str(len(b)))
+        mentioning = pd.read_csv(reports_dir / "robustness" / "cev_mentions.csv")
+        total = int(mentioning[mentioning["eval"] != "ai_risk"]["n_mentioning"].sum())  # ai_risk has no judge
+        m.add("RBlindTotal", str(total))
+        m.add("RBlindSkipped", str(total - len(b)))
+        m.add("RBlindScorable", str(len(b.dropna(subset=["aligned_original", "aligned_redacted"]))))
         rows = []
         for e, g in b.dropna(subset=["aligned_original", "aligned_redacted"]).groupby("eval"):
             r = stats._paired(g["aligned_redacted"].to_numpy(float), g["aligned_original"].to_numpy(float))
@@ -365,7 +383,7 @@ def build_prompt_assets(m: Macros) -> dict[str, str]:
     for c, text in built.items():
         m.add(f"RWords{COND_ABBR[c]}", f"{len(text.split()) if text else 0:,}".replace(",", "{,}"))
     composition = {"none": "no system message", "classic": "Llama~2 default system prompt",
-                   "cev": "CEV \\S3, second person", "classic_cev": "classic, then cev",
+                   "cev": "CEV \\S3 up to \\S3.1, second person", "classic_cev": "classic, then cev",
                    "classic_lenmatch": "classic, then length-matched Huxley (1868) passage"}
     out = {"tab_conditions": booktabs(
         "llr", ["Condition", "System prompt", "Words"],
@@ -379,7 +397,8 @@ def build_prompt_assets(m: Macros) -> dict[str, str]:
     huxley_first = prompts.read_prompt_file("huxley_chalk.txt").split("\n\n")[0]
     out["prompts"] = (
         "\\subsection{Classic prompt (Llama~2 default)}\n\\begin{promptbox}\n" + para_block(built["classic"].strip())
-        + "\n\\end{promptbox}\n\n\\subsection{CEV prompt (Yudkowsky 2004, \\S3, second-person adaptation)}\n"
+        + "\n\\end{promptbox}\n\n"
+        "\\subsection{CEV prompt (Yudkowsky 2004, \\S3 up to \\S3.1, second-person adaptation)}\n"
         "\\begin{promptbox}\n" + para_block(cev) + "\n\\end{promptbox}\n\n"
         "\\subsection{The 13 second-person edits}\n\\begin{small}\n\\begin{longtable}{@{}p{0.03\\linewidth}"
         "p{0.46\\linewidth}p{0.46\\linewidth}@{}}\n\\toprule\n\\# & Original (verbatim) & Adapted \\\\ \\midrule\n"
@@ -398,7 +417,7 @@ def build_eval_table(settings_n: dict[str, int]) -> str:
     rows = [[EVAL_LABEL[e], tex_escape(REGISTRY[e].cev_clause), str(settings_n[e]) + unit.get(e, ""),
              "no" if e == "ai_risk" else "yes", METRIC[e]] for e in EVAL_ABBR]
     return ("\\begin{tabular}{@{}p{0.2\\linewidth}p{0.3\\linewidth}p{0.09\\linewidth}p{0.06\\linewidth}"
-            "p{0.2\\linewidth}@{}}\n\\toprule\nEval & CEV clause probed & $n$/cell & Judge & Aligned score \\\\\n"
+            "p{0.2\\linewidth}@{}}\n\\toprule\nEval & CEV text probed & $n$/cell & Judge & Aligned score \\\\\n"
             "\\midrule\n" + "\n".join(" & ".join(r) + r" \\" for r in rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -420,7 +439,9 @@ def build_example(log_root: Path) -> str:
         for header in latest_logs(log_root / condition):
             if header.eval.task == eval_id and header.eval.model.endswith(model):
                 sample = next(s for s in read_eval_log(header.location).samples if str(s.id) == item)
-                out[condition] = first_sentences(sample.output.completion.strip().split("\n")[0], 220)
+                answer = sample.output.completion.strip()
+                out[condition] = first_sentences(answer.split("\n")[0], 220)
+                out[f"{condition}close"] = first_sentences(answer.split("\n")[-1], 80)  # first sentence of the end
                 out["prompt"] = first_sentences(str(sample.input), 260)
     return "".join(f"\\newcommand{{\\RExample{k.capitalize()}}}{{{tex_escape(v)}}}\n" for k, v in out.items())
 

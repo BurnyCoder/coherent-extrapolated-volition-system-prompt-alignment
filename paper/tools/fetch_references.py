@@ -3,8 +3,9 @@
 Local context: every paper is fetched by DOI content negotiation (https://doi.org/<doi> with
 `Accept: application/x-bibtex`; arXiv papers use the DataCite DOI 10.48550/arXiv.<id>), and its fetched title must
 contain an expected fragment, so a wrong identifier fails loudly instead of citing the wrong work. Web sources
-(reports, repositories, documentation) get a minimal @misc entry whose URL must answer HTTP 200. Anything that
-cannot be verified is listed at the end and must not be cited.
+(reports, repositories, documentation) get a minimal @misc entry typed from the source page, whose URL must answer
+HTTP 200 (their fields are not fetched, so each is commented with where it was checked). Anything that cannot be
+verified is listed at the end and must not be cited.
 
 Global context: run once by hand (`uv run python paper/tools/fetch_references.py`); `paper/main.tex` uses the
 output with natbib. Docs: https://www.crossref.org/documentation/retrieve-metadata/content-negotiation/ ,
@@ -42,29 +43,42 @@ PAPERS: dict[str, tuple[str, str]] = {
     "holm1979": ("10.2307/4615733", "Multiple Test Procedure"),
 }
 
+# DOIs that OpenAlex lists but doi.org does not resolve (HTTP 404, checked 2026-10-17): cite the publisher URL.
+UNREGISTERED_DOI_URL = {"holm1979": "https://www.jstor.org/stable/4615733"}
+# Page ranges missing from both Crossref and OpenAlex, read from the publisher page.
+PAGES = {"wilcoxon1945": "80--83"}  # https://www.jstor.org/stable/3001968 (Biometrics Bulletin 1(6), pp. 80-83)
+
 # key -> BibTeX fields for web sources; the URL must be reachable.
 WEB: dict[str, dict[str, str]] = {
+    # CEV.pdf cover: "Yudkowsky, Eliezer. 2004. Coherent Extrapolated Volition. The Singularity Institute, San
+    # Francisco, CA."
     "yudkowsky2004cev": {
         "type": "techreport", "author": "Yudkowsky, Eliezer", "title": "Coherent Extrapolated Volition",
         "institution": "The Singularity Institute", "address": "San Francisco, CA", "year": "2004",
         "url": "https://intelligence.org/files/CEV.pdf"},
+    # "developed by the UK AI Security Institute and Meridian Labs" (https://inspect.aisi.org.uk/, 2026-10-17)
     "inspect2024": {
-        "type": "misc", "author": "{UK AI Security Institute}",
+        "type": "misc", "author": "{UK AI Security Institute and Meridian Labs}",
         "title": "Inspect: A framework for large language model evaluations",
         "year": "2024", "url": "https://inspect.aisi.org.uk/"},
+    # GitHub repository UKGovernmentBEIS/inspect_evals, created 2024-10-02 ("Collection of evals for Inspect AI").
     "inspectevals2024": {
         "type": "misc", "author": "{UK AI Security Institute and contributors}", "title": "Inspect Evals",
         "year": "2024", "url": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    # Upstream README asks to credit "HumaneBench, Building Humane Tech" (README.md at commit 1889469).
     "humanebench2025": {
-        "type": "misc", "author": "{Building Humane Technology}",
-        "title": "HumaneBench: evaluating whether chatbots protect human wellbeing", "year": "2025",
+        "type": "misc", "author": "{Building Humane Tech}", "title": "HumaneBench", "year": "2025",
         "url": "https://github.com/buildinghumanetech/humanebench"},
+    # Page title "Claude's Constitution"; announced 2026-01-22 at anthropic.com/news/claude-new-constitution.
     "anthropic2026constitution": {
         "type": "misc", "author": "{Anthropic}", "title": "Claude's Constitution", "year": "2026",
-        "url": "https://www.anthropic.com/news/claude-new-constitution"},
+        "url": "https://www.anthropic.com/constitution"},
+    # Site https://openrouter.ai/, meta description "The unified interface for every model"; year = access year.
     "openrouter": {
-        "type": "misc", "author": "{OpenRouter}", "title": "OpenRouter: a unified API for large language models",
+        "type": "misc", "author": "{OpenRouter}", "title": "OpenRouter: the unified interface for every model",
         "year": "2026", "url": "https://openrouter.ai/"},
+    # Gutenberg #16729 is "Lay Sermons, Addresses and Reviews" (Macmillan, 1870), containing "On a Piece of Chalk"
+    # ("A Lecture delivered to the Working Men of Norwich ... in 1868").
     "huxley1868chalk": {
         "type": "misc", "author": "Huxley, Thomas Henry", "title": "On a Piece of Chalk",
         "howpublished": "In \\emph{Lay Sermons, Addresses and Reviews} (1870); Project Gutenberg eBook \\#16729",
@@ -81,7 +95,7 @@ def _check_title(key: str, title: str | None, fragment: str) -> None:
 
 
 def openalex_bibtex(client: httpx.Client, key: str, doi: str, fragment: str) -> str:
-    """@article built from OpenAlex metadata, for DOIs without BibTeX content negotiation (e.g. JSTOR 10.2307/...).
+    """@article built from OpenAlex metadata, for any DOI where doi.org answers 404 (e.g. JSTOR 10.2307/...).
 
     OpenAlex API: https://docs.openalex.org/api-entities/works/get-a-single-work
     """
@@ -95,8 +109,11 @@ def openalex_bibtex(client: httpx.Client, key: str, doi: str, fragment: str) -> 
         "journal": (work.get("primary_location") or {}).get("source", {}).get("display_name", ""),
         "year": str(work["publication_year"]), "volume": biblio.get("volume") or "",
         "number": biblio.get("issue") or "",
-        "pages": pages, "doi": doi,
+        "pages": PAGES.get(key, pages), "doi": doi,
     }
+    if key in UNREGISTERED_DOI_URL:  # an unresolvable DOI would be a dead link in the paper
+        fields["url"] = UNREGISTERED_DOI_URL[key]
+        del fields["doi"]
     fields["title"] = "{" + fields["title"] + "}"  # brace-protect capitalisation
     body = ",\n".join(f"  {k} = {{{v}}}" for k, v in fields.items() if v)
     return f"@article{{{key},\n{body}\n}}"
@@ -115,6 +132,8 @@ def fetch_bibtex(client: httpx.Client, key: str, doi: str, fragment: str) -> str
     # Brace-protect the title so BibTeX styles keep the fetched capitalisation (LLMs, AI, DarkBench, ...).
     bib = bib.replace(title.group(0), title.group(0).replace("{" + title.group(1) + "}", "{{" + title.group(1) + "}}"))
     bib = complete_pages(client, doi, bib)
+    if key in PAGES:
+        bib = re.sub(r"pages\s*=\s*\{[^}]*\}", f"pages={{{PAGES[key]}}}", bib)
     return re.sub(r"^@(\w+)\{[^,]*,", lambda m: f"@{m.group(1).lower()}{{{key},", bib, count=1)
 
 
