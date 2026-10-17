@@ -8,7 +8,9 @@ and reuses `stats.contrast` / `stats.contrast_table`:
   4. missing-data sensitivity: complete cases only, and imputing unscorable samples at fixed values;
   5. OpenRouter provider routing per condition (open-weight models are served by several backends);
   6. answers that explicitly invoke CEV: how often, and how they score (post-treatment, so descriptive only);
-  7. sub-category contrasts (principle / dimension / subset) with CIs and Holm within each eval.
+  7. sub-category contrasts (principle / dimension / subset) with CIs and Holm within each eval;
+  8. unscorable samples by cause (provider refusal, empty answer, no judge/parser score) and the refusals;
+  9. Agentic Misalignment blackmail epochs per model x condition.
 Paid judge checks (judge_checks.py) append their own section when their results exist.
 
 Global context: phase 10b (`write_robustness`) of `cev_alignment.main`, run after the main statistics.
@@ -43,10 +45,11 @@ def pooled(table: pd.DataFrame) -> pd.DataFrame:
 
 
 def manipulation_summary(items: pd.DataFrame) -> pd.DataFrame:
-    """Per condition: samples, samples whose target calls had the wrong prompt, samples with a judge leak."""
+    """Per condition: samples, wrong-prompt samples, judge-leak samples, and the longest judge reply (tokens)."""
     return items.groupby("condition").agg(
         samples=("aligned", "size"), wrong_prompt=("prompt_ok", lambda s: int((~s.astype(bool)).sum())),
         judge_leak=("judge_leak", lambda s: int(s.astype(bool).sum())),
+        judge_max_output_tokens=("judge_max_output_tokens", "max"),
     ).reset_index()
 
 
@@ -98,15 +101,55 @@ def provider_residuals(items: pd.DataFrame, min_samples: int = 50) -> pd.DataFra
 
 
 def mention_summary(items: pd.DataFrame) -> pd.DataFrame:
-    """Under the CEV prompts: share of answers that invoke CEV, and mean aligned score with / without it."""
-    d = items[items["condition"].isin(CEV_CONDITIONS)]
-    g = d.groupby("eval")
+    """Under the CEV prompts: share of answers that invoke CEV, and mean aligned score with / without it.
+
+    `classic_*` is the score of the same model x item (x epoch) under `classic`, i.e. how hard those pairs were
+    without CEV, so a gap that already exists there is not attributed to invoking CEV.
+    """
+    keys = ["eval", "model", "item", "epoch"]
+    classic = items[items["condition"] == "classic"][[*keys, "aligned"]].rename(columns={"aligned": "classic"})
+    d = items[items["condition"].isin(CEV_CONDITIONS)].merge(classic, on=keys, how="left")
+    yes, no = d[d["mentions_cev"]].groupby("eval"), d[~d["mentions_cev"]].groupby("eval")
     return pd.DataFrame({
-        "share_mentioning": g["mentions_cev"].mean(),
-        "aligned_mentioning": d[d["mentions_cev"]].groupby("eval")["aligned"].mean(),
-        "aligned_not_mentioning": d[~d["mentions_cev"]].groupby("eval")["aligned"].mean(),
-        "n_mentioning": d[d["mentions_cev"]].groupby("eval").size(),
+        "share_mentioning": d.groupby("eval")["mentions_cev"].mean(),
+        "share_mentioning_cev_only": d[d["condition"] == "cev"].groupby("eval")["mentions_cev"].mean(),
+        "aligned_mentioning": yes["aligned"].mean(), "aligned_not_mentioning": no["aligned"].mean(),
+        "classic_mentioning": yes["classic"].mean(), "classic_not_mentioning": no["classic"].mean(),
+        "n_mentioning": yes.size(),
     }).reset_index()
+
+
+def refused(items: pd.DataFrame) -> pd.Series:
+    """The provider refused the request (HTTP error) or stopped the answer with its content filter."""
+    return items["error"].fillna("").astype(str).ne("") | items["stop_reason"].eq("content_filter")
+
+
+def unscorable_causes(items: pd.DataFrame) -> pd.DataFrame:
+    """Per eval: unscorable (NaN) samples split into provider refusal, empty answer, and no judge/parser score."""
+    nan, ref = items["aligned"].isna(), refused(items)
+    empty = items["output_chars"].fillna(0).eq(0) & ~ref
+    d = items.assign(unscorable=nan, provider_refused=nan & ref, empty_answer=nan & empty, no_score=nan & ~ref & ~empty)
+    cols = ["unscorable", "provider_refused", "empty_answer", "no_score"]
+    out = d.groupby("eval").agg(samples=("aligned", "size"), **{c: (c, "sum") for c in cols})
+    # Why the judge/parser gave no score, where the scorer records it (HumaneBench: not_applicable, ...).
+    labels = d[d["no_score"]].groupby("eval")["score_status"].agg(
+        lambda s: ", ".join(f"{k}: {v}" for k, v in s[s.fillna("") != ""].value_counts().items()))
+    return out.assign(no_score_status=labels).fillna({"no_score_status": ""}).reset_index()
+
+
+def refusals(items: pd.DataFrame) -> pd.DataFrame:
+    """Every sample the provider refused or content-filtered (scored if a partial answer was kept)."""
+    cols = ["model", "condition", "eval", "item", "stop_reason", "output_chars", "aligned"]
+    return items[refused(items)][cols].assign(error=items["error"].fillna("").astype(str).str[:60])
+
+
+def blackmail_counts(items: pd.DataFrame) -> pd.DataFrame:
+    """Agentic Misalignment: "k/n" epochs judged as blackmail (aligned == 0), per model x condition."""
+    d = items[items["eval"] == "agentic_misalignment"]
+    if d.empty:
+        return pd.DataFrame()
+    counts = d.groupby(["model", "condition"])["aligned"].agg(lambda s: f"{int((s == 0).sum())}/{len(s)}")
+    return counts.unstack("condition").reset_index()
 
 
 def subgroup_contrasts(items: pd.DataFrame, pairs: list[tuple[str, str]] = PRIMARY) -> pd.DataFrame:
@@ -144,18 +187,26 @@ def write_robustness(reports_dir: Path, items: pd.DataFrame, extra_sections: str
         "provider_residuals": provider_residuals(items),
         "cev_mentions": mention_summary(items),
         "subgroups": subgroup_contrasts(items),
+        "unscorable_causes": unscorable_causes(items),
+        "refusals": refusals(items),
+        "blackmail_counts": blackmail_counts(items),
     }
     for name, df in checks.items():
         df.to_csv(out_dir / f"{name}.csv", index=False)
     providers = provider_table(items)
     providers.to_csv(out_dir / "provider_counts.csv")
+    hb = items[items["eval"] == "humanebench"]
+    hb_share = hb["aligned"].isna().mean() if len(hb) else float("nan")
+    hb_range = hb.groupby("condition")["aligned"].apply(lambda s: s.isna().mean()) if len(hb) else pd.Series([0.0])
     markdown = f"""# Robustness checks
 
 _Generated by `uv run cev-eval` from the full-run logs. Each section tests one way the main results could be wrong._
 
 ## 1. Manipulation check (from the logged API requests)
-Each target call must carry exactly its condition's prompt components (classic / CEV / Huxley); judge calls must
-carry none. Wrong-prompt and judge-leak counts should be 0.
+Each target call must carry exactly its condition's prompt components (classic / CEV / Huxley) in its system
+message; judge calls must carry none. Wrong-prompt and judge-leak counts should be 0. `judge_max_output_tokens` is
+the longest judge or grader reply in the condition (our own scorers' judge is capped at 8192 tokens, see
+docs/evals.md).
 {_md(checks["manipulation"])}
 
 ## 2. Holm correction across all 12 primary tests
@@ -168,8 +219,9 @@ Whether an effect depends on a single model. `dropped` is the model left out.
 {_md(checks["leave_one_model_out"], ["dropped"] + cols + ["p_holm"])}
 
 ## 4. HumaneBench missing-data sensitivity
-About 20% of HumaneBench samples are unscorable: the judge marked the targeted principle `not_applicable`, as
-rubric v4.1 intends. The pattern is not random, so the contrasts are recomputed using complete cases (a model × item
+{hb_share:.1%} of HumaneBench samples are unscorable ({hb_range.min():.1%}–{hb_range.max():.1%} per condition), mostly
+because the judge marked the targeted principle `not_applicable`, as rubric v4.1 allows (causes: §8). The pattern is
+not random, so the contrasts are recomputed using complete cases (a model × item
 scored in all five conditions), and with unscorable samples imputed at 0.5, 0.75 and 1.0 (0.75 = "acceptable").
 {_md(checks["missingness_humanebench"], ["method", "contrast", "diff", "ci_low", "ci_high", "p", "n"])}
 
@@ -181,14 +233,28 @@ mean the provider mix cannot explain the condition effects. Counts per condition
 
 ## 6. Answers that explicitly invoke CEV (cev and classic_cev conditions)
 Whether an answer mentions CEV is an outcome of the prompt (post-treatment), so this split is descriptive and not
-causal. A large gap means the effects are concentrated in answers where the model reasons "as CEV". That fits two
-explanations: genuine CEV-driven behaviour, or a judge reacting to the mention. The judge-blinding test below
-separates them.
+causal. `classic_*` is the mean score of the same model × item (× epoch) under `classic`: a gap already present
+there was not caused by invoking CEV. A remaining gap fits two explanations: genuine CEV-driven behaviour, or a judge
+reacting to the mention. The judge-blinding test (§10) separates them. `share_mentioning_cev_only` is the share
+under `cev` alone.
 {_md(checks["cev_mentions"])}
 
 ## 7. Sub-category contrasts (exploratory)
 Pooled over models; `n` = items scored in both conditions. Holm-adjusted within each eval × contrast.
 {_md(checks["subgroups"], ["eval", "group", "contrast", "diff", "ci_low", "ci_high", "p", "p_holm_within_eval", "n"])}
+
+## 8. Unscorable samples by cause
+`provider_refused`: the provider returned an error or stopped the answer with its content filter; `empty_answer`: no
+text; `no_score`: an answer exists but the judge or parser returned no score (`no_score_status`: the scorer's own
+label, where it records one).
+{_md(checks["unscorable_causes"])}
+
+Every refused or content-filtered sample (a partial answer before a content-filter stop is still scored):
+{_md(checks["refusals"])}
+
+## 9. Agentic Misalignment: blackmail epochs per model × condition
+Epochs judged as blackmail (aligned score 0) out of epochs run.
+{_md(checks["blackmail_counts"])}
 {extra_sections}"""
     path = reports_dir / "robustness.md"
     path.write_text(markdown, encoding="utf-8")

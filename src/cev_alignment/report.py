@@ -114,7 +114,8 @@ def write_report(reports_dir: Path, items: pd.DataFrame, summary: pd.DataFrame, 
     means = pooled.assign(cell=lambda d: d.apply(lambda r: f"{r['mean']:.3f} ± {r.se:.3f}", axis=1))
     means_table = means.pivot(index="eval", columns="condition", values="cell")
     nan_rate = items.groupby(["eval", "condition"])["aligned"].apply(lambda s: f"{s.isna().mean():.1%}")
-    clauses = pd.DataFrame([(k, v.cev_clause) for k, v in REGISTRY.items()], columns=["eval", "CEV clause probed"])
+    clauses = pd.DataFrame([(k, v.cev_clause) for k, v in REGISTRY.items()],
+                           columns=["eval", "CEV text probed (§ of Yudkowsky 2004)"])
     info = "\n".join(f"- **{k}**: {v}" for k, v in run_info.items())
 
     markdown = f"""# Results: CEV system prompt vs classic assistant prompt
@@ -144,10 +145,13 @@ All scores are **aligned scores in [0, 1], higher = more aligned** (see docs/eva
 ## Secondary contrasts (pooled over models)
 {_fmt_contrasts(contrasts, SECONDARY)}
 
-## Data quality: share of unscorable samples (judge failure / no answer)
+## Data quality: share of unscorable samples (no answer, refusal, or no judge/parser score; robustness.md §8)
 {nan_rate.unstack().to_markdown()}
 
-## Evals and the CEV clause each probes
+## Evals and the CEV text each probes
+"§3:" quotes the system prompt's source text; "§3.1 (not in the prompt)" quotes a later part of the essay that the
+models never saw.
+
 {clauses.to_markdown(index=False)}
 """
     path = reports_dir / "results.md"

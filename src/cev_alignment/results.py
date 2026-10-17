@@ -6,7 +6,8 @@ eval's `aligned()` function (HIGHER = MORE ALIGNED, in [0, 1]; NaN = could not b
 Docs: https://inspect.aisi.org.uk/eval-logs.html (list_eval_logs, read_eval_log)
 
 It also records per-sample diagnostics used by `robustness.py`: the OpenRouter backend `provider` that served the
-target call, whether the answer `mentions_cev`, and a manipulation check from the logged API requests
+target call, whether the answer `mentions_cev`, the scorer's own `score_status` (e.g. HumaneBench's
+`not_applicable`), the longest judge reply in tokens, and a manipulation check from the logged API requests
 (`prompt_ok`: the system message holds exactly the condition's prompt components; `judge_leak`: a judge call's
 system message holds any of them).
 
@@ -32,7 +33,7 @@ from cev_alignment.prompts import EXPECTED_MARKERS, MARKERS
 logger = logging.getLogger(__name__)
 
 COLUMNS = ["condition", "eval", "model", "item", "epoch", "aligned", "error", "stop_reason", "output_chars",
-           "provider", "mentions_cev", "prompt_ok", "judge_leak"]
+           "provider", "mentions_cev", "score_status", "prompt_ok", "judge_leak", "judge_max_output_tokens"]
 CEV_MENTION = re.compile(r"extrapolated volition|\bCEV\b", re.IGNORECASE)  # the answer invokes CEV itself
 
 
@@ -81,8 +82,8 @@ def _in_scorer(event: ModelEvent, spans: dict[str, SpanBeginEvent]) -> bool:
 
 
 def call_diagnostics(sample: EvalSample, condition: str) -> dict:
-    """Provider of the last target call, and the manipulation check over every model call of the sample."""
-    provider, prompt_ok, judge_leak = "", True, False
+    """Provider of the last target call, the manipulation check over every model call, and the longest judge reply."""
+    provider, prompt_ok, judge_leak, judge_tokens = "", True, False, 0
     spans = {e.id: e for e in sample.events if isinstance(e, SpanBeginEvent)}
     for event in sample.events:
         if not (isinstance(event, ModelEvent) and event.call):
@@ -94,7 +95,22 @@ def call_diagnostics(sample: EvalSample, condition: str) -> dict:
                 provider = event.call.response.get("provider") or provider
         else:  # a judge / grader call must never carry a condition prompt
             judge_leak |= bool(found)
-    return {"provider": provider, "prompt_ok": prompt_ok, "judge_leak": judge_leak}
+            usage = event.output.usage if event.output else None  # ModelOutput.usage: ModelUsage | None
+            judge_tokens = max(judge_tokens, usage.output_tokens if usage else 0)
+    return {"provider": provider, "prompt_ok": prompt_ok, "judge_leak": judge_leak,
+            "judge_max_output_tokens": judge_tokens}
+
+
+def score_status(sample: EvalSample) -> str:
+    """The scorer's own outcome label(s) from `Score.metadata`, "|"-joined; "" if it records none.
+
+    HumaneBench v4 stores each judge's verdict on the target principle in `judge_statuses` (score /
+    not_applicable / low_confidence / quote_unverified / ...) and `judge_failed` in `status` when a judge call
+    failed (third_party/humanebench/humanebench/scorer_v4.py), which tells why a sample is unscorable.
+    """
+    score = next(iter((sample.scores or {}).values()), None)
+    meta = (score.metadata or {}) if score else {}
+    return "|".join(sorted(set(meta.get("judge_statuses") or [meta.get("status", "")])))
 
 
 def sample_rows(log: EvalLog, condition: str) -> list[dict]:
@@ -116,6 +132,7 @@ def sample_rows(log: EvalLog, condition: str) -> list[dict]:
             "stop_reason": sample.output.stop_reason if has_output else "",
             "output_chars": len(completion),
             "mentions_cev": bool(CEV_MENTION.search(completion)),
+            "score_status": score_status(sample),
             **call_diagnostics(sample, condition),
         })
     return rows

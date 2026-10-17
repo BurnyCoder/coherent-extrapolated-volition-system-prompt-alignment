@@ -1,15 +1,16 @@
 """Paid checks of the LLM judge: is it blind to the condition, and does it agree with the benchmark's own judge?
 
 Local context:
-- **Judge-blinding test.** Under the CEV prompts, 11–22% of answers explicitly invoke CEV, and those answers
-  score much lower. That could be genuine CEV-driven behaviour, or the judge penalising the mention itself. Every
-  CEV-mentioning answer is re-judged twice with the same scorer and judge: once as written, once with each
-  sentence that mentions CEV removed. If the redacted copy scores the same, the drop is behavioural; if it scores
+- **Judge-blinding test.** Under the CEV prompts, up to about a fifth of answers explicitly invoke CEV
+  (robustness.md §6), and on several evals those answers score much lower. That could be genuine CEV-driven
+  behaviour, or the judge penalising the mention itself. Every CEV-mentioning answer is re-judged twice with the
+  same scorer and judge: once as written, once with each sentence that mentions CEV removed (answers left empty by
+  the removal are skipped). If the redacted copy scores the same, the drop is behavioural; if it scores
   higher, the judge reacts to the word. Redaction can also remove substantive content, so the gap is an upper
   bound on the judge-reaction effect.
 - **Judge validity (HumanAgencyBench).** The benchmark's dataset stores its original o3 judge's score for every
-  (prompt, response). We re-judge a stratified sample with our judge (same rubric and scoring) and report
-  agreement.
+  (prompt, response). We re-judge a stratified sample with our judge (the most common rubric template per
+  dimension, same scoring) and report agreement.
 Both checks call each eval's own Inspect scorer directly on a TaskState rebuilt from the logged sample
 (inspect_ai.solver.TaskState), using the same judge Model as the run. Results are cached as CSVs, so a re-run makes
 no API calls for rows already judged.
@@ -187,7 +188,7 @@ def run_validity(settings: Settings, out_csv: Path, max_usd: float, limit: int |
 def summary_markdown(reports_dir: Path, items: pd.DataFrame) -> str:
     """Markdown section for robustness.md from the cached CSVs (empty if the checks were never run)."""
     blind_csv, valid_csv = reports_dir / "judge_checks" / "blinding.csv", reports_dir / "judge_checks" / "validity.csv"
-    parts = ["\n## 8. Judge checks (paid; `uv run cev-eval --judge-checks`)\n"]
+    parts = ["\n## 10. Judge checks (paid; `uv run cev-eval --judge-checks`)\n"]
     if blind_csv.exists():
         b = pd.read_csv(blind_csv)
         b["item"] = b["item"].astype(str)
@@ -207,9 +208,14 @@ def summary_markdown(reports_dir: Path, items: pd.DataFrame) -> str:
         adjusted["aligned"] = adjusted["aligned_redacted"].combine_first(adjusted["aligned"])
         adj = stats.contrast_table(adjusted, [("cev", "classic"), ("classic_cev", "classic_lenmatch")])
         adj = adj[adj["model"] == "pooled"]
+        mentioning = items[items["mentions_cev"].astype(bool) & items["eval"].isin(JUDGED_EVALS)
+                           & items["condition"].isin(CEV_CONDITIONS)]
+        n_both = len(b.dropna(subset=["aligned_original", "aligned_redacted"]))
         parts.append(
-            "### Judge-blinding test\nEvery answer under `cev`/`classic_cev` that mentions CEV was re-judged as "
-            "written and with its CEV sentences removed (same scorer, same judge). `diff` = redacted − original "
+            f"### Judge-blinding test\n{len(b)} of the {len(mentioning)} CEV-mentioning answers of the judged evals "
+            "under `cev`/`classic_cev` were re-judged as written and with their CEV sentences removed (same scorer, "
+            f"same judge); {len(mentioning) - len(b)} were skipped because removing those sentences left no text, and "
+            f"{n_both} got a score both times. `diff` = redacted − original "
             "(positive = the judge penalises the mention itself). The redaction can remove substantive content, so "
             "this is an upper bound on the judge-reaction effect.\n\n"
             + pd.DataFrame(rows).to_markdown(index=False, floatfmt=".3g")
@@ -229,9 +235,11 @@ def summary_markdown(reports_dir: Path, items: pd.DataFrame) -> str:
                                  "mae": (g["ours"] - g["original"]).abs().mean(), "n": len(g)}))
         parts.append(
             "### Judge validity on HumanAgencyBench\n"
-            f"{len(v)} stored (prompt, response) pairs from 25 subject models, re-judged by our judge "
-            "(google/gemini-3.1-flash-lite) with the same rubric and scoring, compared with the benchmark's "
-            f"original o3 judge (0–10 scale): Spearman ρ = {st.spearmanr(v['ours'], v['original']).statistic:.3f}, "
+            f"{len(v)} stored (prompt, response) pairs from {v['subject_model'].nunique()} subject models, re-judged "
+            "by our judge with the most common rubric template per dimension (recovered from the dataset; rubric "
+            "revisions mean some original judgements used slightly different wording) and the same scoring, compared "
+            "with the benchmark's original o3 judge (per the dataset card; 0–10 scale): "
+            f"Spearman ρ = {st.spearmanr(v['ours'], v['original']).statistic:.3f}, "
             f"Pearson r = {np.corrcoef(v['ours'], v['original'])[0, 1]:.3f}, MAE = "
             f"{(v['ours'] - v['original']).abs().mean():.2f}, mean ours − original = "
             f"{(v['ours'] - v['original']).mean():+.2f}, Cohen's κ on \"perfect score (10)\" = {kappa:.3f}.\n\n"
