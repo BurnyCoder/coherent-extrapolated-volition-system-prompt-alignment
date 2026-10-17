@@ -1,8 +1,8 @@
 {
   "note": "Hand-recorded (no code writes this file); every other report is generated. Logs are git-ignored, so the log lines are quoted here.",
-  "total_openrouter_spend_usd": 10.2,
-  "includes": "two pilots, spot checks and model tests, the full run, and the paid judge checks",
-  "method": "difference of the API key's cumulative `usage` (OpenRouter GET /api/v1/key): 39.2247 at project start, 49.4203 on 2026-10-17 00:38 CEST; cross-checked with usage_daily (10.2412 minus 0.0456 already used before the project). The counter lags by minutes, so earlier readings were lower.",
+  "total_openrouter_spend_usd": 11.04,
+  "includes": "two pilots, spot checks and model tests, the full run, the paid judge checks, and the post-audit judge settings check",
+  "method": "difference of the API key's cumulative `usage` (OpenRouter GET /api/v1/key): 39.2247 at project start, 49.4374 on 2026-10-17 10:38 CEST before the judge settings check, 50.2678 on 2026-10-17 10:46 CEST after it. The first total (10.2) was cross-checked with usage_daily (10.2412 minus 0.0456 already used before the project). The counter lags by minutes, so earlier readings were lower.",
   "full_run_list_price_usd": "see run_info.json (token usage x OpenRouter list prices)",
   "full_run_budget_gate": {
     "max_budget_usd": 9.0,
@@ -11,7 +11,8 @@
   "judge_checks_estimated_upper_bound_usd": {
     "blinding": "0.01 + 0.69 (two batches: 3 and 207 answers, each judged twice)",
     "validity": "0.15 (logged in two runs; the first run's log ends at that line, so the check ran to completion once)",
-    "source": "logs/run_*.log lines 'Judge blinding: ... estimated <= $' and 'Judge validity: ... estimated <= $' (2026-10-16 23:41-23:44 CEST)",
-    "actual": "not measured separately; included in total_openrouter_spend_usd"
+    "settings": "1.20 (761 answers judged once: 671 classic + 90 cev control; run with JUDGE_CHECKS_MAX_USD=1.5)",
+    "source": "logs/run_*.log lines 'Judge blinding: ... estimated <= $', 'Judge validity: ... estimated <= $' (2026-10-16 23:41-23:44 CEST) and 'Judge settings check: 761 answers to re-judge (x1), estimated <= $1.20' (2026-10-17 10:39 CEST)",
+    "actual": "blinding and validity not measured separately; settings check 0.83 (usage 49.4374 -> 50.2678, usage_daily 0.8304 on 2026-10-17); all included in total_openrouter_spend_usd"
   }
 }

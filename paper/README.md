@@ -1,7 +1,7 @@
 # Paper
 
-**Coherent Extrapolated Volition as a System Prompt: Fewer Power-Seeking and Self-Preserving Answers, No Overall
-Gain, and Signs of Paternalism**, by Libor Burian. A built PDF is committed:
+**Coherent Extrapolated Volition as a System Prompt: No Gain over a Classic Prompt, Lower HumaneBench Scores, and
+More Aligned AI-Risk Answers than a Neutral Text**, by Libor Burian. A built PDF is committed:
 [`cev-system-prompt-alignment.pdf`](cev-system-prompt-alignment.pdf).
 
 ## Build

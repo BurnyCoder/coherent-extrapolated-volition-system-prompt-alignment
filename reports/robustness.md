@@ -20,55 +20,55 @@ docs/evals.md).
 results.md).
 | contrast                       | eval                 |     diff |   ci_low |   ci_high |        p |   n |   p_holm |   p_holm_all |
 |:-------------------------------|:---------------------|---------:|---------:|----------:|---------:|----:|---------:|-------------:|
-| cev - classic                  | agentic_misalignment | -0.0667  |  -0.167  |   0.0333  | 0.227    |  60 |  0.952   |      1       |
-| cev - classic                  | ai_risk              |  0.038   |  -0.0111 |   0.0861  | 0.19     |  90 |  0.952   |      1       |
-| cev - classic                  | darkbench            | -0.0361  |  -0.0875 |   0.0139  | 0.222    |  60 |  0.952   |      1       |
-| cev - classic                  | human_agency         | -0.0421  |  -0.105  |   0.0192  | 0.211    |  60 |  0.952   |      1       |
-| cev - classic                  | humanebench          | -0.0573  |  -0.0938 |  -0.0255  | 0.00246  |  40 |  0.0148  |      0.0271  |
-| cev - classic                  | instrumentaleval     |  0.00417 |  -0.0417 |   0.05    | 0.867    |  60 |  0.952   |      1       |
-| classic_cev - classic_lenmatch | agentic_misalignment |  0.05    |  -0.05   |   0.15    | 0.303    |  60 |  0.882   |      1       |
-| classic_cev - classic_lenmatch | ai_risk              |  0.088   |   0.0398 |   0.138   | 0.000748 |  90 |  0.00449 |      0.00897 |
-| classic_cev - classic_lenmatch | darkbench            | -0.0431  |  -0.0889 |  -0.00417 | 0.0566   |  60 |  0.226   |      0.509   |
-| classic_cev - classic_lenmatch | human_agency         | -0.0663  |  -0.11   |  -0.0154  | 0.0112   |  60 |  0.0562  |      0.112   |
-| classic_cev - classic_lenmatch | humanebench          | -0.00813 |  -0.0249 |   0.00711 | 0.347    |  41 |  0.882   |      1       |
-| classic_cev - classic_lenmatch | instrumentaleval     |  0.0208  |  -0.0167 |   0.0625  | 0.294    |  60 |  0.882   |      1       |
+| cev - classic                  | agentic_misalignment | -0.0667  |  -0.167  |   0.0333  | 0.272    |  60 |  1       |       1      |
+| cev - classic                  | ai_risk              |  0.0241  |  -0.0213 |   0.0694  | 0.424    |  90 |  1       |       1      |
+| cev - classic                  | darkbench            | -0.0361  |  -0.0875 |   0.0139  | 0.222    |  60 |  1       |       1      |
+| cev - classic                  | human_agency         | -0.0421  |  -0.105  |   0.0192  | 0.211    |  60 |  1       |       1      |
+| cev - classic                  | humanebench          | -0.0573  |  -0.0938 |  -0.0255  | 0.00246  |  40 |  0.0148  |       0.0271 |
+| cev - classic                  | instrumentaleval     |  0.00417 |  -0.0417 |   0.05    | 0.867    |  60 |  1       |       1      |
+| classic_cev - classic_lenmatch | agentic_misalignment |  0.05    |  -0.05   |   0.15    | 0.433    |  60 |  0.882   |       1      |
+| classic_cev - classic_lenmatch | ai_risk              |  0.0843  |   0.0389 |   0.133   | 0.000969 |  90 |  0.00582 |       0.0116 |
+| classic_cev - classic_lenmatch | darkbench            | -0.0431  |  -0.0889 |  -0.00417 | 0.0566   |  60 |  0.226   |       0.509  |
+| classic_cev - classic_lenmatch | human_agency         | -0.0663  |  -0.11   |  -0.0154  | 0.0112   |  60 |  0.0562  |       0.112  |
+| classic_cev - classic_lenmatch | humanebench          | -0.00813 |  -0.0249 |   0.00711 | 0.347    |  41 |  0.882   |       1      |
+| classic_cev - classic_lenmatch | instrumentaleval     |  0.0208  |  -0.0167 |   0.0625  | 0.294    |  60 |  0.882   |       1      |
 
 ## 3. Leave-one-model-out (pooled primary contrasts)
 Whether an effect depends on a single model. `dropped` is the model left out.
 | dropped                           | contrast                       | eval                 |     diff |   ci_low |   ci_high |       p |   n |   p_holm |
 |:----------------------------------|:-------------------------------|:---------------------|---------:|---------:|----------:|--------:|----:|---------:|
-| anthropic/claude-haiku-5.5        | cev - classic                  | agentic_misalignment | -0.0889  |  -0.222  |   0.0444  | 0.22    |  45 |  1       |
-| anthropic/claude-haiku-5.5        | cev - classic                  | ai_risk              |  0.037   |  -0.0222 |   0.0963  | 0.28    |  90 |  1       |
+| anthropic/claude-haiku-5.5        | cev - classic                  | agentic_misalignment | -0.0889  |  -0.222  |   0.0444  | 0.272   |  45 |  1       |
+| anthropic/claude-haiku-5.5        | cev - classic                  | ai_risk              |  0.0185  |  -0.0389 |   0.0741  | 0.457   |  90 |  1       |
 | anthropic/claude-haiku-5.5        | cev - classic                  | darkbench            | -0.0333  |  -0.0944 |   0.0306  | 0.442   |  60 |  1       |
 | anthropic/claude-haiku-5.5        | cev - classic                  | human_agency         | -0.035   |  -0.0994 |   0.0306  | 0.376   |  60 |  1       |
 | anthropic/claude-haiku-5.5        | cev - classic                  | humanebench          | -0.0667  |  -0.108  |  -0.0312  | 0.00162 |  40 |  0.00973 |
 | anthropic/claude-haiku-5.5        | cev - classic                  | instrumentaleval     |  0.00556 |  -0.0556 |   0.0667  | 0.572   |  60 |  1       |
-| anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | agentic_misalignment |  0.0667  |  -0.045  |   0.178   | 0.298   |  45 |  0.596   |
-| anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | ai_risk              |  0.0944  |   0.0333 |   0.159   | 0.015   |  90 |  0.0901  |
+| anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | agentic_misalignment |  0.0667  |  -0.045  |   0.178   | 0.433   |  45 |  0.867   |
+| anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | ai_risk              |  0.0889  |   0.0296 |   0.152   | 0.0148  |  90 |  0.0888  |
 | anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | darkbench            | -0.0611  |  -0.119  |  -0.00833 | 0.0622  |  60 |  0.249   |
 | anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | human_agency         | -0.0661  |  -0.121  |  -0.00722 | 0.0193  |  60 |  0.0964  |
 | anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | humanebench          | -0.0274  |  -0.0579 |  -0.00203 | 0.065   |  41 |  0.249   |
-| anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | instrumentaleval     |  0.0278  |  -0.0222 |   0.0833  | 0.462   |  60 |  0.596   |
-| meta-llama/llama-3.3-70b-instruct | cev - classic                  | agentic_misalignment | -0.0889  |  -0.222  |   0.0444  | 0.22    |  45 |  0.932   |
-| meta-llama/llama-3.3-70b-instruct | cev - classic                  | ai_risk              |  0.0519  |  -0.0037 |   0.108   | 0.188   |  90 |  0.932   |
-| meta-llama/llama-3.3-70b-instruct | cev - classic                  | darkbench            | -0.0167  |  -0.0667 |   0.0333  | 0.235   |  60 |  0.932   |
-| meta-llama/llama-3.3-70b-instruct | cev - classic                  | human_agency         | -0.04    |  -0.113  |   0.0317  | 0.288   |  60 |  0.932   |
+| anthropic/claude-haiku-5.5        | classic_cev - classic_lenmatch | instrumentaleval     |  0.0278  |  -0.0222 |   0.0833  | 0.462   |  60 |  0.867   |
+| meta-llama/llama-3.3-70b-instruct | cev - classic                  | agentic_misalignment | -0.0889  |  -0.222  |   0.0444  | 0.272   |  45 |  0.94    |
+| meta-llama/llama-3.3-70b-instruct | cev - classic                  | ai_risk              |  0.0333  |  -0.0185 |   0.0852  | 0.433   |  90 |  0.94    |
+| meta-llama/llama-3.3-70b-instruct | cev - classic                  | darkbench            | -0.0167  |  -0.0667 |   0.0333  | 0.235   |  60 |  0.94    |
+| meta-llama/llama-3.3-70b-instruct | cev - classic                  | human_agency         | -0.04    |  -0.113  |   0.0317  | 0.288   |  60 |  0.94    |
 | meta-llama/llama-3.3-70b-instruct | cev - classic                  | humanebench          | -0.0365  |  -0.0833 |  -0.00313 | 0.0889  |  40 |  0.534   |
 | meta-llama/llama-3.3-70b-instruct | cev - classic                  | instrumentaleval     |  0.0333  |  -0.0111 |   0.0833  | 0.186   |  60 |  0.932   |
-| meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | agentic_misalignment |  0.0667  |  -0.0444 |   0.178   | 0.298   |  45 |  0.979   |
-| meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | ai_risk              |  0.087   |   0.0315 |   0.141   | 0.0121  |  90 |  0.0726  |
+| meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | agentic_misalignment |  0.0667  |  -0.0444 |   0.178   | 0.433   |  45 |  0.979   |
+| meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | ai_risk              |  0.0833  |   0.0296 |   0.135   | 0.0126  |  90 |  0.0753  |
 | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | darkbench            | -0.0333  |  -0.0833 |   0.0111  | 0.245   |  60 |  0.979   |
 | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | human_agency         | -0.0806  |  -0.139  |  -0.0167  | 0.0211  |  60 |  0.105   |
 | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | humanebench          | -0.00305 |  -0.0234 |   0.0152  | 0.831   |  41 |  0.979   |
 | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch | instrumentaleval     |  0.0278  |  -0.0167 |   0.0722  | 0.31    |  60 |  0.979   |
-| openai/gpt-6-luna                 | cev - classic                  | agentic_misalignment | -0.0889  |  -0.222  |   0.0444  | 0.22    |  45 |  0.711   |
-| openai/gpt-6-luna                 | cev - classic                  | ai_risk              |  0.037   |  -0.0222 |   0.0926  | 0.329   |  90 |  0.711   |
+| openai/gpt-6-luna                 | cev - classic                  | agentic_misalignment | -0.0889  |  -0.222  |   0.0444  | 0.272   |  45 |  0.815   |
+| openai/gpt-6-luna                 | cev - classic                  | ai_risk              |  0.0185  |  -0.0352 |   0.0704  | 0.6     |  90 |  0.958   |
 | openai/gpt-6-luna                 | cev - classic                  | darkbench            | -0.0556  |  -0.119  |   0.00278 | 0.178   |  60 |  0.711   |
 | openai/gpt-6-luna                 | cev - classic                  | human_agency         | -0.06    |  -0.122  |   0.00222 | 0.0733  |  60 |  0.367   |
 | openai/gpt-6-luna                 | cev - classic                  | humanebench          | -0.0771  |  -0.123  |  -0.0365  | 0.00211 |  40 |  0.0126  |
-| openai/gpt-6-luna                 | cev - classic                  | instrumentaleval     |  0.0111  |  -0.0444 |   0.0667  | 0.479   |  60 |  0.711   |
-| openai/gpt-6-luna                 | classic_cev - classic_lenmatch | agentic_misalignment |  0.0667  |  -0.0444 |   0.2     | 0.298   |  45 |  1       |
-| openai/gpt-6-luna                 | classic_cev - classic_lenmatch | ai_risk              |  0.0944  |   0.0426 |   0.148   | 0.00323 |  90 |  0.0194  |
+| openai/gpt-6-luna                 | cev - classic                  | instrumentaleval     |  0.0111  |  -0.0444 |   0.0667  | 0.479   |  60 |  0.958   |
+| openai/gpt-6-luna                 | classic_cev - classic_lenmatch | agentic_misalignment |  0.0667  |  -0.0444 |   0.2     | 0.433   |  45 |  1       |
+| openai/gpt-6-luna                 | classic_cev - classic_lenmatch | ai_risk              |  0.0889  |   0.0407 |   0.141   | 0.00329 |  90 |  0.0197  |
 | openai/gpt-6-luna                 | classic_cev - classic_lenmatch | darkbench            | -0.0222  |  -0.0722 |   0.0278  | 0.314   |  60 |  1       |
 | openai/gpt-6-luna                 | classic_cev - classic_lenmatch | human_agency         | -0.0767  |  -0.131  |  -0.0189  | 0.0145  |  60 |  0.0723  |
 | openai/gpt-6-luna                 | classic_cev - classic_lenmatch | humanebench          | -0.00915 |  -0.0325 |   0.0102  | 0.497   |  41 |  1       |
@@ -110,25 +110,85 @@ scored in all five conditions), and with unscorable samples imputed at 0.5, 0.75
 | impute 1.0     | cev - none                     | -0.013   | -0.0365  |   0.0104  | 0.32     |  48 |
 | impute 1.0     | classic - none                 |  0.0208  |  0.0013  |   0.0404  | 0.0545   |  48 |
 
+**Tipping point.** The imputations above use the same value in every condition, so they assume unscorable answers
+are alike under both prompts. Below, unscorable samples are imputed at `fill_a` under `cev` and `fill_b` under
+`classic` (0.75 ± `delta`/2): how much better would `cev`'s unscorable answers have to be for the effect to vanish?
+| contrast      |   delta |   fill_a |   fill_b |     diff |    ci_low |   ci_high |       p |   n |
+|:--------------|--------:|---------:|---------:|---------:|----------:|----------:|--------:|----:|
+| cev - classic |    0    |    0.75  |    0.75  | -0.0443  | -0.069    |  -0.0208  | 0.00104 |  48 |
+| cev - classic |    0.05 |    0.775 |    0.725 | -0.0336  | -0.0606   |  -0.0099  | 0.0348  |  48 |
+| cev - classic |    0.1  |    0.8   |    0.7   | -0.0229  | -0.0518   |   0.00286 | 0.263   |  48 |
+| cev - classic |    0.15 |    0.825 |    0.675 | -0.0122  | -0.044    |   0.0169  | 0.652   |  48 |
+| cev - classic |    0.2  |    0.85  |    0.65  | -0.00156 | -0.0362   |   0.0313  | 0.783   |  48 |
+| cev - classic |    0.25 |    0.875 |    0.625 |  0.00911 | -0.0293   |   0.0462  | 0.62    |  48 |
+| cev - classic |    0.3  |    0.9   |    0.6   |  0.0198  | -0.0219   |   0.0602  | 0.427   |  48 |
+| cev - classic |    0.35 |    0.925 |    0.575 |  0.0305  | -0.0143   |   0.0747  | 0.247   |  48 |
+| cev - classic |    0.4  |    0.95  |    0.55  |  0.0411  | -0.00729  |   0.0891  | 0.17    |  48 |
+| cev - classic |    0.45 |    0.975 |    0.525 |  0.0518  |  0.000124 |   0.104   | 0.17    |  48 |
+| cev - classic |    0.5  |    1     |    0.5   |  0.0625  |  0.00778  |   0.118   | 0.0763  |  48 |
+
 ## 5. OpenRouter provider routing
 Open-weight models are served by several backends, and the mix varied between conditions (they ran sequentially).
-Below: mean aligned score of each provider (with ≥ 50 samples) minus its eval × condition × model mean. Values near 0
-mean the provider mix cannot explain the condition effects. Counts per condition: `robustness/provider_counts.csv`.
+Below: mean aligned score of each provider (with ≥ 50 samples) minus its eval × condition × model mean. Counts per
+condition: `robustness/provider_counts.csv`. Residuals are taken around each condition's mean, so a provider effect
+that tracks the condition is partly absorbed into that mean; the fixed-effects table below addresses this.
 | model                             | provider               |   mean_residual |   samples |
 |:----------------------------------|:-----------------------|----------------:|----------:|
 | anthropic/claude-haiku-5.5        | Claude Platform on AWS |        5.25e-18 |      1607 |
-| meta-llama/llama-3.3-70b-instruct | AkashML                |        0.00659  |       181 |
-| meta-llama/llama-3.3-70b-instruct | Cloudflare             |        0.0263   |        56 |
+| meta-llama/llama-3.3-70b-instruct | AkashML                |        0.00742  |       182 |
+| meta-llama/llama-3.3-70b-instruct | Cloudflare             |        0.026    |        56 |
 | meta-llama/llama-3.3-70b-instruct | DeepInfra              |       -0.0134   |       753 |
-| meta-llama/llama-3.3-70b-instruct | Novita                 |        0.0162   |       420 |
-| meta-llama/llama-3.3-70b-instruct | Parasail               |        0.0207   |       149 |
+| meta-llama/llama-3.3-70b-instruct | Novita                 |        0.016    |       420 |
+| meta-llama/llama-3.3-70b-instruct | Parasail               |        0.0205   |       149 |
 | openai/gpt-6-luna                 | OpenAI                 |        8.69e-18 |      1610 |
-| qwen/qwen3.6-35b-a3b              | AkashML                |       -0.0127   |       377 |
-| qwen/qwen3.6-35b-a3b              | AtlasCloud             |       -0.00117  |       216 |
-| qwen/qwen3.6-35b-a3b              | CoreWeave              |       -0.0117   |       215 |
-| qwen/qwen3.6-35b-a3b              | Parasail               |        0.0386   |       202 |
-| qwen/qwen3.6-35b-a3b              | Phala                  |       -0.000926 |       115 |
-| qwen/qwen3.6-35b-a3b              | SiliconFlow            |       -0.00154  |       460 |
+| qwen/qwen3.6-35b-a3b              | AkashML                |       -0.0105   |       379 |
+| qwen/qwen3.6-35b-a3b              | AtlasCloud             |        0.0221   |       219 |
+| qwen/qwen3.6-35b-a3b              | CoreWeave              |       -0.0269   |       215 |
+| qwen/qwen3.6-35b-a3b              | Parasail               |        0.017    |       202 |
+| qwen/qwen3.6-35b-a3b              | Phala                  |        0.003    |       116 |
+| qwen/qwen3.6-35b-a3b              | SiliconFlow            |        0.00141  |       461 |
+
+**Provider fixed effects.** For each multi-provider model × eval, the primary-contrast effect from OLS with item
+fixed effects (`coef_item_fe`, a paired comparison) and with item and provider fixed effects
+(`coef_item_provider_fe`). A coefficient that shrinks towards 0 once providers are held fixed points to routing.
+| eval                 | model                             | contrast                       |   coef_item_fe |   coef_item_provider_fe |   p_item_fe |   p_item_provider_fe |   n |
+|:---------------------|:----------------------------------|:-------------------------------|---------------:|------------------------:|------------:|---------------------:|----:|
+| agentic_misalignment | meta-llama/llama-3.3-70b-instruct | cev - classic                  |       5.55e-17 |                5.83e-16 |      0.514  |               0.332  |  30 |
+| agentic_misalignment | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch |      -5.55e-17 |               -5.55e-17 |      0.743  |               0.41   |  30 |
+| agentic_misalignment | openai/gpt-6-luna                 | cev - classic                  |       5.55e-17 |                5.55e-17 |      0.514  |               0.514  |  30 |
+| agentic_misalignment | openai/gpt-6-luna                 | classic_cev - classic_lenmatch |      -5.55e-17 |               -5.55e-17 |      0.743  |               0.743  |  30 |
+| agentic_misalignment | qwen/qwen3.6-35b-a3b              | cev - classic                  |      -0.267    |               -0.179    |      0.146  |               0.434  |  30 |
+| agentic_misalignment | qwen/qwen3.6-35b-a3b              | classic_cev - classic_lenmatch |       0.2      |                0.26     |      0.247  |               0.202  |  30 |
+| ai_risk              | meta-llama/llama-3.3-70b-instruct | cev - classic                  |       0.0112   |                0.029    |      0.783  |               0.508  | 179 |
+| ai_risk              | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch |       0.0899   |                0.0795   |      0.0201 |               0.0425 | 179 |
+| ai_risk              | openai/gpt-6-luna                 | cev - classic                  |       0.0341   |                0.0341   |      0.369  |               0.369  | 178 |
+| ai_risk              | openai/gpt-6-luna                 | classic_cev - classic_lenmatch |       0.0682   |                0.0682   |      0.109  |               0.109  | 178 |
+| ai_risk              | qwen/qwen3.6-35b-a3b              | cev - classic                  |       0.0111   |                0.0184   |      0.843  |               0.778  | 180 |
+| ai_risk              | qwen/qwen3.6-35b-a3b              | classic_cev - classic_lenmatch |       0.111    |                0.15     |      0.0493 |               0.0345 | 180 |
+| darkbench            | meta-llama/llama-3.3-70b-instruct | cev - classic                  |      -0.0862   |               -0.108    |      0.228  |               0.148  | 117 |
+| darkbench            | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch |      -0.0714   |               -0.0675   |      0.103  |               0.177  | 114 |
+| darkbench            | openai/gpt-6-luna                 | cev - classic                  |       0.0339   |                0.0339   |      0.321  |               0.321  | 119 |
+| darkbench            | openai/gpt-6-luna                 | classic_cev - classic_lenmatch |      -0.102    |               -0.102    |      0.013  |               0.013  | 119 |
+| darkbench            | qwen/qwen3.6-35b-a3b              | cev - classic                  |      -0.05     |               -0.025    |      0.37   |               0.704  | 120 |
+| darkbench            | qwen/qwen3.6-35b-a3b              | classic_cev - classic_lenmatch |      -0.0172   |               -0.00177  |      0.742  |               0.976  | 118 |
+| human_agency         | meta-llama/llama-3.3-70b-instruct | cev - classic                  |      -0.0483   |               -0.0749   |      0.284  |               0.13   | 120 |
+| human_agency         | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch |      -0.0233   |               -0.023    |      0.559  |               0.569  | 120 |
+| human_agency         | openai/gpt-6-luna                 | cev - classic                  |       0.0117   |                0.0117   |      0.832  |               0.832  | 120 |
+| human_agency         | openai/gpt-6-luna                 | classic_cev - classic_lenmatch |      -0.035    |               -0.035    |      0.551  |               0.551  | 120 |
+| human_agency         | qwen/qwen3.6-35b-a3b              | cev - classic                  |      -0.0683   |               -0.0516   |      0.218  |               0.459  | 120 |
+| human_agency         | qwen/qwen3.6-35b-a3b              | classic_cev - classic_lenmatch |      -0.14     |               -0.0721   |      0.0336 |               0.25   | 120 |
+| humanebench          | meta-llama/llama-3.3-70b-instruct | cev - classic                  |      -0.135    |               -0.147    |      0.0104 |               0.0107 |  76 |
+| humanebench          | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch |      -0.0294   |               -0.0368   |      0.402  |               0.351  |  73 |
+| humanebench          | openai/gpt-6-luna                 | cev - classic                  |       2.6e-16  |                2.6e-16  |      0.557  |               0.557  |  77 |
+| humanebench          | openai/gpt-6-luna                 | classic_cev - classic_lenmatch |      -0.00694  |               -0.00694  |      0.571  |               0.571  |  76 |
+| humanebench          | qwen/qwen3.6-35b-a3b              | cev - classic                  |      -0.0625   |               -0.0552   |      0.0435 |               0.152  |  71 |
+| humanebench          | qwen/qwen3.6-35b-a3b              | classic_cev - classic_lenmatch |      -0.0294   |               -0.0224   |      0.402  |               0.549  |  74 |
+| instrumentaleval     | meta-llama/llama-3.3-70b-instruct | cev - classic                  |      -0.0833   |               -0.0723   |      0.133  |               0.221  | 120 |
+| instrumentaleval     | meta-llama/llama-3.3-70b-instruct | classic_cev - classic_lenmatch |      -7.6e-16  |               -0.0101   |      1      |               0.844  | 120 |
+| instrumentaleval     | openai/gpt-6-luna                 | cev - classic                  |      -0.0167   |               -0.0167   |      0.568  |               0.568  | 120 |
+| instrumentaleval     | openai/gpt-6-luna                 | classic_cev - classic_lenmatch |       0.0167   |                0.0167   |      0.568  |               0.568  | 120 |
+| instrumentaleval     | qwen/qwen3.6-35b-a3b              | cev - classic                  |       0.117    |                0.0945   |      0.0514 |               0.195  | 120 |
+| instrumentaleval     | qwen/qwen3.6-35b-a3b              | classic_cev - classic_lenmatch |       0.0667   |                0.102    |      0.252  |               0.11   | 120 |
 
 ## 6. Answers that explicitly invoke CEV (cev and classic_cev conditions)
 Whether an answer mentions CEV is an outcome of the prompt (post-treatment), so this split is descriptive and not
@@ -139,62 +199,110 @@ under `cev` alone.
 | eval                 |   share_mentioning |   share_mentioning_cev_only |   aligned_mentioning |   aligned_not_mentioning |   classic_mentioning |   classic_not_mentioning |   n_mentioning |
 |:---------------------|-------------------:|----------------------------:|---------------------:|-------------------------:|---------------------:|-------------------------:|---------------:|
 | agentic_misalignment |            0.15    |                     0.133   |                0.556 |                    0.971 |                0.833 |                    0.951 |             18 |
-| ai_risk              |            0.164   |                     0.225   |                0.783 |                    0.785 |                0.81  |                    0.72  |            118 |
+| ai_risk              |            0.164   |                     0.225   |                0.819 |                    0.785 |                0.814 |                    0.744 |            118 |
 | darkbench            |            0.152   |                     0.208   |                0.806 |                    0.797 |                0.903 |                    0.814 |             73 |
 | human_agency         |            0.119   |                     0.175   |                0.177 |                    0.463 |                0.309 |                    0.498 |             57 |
 | humanebench          |            0.161   |                     0.214   |                0.723 |                    0.872 |                0.88  |                    0.883 |             62 |
 | instrumentaleval     |            0.00625 |                     0.00833 |                1     |                    0.845 |                1     |                    0.845 |              3 |
 
 ## 7. Sub-category contrasts (exploratory)
-Pooled over models; `n` = items scored in both conditions. Holm-adjusted within each eval × contrast.
+Pooled over models; `n` = items scored in both conditions. Holm-adjusted within each eval × contrast. Besides the two
+primary contrasts, each long prompt is compared with the classic prompt alone: a sub-category effect of the length
+control itself (`classic_lenmatch - classic`) also shows up in `classic_cev - classic_lenmatch`.
 | eval         | group                           | contrast                       |     diff |   ci_low |   ci_high |       p |   p_holm_within_eval |   n |
 |:-------------|:--------------------------------|:-------------------------------|---------:|---------:|----------:|--------:|---------------------:|----:|
-| ai_risk      | corrigible-neutral-HHH          | cev - classic                  |  0.0833  |   0      |    0.167  | 0.0842  |               0.253  |  30 |
-| ai_risk      | corrigible-neutral-HHH          | classic_cev - classic_lenmatch | -0.00556 |  -0.0667 |    0.0528 | 0.957   |               0.957  |  30 |
-| ai_risk      | power-seeking-inclination       | cev - classic                  | -0.025   |  -0.108  |    0.05   | 0.519   |               0.545  |  30 |
-| ai_risk      | power-seeking-inclination       | classic_cev - classic_lenmatch |  0.0917  |   0.0167 |    0.175  | 0.0383  |               0.0766 |  30 |
-| ai_risk      | survival-instinct               | cev - classic                  |  0.0556  |  -0.0222 |    0.139  | 0.273   |               0.545  |  30 |
-| ai_risk      | survival-instinct               | classic_cev - classic_lenmatch |  0.178   |   0.0861 |    0.286  | 0.00197 |               0.0059 |  30 |
-| darkbench    | anthropomorphization            | cev - classic                  | -0.1     |  -0.275  |    0.05   | 0.344   |               1      |  10 |
-| darkbench    | anthropomorphization            | classic_cev - classic_lenmatch |  0       |  -0.1    |    0.1    | 1       |               1      |  10 |
-| darkbench    | brand-bias                      | cev - classic                  | -0.0667  |  -0.2    |    0.075  | 0.766   |               1      |  10 |
-| darkbench    | brand-bias                      | classic_cev - classic_lenmatch | -0.0583  |  -0.142  |    0      | 0.5     |               1      |  10 |
-| darkbench    | harmful-generation              | cev - classic                  | -0.05    |  -0.15   |    0      | 1       |               1      |  10 |
-| darkbench    | harmful-generation              | classic_cev - classic_lenmatch |  0       |   0      |    0      | 1       |               1      |  10 |
-| darkbench    | sneaking                        | cev - classic                  |  0.075   |  -0.075  |    0.225  | 0.531   |               1      |  10 |
-| darkbench    | sneaking                        | classic_cev - classic_lenmatch |  0.025   |  -0.075  |    0.125  | 1       |               1      |  10 |
-| darkbench    | sycophancy                      | cev - classic                  |  0.025   |   0      |    0.075  | 1       |               1      |  10 |
-| darkbench    | sycophancy                      | classic_cev - classic_lenmatch |  0       |  -0.075  |    0.075  | 1       |               1      |  10 |
-| darkbench    | user-retention                  | cev - classic                  | -0.1     |  -0.2    |    0.025  | 0.289   |               1      |  10 |
-| darkbench    | user-retention                  | classic_cev - classic_lenmatch | -0.225   |  -0.375  |   -0.1    | 0.0312  |               0.188  |  10 |
-| human_agency | ask_clarifying_questions        | cev - classic                  |  0.04    |  -0.075  |    0.175  | 0.625   |               1      |  10 |
-| human_agency | ask_clarifying_questions        | classic_cev - classic_lenmatch | -0.01    |  -0.085  |    0.065  | 1       |               1      |  10 |
-| human_agency | avoid_value_manipulation        | cev - classic                  | -0.218   |  -0.353  |   -0.0925 | 0.0156  |               0.0938 |  10 |
-| human_agency | avoid_value_manipulation        | classic_cev - classic_lenmatch | -0.128   |  -0.23   |   -0.045  | 0.0273  |               0.164  |  10 |
-| human_agency | correct_misinformation          | cev - classic                  |  0.01    |  -0.0801 |    0.0925 | 0.691   |               1      |  10 |
-| human_agency | correct_misinformation          | classic_cev - classic_lenmatch | -0.11    |  -0.2    |   -0.0225 | 0.0781  |               0.312  |  10 |
-| human_agency | defer_important_decisions       | cev - classic                  | -0.23    |  -0.42   |   -0.08   | 0.0234  |               0.117  |  10 |
-| human_agency | defer_important_decisions       | classic_cev - classic_lenmatch | -0.12    |  -0.215  |   -0.015  | 0.0508  |               0.254  |  10 |
-| human_agency | encourage_learning              | cev - classic                  |  0.138   |   0.0325 |    0.248  | 0.0449  |               0.18   |  10 |
-| human_agency | encourage_learning              | classic_cev - classic_lenmatch |  0.0525  |  -0.103  |    0.215  | 0.643   |               1      |  10 |
-| human_agency | maintain_social_boundaries      | cev - classic                  |  0.0075  |  -0.113  |    0.142  | 0.793   |               1      |  10 |
-| human_agency | maintain_social_boundaries      | classic_cev - classic_lenmatch | -0.0825  |  -0.188  |    0.04   | 0.355   |               1      |  10 |
-| humanebench  | be-transparent-and-honest       | cev - classic                  | -0.153   |  -0.281  |   -0.0243 | 0.125   |               1      |   6 |
-| humanebench  | be-transparent-and-honest       | classic_cev - classic_lenmatch | -0.0208  |  -0.0938 |    0.0312 | 1       |               1      |   6 |
-| humanebench  | design-for-equity-and-inclusion | cev - classic                  | -0.174   |  -0.375  |   -0.0625 | 0.25    |               1      |   3 |
-| humanebench  | design-for-equity-and-inclusion | classic_cev - classic_lenmatch |  0.0312  |   0      |    0.0938 | 1       |               1      |   4 |
-| humanebench  | enable-meaningful-choices       | cev - classic                  | -0.0125  |  -0.075  |    0.0625 | 1       |               1      |   5 |
-| humanebench  | enable-meaningful-choices       | classic_cev - classic_lenmatch |  0       |   0      |    0      | 1       |               1      |   5 |
-| humanebench  | enhance-human-capabilities      | cev - classic                  | -0.0104  |  -0.0312 |    0      | 1       |               1      |   6 |
-| humanebench  | enhance-human-capabilities      | classic_cev - classic_lenmatch | -0.0139  |  -0.0417 |    0      | 1       |               1      |   6 |
-| humanebench  | foster-healthy-relationships    | cev - classic                  |  0       |   0      |    0      | 1       |               1      |   3 |
-| humanebench  | foster-healthy-relationships    | classic_cev - classic_lenmatch | -0.0208  |  -0.0625 |    0      | 1       |               1      |   3 |
-| humanebench  | prioritize-long-term-wellbeing  | cev - classic                  | -0.0278  |  -0.0974 |    0.0312 | 0.75    |               1      |   6 |
-| humanebench  | prioritize-long-term-wellbeing  | classic_cev - classic_lenmatch | -0.0104  |  -0.0417 |    0.0208 | 1       |               1      |   6 |
-| humanebench  | protect-dignity-and-safety      | cev - classic                  | -0.0542  |  -0.129  |    0      | 0.5     |               1      |   5 |
-| humanebench  | protect-dignity-and-safety      | classic_cev - classic_lenmatch | -0.025   |  -0.113  |    0.0375 | 1       |               1      |   5 |
-| humanebench  | respect-user-attention          | cev - classic                  | -0.0486  |  -0.104  |    0      | 0.5     |               1      |   6 |
-| humanebench  | respect-user-attention          | classic_cev - classic_lenmatch |  0       |   0      |    0      | 1       |               1      |   6 |
+| ai_risk      | corrigible-neutral-HHH          | cev - classic                  |  0.05    |  -0.025  |   0.133   | 0.266   |               0.798  |  30 |
+| ai_risk      | corrigible-neutral-HHH          | classic_cev - classic_lenmatch | -0.00556 |  -0.0667 |   0.0528  | 0.957   |               0.957  |  30 |
+| ai_risk      | corrigible-neutral-HHH          | classic_cev - classic          |  0.0833  |   0.0333 |   0.142   | 0.0083  |               0.0249 |  30 |
+| ai_risk      | corrigible-neutral-HHH          | classic_lenmatch - classic     |  0.075   |   0      |   0.15    | 0.0684  |               0.0912 |  30 |
+| ai_risk      | power-seeking-inclination       | cev - classic                  | -0.00833 |  -0.0917 |   0.075   | 0.816   |               1      |  30 |
+| ai_risk      | power-seeking-inclination       | classic_cev - classic_lenmatch |  0.1     |   0.0333 |   0.175   | 0.0128  |               0.0256 |  30 |
+| ai_risk      | power-seeking-inclination       | classic_cev - classic          |  0.0333  |  -0.0333 |   0.108   | 0.329   |               0.657  |  30 |
+| ai_risk      | power-seeking-inclination       | classic_lenmatch - classic     | -0.0667  |  -0.133  |  -0.00833 | 0.0456  |               0.0912 |  30 |
+| ai_risk      | survival-instinct               | cev - classic                  |  0.0306  |  -0.0444 |   0.117   | 0.606   |               1      |  30 |
+| ai_risk      | survival-instinct               | classic_cev - classic_lenmatch |  0.158   |   0.0667 |   0.267   | 0.00517 |               0.0155 |  30 |
+| ai_risk      | survival-instinct               | classic_cev - classic          |  0.025   |  -0.0333 |   0.0917  | 0.417   |               0.657  |  30 |
+| ai_risk      | survival-instinct               | classic_lenmatch - classic     | -0.136   |  -0.242  |  -0.0444  | 0.0164  |               0.0493 |  30 |
+| darkbench    | anthropomorphization            | cev - classic                  | -0.1     |  -0.275  |   0.05    | 0.344   |               1      |  10 |
+| darkbench    | anthropomorphization            | classic_cev - classic_lenmatch |  0       |  -0.1    |   0.1     | 1       |               1      |  10 |
+| darkbench    | anthropomorphization            | classic_cev - classic          |  0.025   |  -0.075  |   0.125   | 1       |               1      |  10 |
+| darkbench    | anthropomorphization            | classic_lenmatch - classic     |  0.025   |  -0.075  |   0.125   | 1       |               1      |  10 |
+| darkbench    | brand-bias                      | cev - classic                  | -0.0667  |  -0.2    |   0.075   | 0.766   |               1      |  10 |
+| darkbench    | brand-bias                      | classic_cev - classic_lenmatch | -0.0583  |  -0.142  |   0       | 0.5     |               1      |  10 |
+| darkbench    | brand-bias                      | classic_cev - classic          | -0.05    |  -0.15   |   0.05    | 0.625   |               1      |  10 |
+| darkbench    | brand-bias                      | classic_lenmatch - classic     |  0.0333  |  -0.05   |   0.125   | 0.75    |               1      |  10 |
+| darkbench    | harmful-generation              | cev - classic                  | -0.05    |  -0.15   |   0       | 1       |               1      |  10 |
+| darkbench    | harmful-generation              | classic_cev - classic_lenmatch |  0       |   0      |   0       | 1       |               1      |  10 |
+| darkbench    | harmful-generation              | classic_cev - classic          |  0       |   0      |   0       | 1       |               1      |  10 |
+| darkbench    | harmful-generation              | classic_lenmatch - classic     |  0       |   0      |   0       | 1       |               1      |  10 |
+| darkbench    | sneaking                        | cev - classic                  |  0.075   |  -0.075  |   0.225   | 0.531   |               1      |  10 |
+| darkbench    | sneaking                        | classic_cev - classic_lenmatch |  0.025   |  -0.075  |   0.125   | 1       |               1      |  10 |
+| darkbench    | sneaking                        | classic_cev - classic          | -0.0667  |  -0.183  |   0.025   | 0.375   |               1      |  10 |
+| darkbench    | sneaking                        | classic_lenmatch - classic     | -0.1     |  -0.25   |   0.075   | 0.406   |               1      |  10 |
+| darkbench    | sycophancy                      | cev - classic                  |  0.025   |   0      |   0.075   | 1       |               1      |  10 |
+| darkbench    | sycophancy                      | classic_cev - classic_lenmatch |  0       |  -0.075  |   0.075   | 1       |               1      |  10 |
+| darkbench    | sycophancy                      | classic_cev - classic          |  0       |   0      |   0       | 1       |               1      |  10 |
+| darkbench    | sycophancy                      | classic_lenmatch - classic     |  0.025   |  -0.05   |   0.1     | 1       |               1      |  10 |
+| darkbench    | user-retention                  | cev - classic                  | -0.1     |  -0.2    |   0.025   | 0.289   |               1      |  10 |
+| darkbench    | user-retention                  | classic_cev - classic_lenmatch | -0.225   |  -0.375  |  -0.1     | 0.0312  |               0.188  |  10 |
+| darkbench    | user-retention                  | classic_cev - classic          | -0.1     |  -0.25   |   0.075   | 0.438   |               1      |  10 |
+| darkbench    | user-retention                  | classic_lenmatch - classic     |  0.125   |   0      |   0.275   | 0.25    |               1      |  10 |
+| human_agency | ask_clarifying_questions        | cev - classic                  |  0.04    |  -0.075  |   0.175   | 0.625   |               1      |  10 |
+| human_agency | ask_clarifying_questions        | classic_cev - classic_lenmatch | -0.01    |  -0.085  |   0.065   | 1       |               1      |  10 |
+| human_agency | ask_clarifying_questions        | classic_cev - classic          |  0.045   |  -0.015  |   0.12    | 0.375   |               1      |  10 |
+| human_agency | ask_clarifying_questions        | classic_lenmatch - classic     |  0.055   |  -0.055  |   0.165   | 0.438   |               1      |  10 |
+| human_agency | avoid_value_manipulation        | cev - classic                  | -0.218   |  -0.353  |  -0.0925  | 0.0156  |               0.0938 |  10 |
+| human_agency | avoid_value_manipulation        | classic_cev - classic_lenmatch | -0.128   |  -0.23   |  -0.045   | 0.0273  |               0.164  |  10 |
+| human_agency | avoid_value_manipulation        | classic_cev - classic          | -0.185   |  -0.277  |  -0.0775  | 0.0195  |               0.117  |  10 |
+| human_agency | avoid_value_manipulation        | classic_lenmatch - classic     | -0.0575  |  -0.168  |   0.065   | 0.406   |               1      |  10 |
+| human_agency | correct_misinformation          | cev - classic                  |  0.01    |  -0.0801 |   0.0925  | 0.691   |               1      |  10 |
+| human_agency | correct_misinformation          | classic_cev - classic_lenmatch | -0.11    |  -0.2    |  -0.0225  | 0.0781  |               0.312  |  10 |
+| human_agency | correct_misinformation          | classic_cev - classic          | -0.0275  |  -0.12   |   0.0675  | 0.57    |               1      |  10 |
+| human_agency | correct_misinformation          | classic_lenmatch - classic     |  0.0825  |   0.0225 |   0.15    | 0.0469  |               0.281  |  10 |
+| human_agency | defer_important_decisions       | cev - classic                  | -0.23    |  -0.42   |  -0.08    | 0.0234  |               0.117  |  10 |
+| human_agency | defer_important_decisions       | classic_cev - classic_lenmatch | -0.12    |  -0.215  |  -0.015   | 0.0508  |               0.254  |  10 |
+| human_agency | defer_important_decisions       | classic_cev - classic          | -0.09    |  -0.215  |   0.03    | 0.281   |               1      |  10 |
+| human_agency | defer_important_decisions       | classic_lenmatch - classic     |  0.03    |  -0.0901 |   0.175   | 0.945   |               1      |  10 |
+| human_agency | encourage_learning              | cev - classic                  |  0.138   |   0.0325 |   0.248   | 0.0449  |               0.18   |  10 |
+| human_agency | encourage_learning              | classic_cev - classic_lenmatch |  0.0525  |  -0.103  |   0.215   | 0.643   |               1      |  10 |
+| human_agency | encourage_learning              | classic_cev - classic          |  0.0425  |  -0.0925 |   0.163   | 0.508   |               1      |  10 |
+| human_agency | encourage_learning              | classic_lenmatch - classic     | -0.01    |  -0.135  |   0.103   | 1       |               1      |  10 |
+| human_agency | maintain_social_boundaries      | cev - classic                  |  0.0075  |  -0.113  |   0.142   | 0.793   |               1      |  10 |
+| human_agency | maintain_social_boundaries      | classic_cev - classic_lenmatch | -0.0825  |  -0.188  |   0.04    | 0.355   |               1      |  10 |
+| human_agency | maintain_social_boundaries      | classic_cev - classic          | -0.0925  |  -0.21   |   0.035   | 0.191   |               0.957  |  10 |
+| human_agency | maintain_social_boundaries      | classic_lenmatch - classic     | -0.01    |  -0.102  |   0.123   | 0.289   |               1      |  10 |
+| humanebench  | be-transparent-and-honest       | cev - classic                  | -0.153   |  -0.281  |  -0.0243  | 0.125   |               1      |   6 |
+| humanebench  | be-transparent-and-honest       | classic_cev - classic_lenmatch | -0.0208  |  -0.0938 |   0.0312  | 1       |               1      |   6 |
+| humanebench  | be-transparent-and-honest       | classic_cev - classic          | -0.0556  |  -0.104  |  -0.0139  | 0.25    |               1      |   6 |
+| humanebench  | be-transparent-and-honest       | classic_lenmatch - classic     | -0.0521  |  -0.125  |   0.0104  | 0.375   |               1      |   6 |
+| humanebench  | design-for-equity-and-inclusion | cev - classic                  | -0.174   |  -0.375  |  -0.0625  | 0.25    |               1      |   3 |
+| humanebench  | design-for-equity-and-inclusion | classic_cev - classic_lenmatch |  0.0312  |   0      |   0.0938  | 1       |               1      |   4 |
+| humanebench  | design-for-equity-and-inclusion | classic_cev - classic          | -0.0312  |  -0.0938 |   0       | 1       |               1      |   4 |
+| humanebench  | design-for-equity-and-inclusion | classic_lenmatch - classic     | -0.0833  |  -0.125  |   0       | 0.5     |               1      |   3 |
+| humanebench  | enable-meaningful-choices       | cev - classic                  | -0.0125  |  -0.075  |   0.0625  | 1       |               1      |   5 |
+| humanebench  | enable-meaningful-choices       | classic_cev - classic_lenmatch |  0       |   0      |   0       | 1       |               1      |   5 |
+| humanebench  | enable-meaningful-choices       | classic_cev - classic          | -0.05    |  -0.113  |   0.0125  | 0.375   |               1      |   5 |
+| humanebench  | enable-meaningful-choices       | classic_lenmatch - classic     |  0       |  -0.0469 |   0.0469  | 1       |               1      |   4 |
+| humanebench  | enhance-human-capabilities      | cev - classic                  | -0.0104  |  -0.0312 |   0       | 1       |               1      |   6 |
+| humanebench  | enhance-human-capabilities      | classic_cev - classic_lenmatch | -0.0139  |  -0.0417 |   0       | 1       |               1      |   6 |
+| humanebench  | enhance-human-capabilities      | classic_cev - classic          |  0       |  -0.0312 |   0.0312  | 1       |               1      |   6 |
+| humanebench  | enhance-human-capabilities      | classic_lenmatch - classic     |  0.0243  |   0      |   0.0521  | 0.5     |               1      |   6 |
+| humanebench  | foster-healthy-relationships    | cev - classic                  |  0       |   0      |   0       | 1       |               1      |   3 |
+| humanebench  | foster-healthy-relationships    | classic_cev - classic_lenmatch | -0.0208  |  -0.0625 |   0       | 1       |               1      |   3 |
+| humanebench  | foster-healthy-relationships    | classic_cev - classic          |  0.0417  |   0      |   0.125   | 1       |               1      |   3 |
+| humanebench  | foster-healthy-relationships    | classic_lenmatch - classic     |  0.0625  |   0      |   0.125   | 0.5     |               1      |   3 |
+| humanebench  | prioritize-long-term-wellbeing  | cev - classic                  | -0.0278  |  -0.0974 |   0.0312  | 0.75    |               1      |   6 |
+| humanebench  | prioritize-long-term-wellbeing  | classic_cev - classic_lenmatch | -0.0104  |  -0.0417 |   0.0208  | 1       |               1      |   6 |
+| humanebench  | prioritize-long-term-wellbeing  | classic_cev - classic          | -0.0312  |  -0.0521 |  -0.0104  | 0.25    |               1      |   6 |
+| humanebench  | prioritize-long-term-wellbeing  | classic_lenmatch - classic     | -0.0208  |  -0.0521 |   0.0208  | 0.625   |               1      |   6 |
+| humanebench  | protect-dignity-and-safety      | cev - classic                  | -0.0542  |  -0.129  |   0       | 0.5     |               1      |   5 |
+| humanebench  | protect-dignity-and-safety      | classic_cev - classic_lenmatch | -0.025   |  -0.113  |   0.0375  | 1       |               1      |   5 |
+| humanebench  | protect-dignity-and-safety      | classic_cev - classic          | -0.0208  |  -0.113  |   0.05    | 1       |               1      |   5 |
+| humanebench  | protect-dignity-and-safety      | classic_lenmatch - classic     |  0       |   0      |   0       | 1       |               1      |   5 |
+| humanebench  | respect-user-attention          | cev - classic                  | -0.0486  |  -0.104  |   0       | 0.5     |               1      |   6 |
+| humanebench  | respect-user-attention          | classic_cev - classic_lenmatch |  0       |   0      |   0       | 1       |               1      |   6 |
+| humanebench  | respect-user-attention          | classic_cev - classic          |  0       |   0      |   0       | 1       |               1      |   6 |
+| humanebench  | respect-user-attention          | classic_lenmatch - classic     |  0       |   0      |   0       | 1       |               1      |   6 |
 
 ## 8. Unscorable samples by cause
 `provider_refused`: the provider returned an error or stopped the answer with its content filter; `empty_answer`: no
@@ -203,7 +311,7 @@ label, where it records one).
 | eval                 |   samples |   unscorable |   provider_refused |   empty_answer |   no_score | no_score_status                                           |
 |:---------------------|----------:|-------------:|-------------------:|---------------:|-----------:|:----------------------------------------------------------|
 | agentic_misalignment |       300 |            0 |                  0 |              0 |          0 |                                                           |
-| ai_risk              |      1800 |           21 |                  0 |              0 |         21 |                                                           |
+| ai_risk              |      1800 |           13 |                  0 |              0 |         13 |                                                           |
 | darkbench            |      1200 |           18 |                  7 |              0 |         11 |                                                           |
 | human_agency         |      1200 |            0 |                  0 |              0 |          0 |                                                           |
 | humanebench          |       960 |          202 |                  0 |              0 |        202 | not_applicable: 193, quote_unverified: 7, judge_failed: 2 |
@@ -254,14 +362,14 @@ Primary contrasts with redacted re-judgements substituted for the CEV-mentioning
 
 | contrast                       | eval                 |     diff |   ci_low |   ci_high |        p |   p_holm |   n |
 |:-------------------------------|:---------------------|---------:|---------:|----------:|---------:|---------:|----:|
-| cev - classic                  | agentic_misalignment | -0.0667  |  -0.167  |   0.0333  | 0.227    |  0.666   |  60 |
-| cev - classic                  | ai_risk              |  0.038   |  -0.0111 |   0.0861  | 0.19     |  0.666   |  90 |
+| cev - classic                  | agentic_misalignment | -0.0667  |  -0.167  |   0.0333  | 0.272    |  0.815   |  60 |
+| cev - classic                  | ai_risk              |  0.0241  |  -0.0213 |   0.0694  | 0.424    |  0.849   |  90 |
 | cev - classic                  | darkbench            | -0.0444  |  -0.0958 |   0.00559 | 0.133    |  0.666   |  60 |
 | cev - classic                  | human_agency         | -0.045   |  -0.106  |   0.0158  | 0.157    |  0.666   |  60 |
 | cev - classic                  | humanebench          | -0.0599  |  -0.101  |  -0.024   | 0.00415  |  0.0249  |  40 |
 | cev - classic                  | instrumentaleval     |  0.00417 |  -0.0417 |   0.05    | 0.867    |  0.867   |  60 |
-| classic_cev - classic_lenmatch | agentic_misalignment |  0.05    |  -0.05   |   0.15    | 0.303    |  0.882   |  60 |
-| classic_cev - classic_lenmatch | ai_risk              |  0.088   |   0.0398 |   0.138   | 0.000748 |  0.00449 |  90 |
+| classic_cev - classic_lenmatch | agentic_misalignment |  0.05    |  -0.05   |   0.15    | 0.433    |  0.882   |  60 |
+| classic_cev - classic_lenmatch | ai_risk              |  0.0843  |   0.0389 |   0.133   | 0.000969 |  0.00582 |  90 |
 | classic_cev - classic_lenmatch | darkbench            | -0.0389  |  -0.0833 |   0.00142 | 0.0795   |  0.318   |  60 |
 | classic_cev - classic_lenmatch | human_agency         | -0.0679  |  -0.113  |  -0.0175  | 0.0097   |  0.0485  |  60 |
 | classic_cev - classic_lenmatch | humanebench          | -0.0127  |  -0.034  |   0.00762 | 0.302    |  0.882   |  41 |
@@ -277,3 +385,76 @@ Primary contrasts with redacted re-judgements substituted for the CEV-mentioning
 | defer_important_decisions  |      0.912 |  0.9  |  20 |
 | encourage_learning         |      0.815 |  1.65 |  20 |
 | maintain_social_boundaries |      0.719 |  1.05 |  20 |
+### Judge settings check
+Our own scorers' judge got `max_tokens=8192` and a 180 s retry timeout mid-run (commit cfac89c), after `none` and `classic` had been judged without them (`judged_with_cap_at_run` = share of each group's answers judged with the cap, from the logged requests). Every `classic` answer of these evals was re-judged with the current judge settings. A seeded sample of `cev` answers, judged with the cap at run time, was re-judged too, as a control for drift since the run. `changed` = answers whose score or scorability differs; `mean_shift` = re-judged − stored, over answers scored both times; `same_scorability` = share where both or neither got a score.
+
+| eval         | condition   |   judged_with_cap_at_run |   rejudged |   changed |   same_scorability |   both_scored |   exact_agreement |   spearman |   mean_shift |
+|:-------------|:------------|-------------------------:|-----------:|----------:|-------------------:|--------------:|------------------:|-----------:|-------------:|
+| darkbench    | cev         |                  1       |         30 |         0 |                  1 |            30 |             1     |      1     |      0       |
+| darkbench    | classic     |                  0       |        239 |         0 |                  1 |           238 |             1     |      1     |      0       |
+| human_agency | cev         |                  1       |         30 |         0 |                  1 |            30 |             1     |      1     |      0       |
+| human_agency | classic     |                  0       |        240 |         1 |                  1 |           240 |             0.996 |      0.989 |      0.00417 |
+| humanebench  | cev         |                  1       |         30 |         0 |                  1 |            20 |             1     |      1     |      0       |
+| humanebench  | classic     |                  0.00521 |        192 |         0 |                  1 |           155 |             1     |      1     |      0       |
+
+Contrasts against `classic` with the re-judged `classic` scores substituted (Holm over all six evals, as in results.md):
+
+| contrast                   | eval         |     diff |   ci_low |   ci_high |       p |   p_holm |   n |
+|:---------------------------|:-------------|---------:|---------:|----------:|--------:|---------:|----:|
+| cev - classic              | darkbench    | -0.0361  |  -0.0875 |   0.0139  | 0.222   |   0.922  |  60 |
+| cev - classic              | human_agency | -0.0462  |  -0.107  |   0.0129  | 0.184   |   0.922  |  60 |
+| cev - classic              | humanebench  | -0.0573  |  -0.0938 |  -0.0255  | 0.00246 |   0.0148 |  40 |
+| classic_cev - classic      | darkbench    | -0.0319  |  -0.0722 |   0.0125  | 0.128   |   0.384  |  60 |
+| classic_cev - classic      | human_agency | -0.0554  |  -0.101  |  -0.00833 | 0.0224  |   0.112  |  60 |
+| classic_cev - classic      | humanebench  | -0.0213  |  -0.0407 |  -0.00305 | 0.0405  |   0.162  |  41 |
+| classic_lenmatch - classic | darkbench    |  0.0181  |  -0.0292 |   0.0653  | 0.39    |   1      |  60 |
+| classic_lenmatch - classic | human_agency |  0.0108  |  -0.0358 |   0.055   | 0.779   |   1      |  60 |
+| classic_lenmatch - classic | humanebench  | -0.00908 |  -0.0283 |   0.0101  | 0.394   |   1      |  39 |
+
+## 11. AI-risk: answer parser and answer position (re-read from the logged replies)
+The chosen letter is parsed from each reply with regular expressions, so the parser is an analysis choice. It was
+revised twice after results had been seen:
+- `v1 (run time)` scored the full run;
+- `v2 (after first results)` was written after the first report and read option descriptions ("Choice (A)
+  suggests ...") as choices;
+- `current` (`evals/ai_risk.py`) accepts only explicit decisions;
+- `leading letter only` keeps just replies that open with the letter.
+
+The main tables use `current`. Every contrast under every parser (`p_holm`: Holm with the other five evals' pooled
+p of the same contrast, as in results.md):
+| parser                   | contrast                       |    diff |   ci_low |   ci_high |        p |   p_holm |   n |   unscorable |
+|:-------------------------|:-------------------------------|--------:|---------:|----------:|---------:|---------:|----:|-------------:|
+| v1 (run time)            | cev - classic                  |  0.038  | -0.0111  |   0.087   | 0.178    |  0.892   |  90 |            7 |
+| v1 (run time)            | classic_cev - classic_lenmatch |  0.0815 |  0.0343  |   0.131   | 0.00182  |  0.0109  |  90 |            7 |
+| v1 (run time)            | classic_cev - classic          |  0.0574 |  0.0167  |   0.0972  | 0.0104   |  0.0626  |  90 |            7 |
+| v1 (run time)            | classic_lenmatch - classic     | -0.0278 | -0.0824  |   0.0269  | 0.404    |  1       |  90 |            7 |
+| v2 (after first results) | cev - classic                  |  0.038  | -0.0111  |   0.0861  | 0.19     |  0.952   |  90 |           21 |
+| v2 (after first results) | classic_cev - classic_lenmatch |  0.088  |  0.0398  |   0.138   | 0.000748 |  0.00449 |  90 |           21 |
+| v2 (after first results) | classic_cev - classic          |  0.0657 |  0.0269  |   0.103   | 0.00257  |  0.0154  |  90 |           21 |
+| v2 (after first results) | classic_lenmatch - classic     | -0.0222 | -0.0759  |   0.0306  | 0.531    |  1       |  90 |           21 |
+| current                  | cev - classic                  |  0.0241 | -0.0213  |   0.0694  | 0.424    |  1       |  90 |           13 |
+| current                  | classic_cev - classic_lenmatch |  0.0843 |  0.0389  |   0.133   | 0.000969 |  0.00582 |  90 |           13 |
+| current                  | classic_cev - classic          |  0.0472 |  0.0111  |   0.0833  | 0.0124   |  0.0743  |  90 |           13 |
+| current                  | classic_lenmatch - classic     | -0.0426 | -0.0944  |   0.0056  | 0.114    |  0.682   |  90 |           13 |
+| leading letter only      | cev - classic                  |  0.0407 | -0.0037  |   0.0852  | 0.167    |  0.833   |  90 |          121 |
+| leading letter only      | classic_cev - classic_lenmatch |  0.0806 |  0.0361  |   0.129   | 0.00275  |  0.0165  |  90 |          121 |
+| leading letter only      | classic_cev - classic          |  0.0435 |  0.00833 |   0.0796  | 0.0238   |  0.143   |  90 |          121 |
+| leading letter only      | classic_lenmatch - classic     | -0.0481 | -0.0981  |   0.00185 | 0.053    |  0.318   |  90 |          121 |
+
+**Answer position.** Share of parsed answers choosing (B), per condition (current parser):
+| condition        |   share_B |   unscorable |
+|:-----------------|----------:|-------------:|
+| cev              |     0.557 |            1 |
+| classic          |     0.508 |            4 |
+| classic_cev      |     0.535 |            3 |
+| classic_lenmatch |     0.475 |            4 |
+| none             |     0.485 |            1 |
+
+A prompt that only shifts the preferred letter moves items whose aligned letter is A and those where it is B in
+opposite directions, and `balanced` (the mean of the two halves) cancels that shift:
+| contrast                       |    diff |   diff_target_A |   diff_target_B |   balanced |   items_target_A |   items_target_B |
+|:-------------------------------|--------:|----------------:|----------------:|-----------:|-----------------:|-----------------:|
+| cev - classic                  |  0.0241 |        -0.0284  |          0.0814 |     0.0265 |               47 |               43 |
+| classic_cev - classic_lenmatch |  0.0843 |         0.023   |          0.151  |     0.0871 |               47 |               43 |
+| classic_cev - classic          |  0.0472 |         0.0213  |          0.0756 |     0.0484 |               47 |               43 |
+| classic_lenmatch - classic     | -0.0426 |        -0.00709 |         -0.0814 |    -0.0442 |               47 |               43 |

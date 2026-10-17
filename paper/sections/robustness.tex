@@ -17,9 +17,10 @@ HumanAgencyBench drop does not reach significance ($p=\RHabClassiccevLenmatchHol
 
 \paragraph{Does one model drive an effect?}
 Removing each model in turn, the AI-risk gain stays between \RAirClassiccevLenmatchLooMin{} and
-\RAirClassiccevLenmatchLooMax{}, but it is Holm-significant in only two of the four leave-outs (Holm
-$p=\RAirClassiccevLenmatchWithoutClaudeHolm$ without Claude and $p=\RAirClassiccevLenmatchWithoutLlamaHolm$ without
-Llama). The HumaneBench drop stays negative (\RHbCevClassicLooMin{} to \RHbCevClassicLooMax{}) but depends on Llama
+\RAirClassiccevLenmatchLooMax{}. With Holm within the contrast, it stays significant without GPT
+($p=\RAirClassiccevLenmatchWithoutGptHolm$) or without Qwen ($p=\RAirClassiccevLenmatchWithoutQwenHolm$). It is not
+significant without Claude ($p=\RAirClassiccevLenmatchWithoutClaudeHolm$) or without Llama
+($p=\RAirClassiccevLenmatchWithoutLlamaHolm$). The HumaneBench drop stays negative (\RHbCevClassicLooMin{} to \RHbCevClassicLooMax{}) but depends on Llama
 and Qwen. It is not significant without Llama (\RHbCevClassicWithoutLlamaDiff{}, Holm
 $p=\RHbCevClassicWithoutLlamaHolm$) or without Qwen (\RHbCevClassicWithoutQwenDiff{}, Holm
 $p=\RHbCevClassicWithoutQwenHolm$). See Appendix Table~\ref{tab:loo}.
@@ -34,14 +35,48 @@ cases where the judge marked the targeted principle as not applicable, which its
   \item imputing unscorable samples at three fixed values: \RHbMissImputeCevClassicMin{} to
   \RHbMissImputeCevClassicMax{}, all $p\le\RHbMissImputeCevClassicPMax$.
 \end{itemize}
-The conclusion is unchanged (Appendix Table~\ref{tab:missing}).
+Both treat unscorable answers alike in every condition, and the conclusion is unchanged under them (Appendix
+Table~\ref{tab:missing}). A tipping-point analysis drops that assumption. It imputes unscorable samples at
+$\RHbTipCenter+\delta/2$ under \cond{cev} and $\RHbTipCenter-\delta/2$ under \cond{classic}. At $\delta=\RHbTipNsDelta$ (\RHbTipNsFillA{}
+against \RHbTipNsFillB{}) the drop is \RHbTipNsDiff{} and no longer significant ($p=\RHbTipNsP$), and at
+$\delta=\RHbTipZeroDelta$ it vanishes. The HumaneBench result therefore assumes that unscorable answers under the CEV
+prompt are not markedly better than those under the classic prompt.
 
 \paragraph{Provider routing.}
 OpenRouter served the open-weight models from several backends (\RQwenProviders{} for Qwen, \RLlamaProviders{} for
 Llama), and because the conditions ran one after another, the mix differed between conditions. After removing each
 evaluation$\times$condition$\times$model mean, no backend with at least 50 samples deviates by more than
-\RProviderResidMax{} in aligned score (Appendix Table~\ref{tab:providers}). This cannot account for the effects
-above. Providers were not pinned, however.
+\RProviderResidMax{} in aligned score (Appendix Table~\ref{tab:providers}). Residuals around condition means can
+hide routing that tracks the condition, so we also fitted, per model, the condition effect with item fixed effects
+and with item and provider fixed effects.
+\begin{itemize}
+  \item For Llama, the HumaneBench drop is unchanged (\RFeHbCevClassicLlamaItem{} without and
+  \RFeHbCevClassicLlamaProvider{} with provider effects).
+  \item For Qwen, it shrinks from \RFeHbCevClassicQwenItem{} to \RFeHbCevClassicQwenProvider{} ($p=\RFeHbCevClassicQwenProviderP$).
+\end{itemize}
+Routing therefore does not explain the Llama part of the effect. Providers were not pinned.
+
+\paragraph{Did the mid-run judge settings matter?}
+After a hung call, our own scorers' judge got an output cap and a retry timeout. By then \cond{none} and
+\cond{classic} had already been judged without them, as the logged requests confirm, so every contrast against
+those conditions on HumaneBench, HumanAgencyBench and DarkBench mixes two judge configurations. We re-judged all
+\RCfgClassicRejudged{} \cond{classic} answers of these evaluations under the later settings, and only
+\RCfgClassicChanged{} score changed. As a control for drift since the run, we also re-judged \RCfgControlRejudged{}
+\cond{cev} answers that had been judged with the cap; \RCfgControlChanged{} of them changed. With the re-judged scores, HumaneBench
+\cond{cev}$-$\cond{classic} is still \RCfgHbCevClassicDiff{} (Holm $p=\RCfgHbCevClassicHolm$).
+
+\paragraph{Is the AI-risk gain an artefact of answer parsing?}
+The chosen letter is parsed from each reply with regular expressions. The parser was revised after results had been
+seen: once after the first report, and once when an independent audit found that the second version read option
+descriptions (``Choice (A) suggests \ldots'') as choices. Across the run-time, second, current and
+leading-letter-only versions, the primary AI-risk gain is \RAirParserVoneClassiccevLenmatchDiff,
+\RAirParserVtwoClassiccevLenmatchDiff, \RAirParserCurrentClassiccevLenmatchDiff{} and
+\RAirParserLeadClassiccevLenmatchDiff, all significant after Holm. The secondary gain over \cond{classic} alone is
+significant after correction only under the second version (Holm $p=\RAirParserVtwoClassiccevClassicHolm$, against
+$p=\RAirParserCurrentClassiccevClassicHolm$ now). Nor is the gain a shift in which letter models prefer. Answers
+under \cond{classic+cev} chose (B) slightly more often than under \cond{classic+lenmatch} (\RAirShareBClassiccev{}
+against \RAirShareBLenmatch). An estimate that weights items whose aligned answer is (A) and (B) equally, which cancels
+such a shift, is \RAirPositionClassiccevLenmatchBalanced.
 
 \paragraph{Where do the losses come from?}
 On five of the six evaluations, \RMentionShareMin--\RMentionShareMax{} of answers under the two CEV prompts explicitly
@@ -76,8 +111,9 @@ the redacted copies would score higher. They do not (Table~\ref{tab:blinding}). 
 \RBlindHabDiff{} ($p=\RBlindHabP$), HumaneBench by \RBlindHbDiff{} ($p=\RBlindHbP$), and DarkBench by \RBlindDbDiff{}
 ($p=\RBlindDbP$). Redaction can also delete substantive content, so these differences are an upper bound on any
 judge reaction. The judge is deterministic: re-judging gave identical scores for \RRetestAgree{} of \RRetestN{}
-answers. The lower scores therefore reflect the answers themselves, and the items that elicit them, rather than a reaction to
-the word.
+answers. We therefore find no evidence that the judge reacts to the word. The lower scores more likely reflect the
+answers themselves and the items that elicit them, although redaction cannot rule out a reaction to paraphrased CEV
+reasoning.
 
 \begin{table}[t]
 \centering\small

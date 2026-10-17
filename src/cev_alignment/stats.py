@@ -10,7 +10,9 @@ Local context (methodology, following Miller 2024, "Adding Error Bars to Evals",
   cluster sizes), then tested the same way. Those means are fractional, so pooled tests are Wilcoxon even for
   binary evals; McNemar applies to per-model contrasts.
 - An eval with a single item run for many epochs (agentic_misalignment) has no pairing; its epochs are
-  compared unpaired (Mann-Whitney U, two-sample bootstrap CI).
+  compared unpaired (Mann-Whitney U, two-sample bootstrap CI). Pooled over models, its binary scores are tested
+  with a Cochran-Mantel-Haenszel test stratified by model, so differences between models are not mistaken for an
+  effect of the condition (statsmodels StratifiedTable).
 - Holm correction across evals within each contrast, on the pooled rows (statsmodels multipletests).
 Docs: https://docs.scipy.org/doc/scipy/reference/stats.html , https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html
 
@@ -22,6 +24,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from scipy import stats as st
+from statsmodels.stats.contingency_tables import StratifiedTable
 from statsmodels.stats.multitest import multipletests
 
 SEED = 0  # bootstrap seed (reproducible CIs)
@@ -89,14 +92,31 @@ def _unpaired(a: np.ndarray, b: np.ndarray) -> dict:
             "n": min(len(a), len(b)), "test": "mannwhitney"}
 
 
+def _cmh_p(df: pd.DataFrame, cond_a: str, cond_b: str) -> float:
+    """Cochran-Mantel-Haenszel p-value of a 0/1 score, A vs B, stratified by model (one 2x2 table per model).
+
+    A model whose epochs all have the same score carries no information and is left out; none left -> 1.0. With
+    the continuity correction, because counts are small (on this run's data it matches an exact within-model
+    permutation test: 0.27 vs 0.27 and 0.43 vs 0.42 on the primary contrasts).
+    Docs: https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.StratifiedTable.html
+    """
+    tables = [np.array([[((g.condition == c) & (g.aligned == v)).sum() for v in (1.0, 0.0)] for c in (cond_a, cond_b)],
+                       dtype=float)
+              for _, g in df.groupby("model") if g["aligned"].nunique() > 1]
+    return float(StratifiedTable(tables).test_null_odds(correction=True).pvalue) if tables else 1.0
+
+
 def contrast(df: pd.DataFrame, cond_a: str, cond_b: str) -> dict:
     """Compare condition A vs B on one eval (rows may span several models -> pooled over models)."""
     if df.empty or df["aligned"].isna().all():  # nothing scorable (e.g. an empty complete-case subset)
         return dict(EMPTY)
     if df["item"].nunique() == 1:  # one prompt x many epochs: compare the epochs, unpaired
-        a = df.loc[df.condition == cond_a, "aligned"].dropna().to_numpy(float)
-        b = df.loc[df.condition == cond_b, "aligned"].dropna().to_numpy(float)
-        return _unpaired(a, b)
+        d = df[df.condition.isin([cond_a, cond_b])].dropna(subset=["aligned"])
+        out = _unpaired(d.loc[d.condition == cond_a, "aligned"].to_numpy(float),
+                        d.loc[d.condition == cond_b, "aligned"].to_numpy(float))
+        if out["test"] != "none" and d["model"].nunique() > 1 and set(d["aligned"].unique()) <= {0.0, 1.0}:
+            out |= {"p": _cmh_p(d, cond_a, cond_b), "test": "cmh"}  # pooled over models: stratify by model
+        return out
     im = item_means(df)
     wide = im.pivot_table(index=["model", "item"], columns="condition", values="aligned")
     if not {cond_a, cond_b} <= set(wide.columns):  # a condition with no scorable items at all

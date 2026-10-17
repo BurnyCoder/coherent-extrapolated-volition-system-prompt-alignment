@@ -1,14 +1,14 @@
 model,provider,mean_residual,samples
 anthropic/claude-haiku-5.5,Claude Platform on AWS,5.250588044275787e-18,1607
-meta-llama/llama-3.3-70b-instruct,AkashML,0.006591342832186134,181
-meta-llama/llama-3.3-70b-instruct,Cloudflare,0.026263524322536116,56
-meta-llama/llama-3.3-70b-instruct,DeepInfra,-0.013401376910144949,753
-meta-llama/llama-3.3-70b-instruct,Novita,0.01618168736705021,420
-meta-llama/llama-3.3-70b-instruct,Parasail,0.020741212333118167,149
+meta-llama/llama-3.3-70b-instruct,AkashML,0.007421488765095678,182
+meta-llama/llama-3.3-70b-instruct,Cloudflare,0.026049506130989837,56
+meta-llama/llama-3.3-70b-instruct,DeepInfra,-0.013449291784148725,753
+meta-llama/llama-3.3-70b-instruct,Novita,0.016022065465855276,420
+meta-llama/llama-3.3-70b-instruct,Parasail,0.020505768383022233,149
 openai/gpt-6-luna,OpenAI,8.688701931849052e-18,1610
-qwen/qwen3.6-35b-a3b,AkashML,-0.012675628129941016,377
-qwen/qwen3.6-35b-a3b,AtlasCloud,-0.0011681814044567445,216
-qwen/qwen3.6-35b-a3b,CoreWeave,-0.011742946752584128,215
-qwen/qwen3.6-35b-a3b,Parasail,0.03862819745478259,202
-qwen/qwen3.6-35b-a3b,Phala,-0.0009260765669186311,115
-qwen/qwen3.6-35b-a3b,SiliconFlow,-0.0015400880697291242,460
+qwen/qwen3.6-35b-a3b,AkashML,-0.010482966940768229,379
+qwen/qwen3.6-35b-a3b,AtlasCloud,0.02206444647061513,219
+qwen/qwen3.6-35b-a3b,CoreWeave,-0.026927522009716064,215
+qwen/qwen3.6-35b-a3b,Parasail,0.016967471152207207,202
+qwen/qwen3.6-35b-a3b,Phala,0.002999173460161181,116
+qwen/qwen3.6-35b-a3b,SiliconFlow,0.0014121343076354974,461
