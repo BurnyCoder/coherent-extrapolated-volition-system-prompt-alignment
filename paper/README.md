@@ -1,13 +1,14 @@
 # Paper
 
-**Coherent Extrapolated Volition as a System Prompt: More Corrigible Answers, No Overall Gain, and Signs of
-Paternalism**, by Libor Burian. A built PDF is committed:
+**Coherent Extrapolated Volition as a System Prompt: Fewer Power-Seeking and Self-Preserving Answers, No Overall
+Gain, and Signs of Paternalism**, by Libor Burian. A built PDF is committed:
 [`cev-system-prompt-alignment.pdf`](cev-system-prompt-alignment.pdf).
 
 ## Build
 
 The build needs pdfLaTeX, BibTeX and latexmk (TeX Live or TinyTeX). It uses only standard packages: geometry,
-lmodern, booktabs, longtable, etoolbox, natbib, hyperref, graphicx, caption, xcolor. From the repository root:
+fontenc, inputenc, lmodern, textcomp, amsmath, amssymb, booktabs, longtable, etoolbox, graphicx, xcolor, caption,
+natbib, hyperref. From the repository root:
 
 ```bash
 make -C paper
@@ -24,9 +25,14 @@ Intermediates go to the git-ignored `paper/build/`, and the PDF is copied to `pa
   - the exact system prompts and the 13 CEV edits;
   - the qualitative example, quoted from the logs.
   The prose in `sections/` must not contain hand-typed results; `tests/test_paper.py` enforces this.
-- **`references.bib`** is written by `uv run python paper/tools/fetch_references.py`. Papers are fetched by DOI
-  content negotiation, with an OpenAlex fallback for JSTOR DOIs. Each fetched title must contain an expected fragment.
-  Web sources must answer HTTP 200. Nothing is typed from memory.
+- **`references.bib`** is written by `uv run python paper/tools/fetch_references.py`.
+  - Papers are fetched by DOI content negotiation. The OpenAlex fallback is used whenever doi.org answers 404, as it
+    does for some JSTOR DOIs.
+  - Each fetched title must contain an expected fragment.
+  - Two sourced overrides apply: Holm's DOI does not resolve, so its JSTOR URL is cited, and Wilcoxon's page range
+    is taken from JSTOR.
+  - The seven web sources (CEV.pdf, Inspect, Inspect Evals, HumaneBench, Claude's constitution, OpenRouter, Huxley)
+    are typed from their source pages, each commented with where it was checked, and must answer HTTP 200.
 - **Figures** are the vector PDFs in `reports/figures/`, written by `report.py`.
 
 ## Layout

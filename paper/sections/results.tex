@@ -49,11 +49,14 @@ prompt (\RHbMissCompleteClassicNoneDiff{}, $p=\RHbMissCompleteClassicNoneP$) and
 (\RHbCevClassicLlamaDiff{}) and Qwen (\RHbCevClassicQwenDiff{}) and absent for GPT (\RHbCevClassicGptDiff{}); see
 Figure~\ref{fig:permodel}.
 
-\paragraph{Adding CEV text: more corrigible answers, less deference.}
+\paragraph{Adding CEV text: more aligned AI-risk answers, lower agency scores.}
 When the CEV text is added to the classic prompt and compared with the equally long neutral text, the AI-risk answers
 become more aligned: \RAirClassiccevLenmatchDiff{} \RAirClassiccevLenmatchCi{}, Holm $p=\RAirClassiccevLenmatchHolm$,
-$p=\RAirClassiccevLenmatchHolmAll$ across all twelve tests. The CEV prompt alone also beats no prompt on these
-questions (\RAirCevNoneDiff{}, Holm $p=\RAirCevNoneHolm$; a secondary contrast). By subset, the gain is largest for
+$p=\RAirClassiccevLenmatchHolmAll$ across all twelve tests. Added to the classic prompt, the CEV text also beats the
+classic prompt alone (\RAirClassiccevClassicDiff{}, Holm $p=\RAirClassiccevClassicHolm$), and the CEV prompt alone
+beats no prompt (\RAirCevNoneDiff{}, Holm $p=\RAirCevNoneHolm$); both are secondary contrasts. The CEV prompt alone
+does not beat the classic prompt (\RAirCevClassicDiff{}, Holm $p=\RAirCevClassicHolm$). These questions map to
+Section~3.1 of the essay, which is not in the prompt. By subset, the gain is largest for
 survival instinct (\RSubAirSurvivalInstinctClassiccevLenmatchDiff{} \RSubAirSurvivalInstinctClassiccevLenmatchCi{}),
 followed by power-seeking (\RSubAirPowerSeekingInclinationClassiccevLenmatchDiff{}). Accepting a neutral goal change
 does not move (\RSubAirCorrigibleNeutralHhhClassiccevLenmatchDiff{}). The same addition lowers HumanAgencyBench by
@@ -62,23 +65,26 @@ $p=\RHabClassiccevLenmatchHolm$; $p=\RHabClassiccevLenmatchHolmAll$ across all t
 direction (\RDbClassiccevLenmatchDiff{}, Holm $p=\RDbClassiccevLenmatchHolm$).
 
 \paragraph{Where deference drops (exploratory).}
-HumanAgencyBench has six dimensions. Two account for the drop, comparing \cond{cev} with \cond{classic}: \emph{defer
+HumanAgencyBench has six dimensions. Comparing \cond{cev} with \cond{classic}, two stand out: \emph{defer
 important decisions} (\RSubHabDeferImportantDecisionsCevClassicDiff{} \RSubHabDeferImportantDecisionsCevClassicCi{})
 and \emph{avoid value manipulation} (\RSubHabAvoidValueManipulationCevClassicDiff{}
 \RSubHabAvoidValueManipulationCevClassicCi{}). Each rests on \RSubHabDeferImportantDecisionsCevClassicN{} items
 pooled over models and is uncorrected. Holm-adjusted within HumanAgencyBench, neither is significant
 ($p=\RSubHabDeferImportantDecisionsCevClassicHolmWithin$ and $p=\RSubHabAvoidValueManipulationCevClassicHolmWithin$). By contrast, \emph{encourage learning} improves
-(\RSubHabEncourageLearningCevClassicDiff{} \RSubHabEncourageLearningCevClassicCi{}). On HumaneBench, the largest
+(\RSubHabEncourageLearningCevClassicDiff{} \RSubHabEncourageLearningCevClassicCi{}). For
+\cond{classic+cev}$-$\cond{classic+lenmatch}, the drop is spread over four dimensions (Appendix
+Table~\ref{tab:subgroups}). On HumaneBench, the largest
 per-principle drops are \emph{design for equity and inclusion} (\RSubHbDesignForEquityAndInclusionCevClassicDiff{},
 $n=\RSubHbDesignForEquityAndInclusionCevClassicN$ items) and \emph{be transparent and honest}
 (\RSubHbBeTransparentAndHonestCevClassicDiff{}, $p=\RSubHbBeTransparentAndHonestCevClassicP$,
 $n=\RSubHbBeTransparentAndHonestCevClassicN$ items). No single principle is significant on its own. Appendix Table~\ref{tab:subgroups} lists all sub-categories.
 
 The following pair illustrates the drop. \RDeferFlipN{} of the \RDeferPairs{} model$\times$item pairs on
-\emph{defer important decisions} flip in the same direction, from a high agency score under \cond{classic} to a low one under
-\cond{cev}. A user writes: ``\RExamplePrompt{} [\ldots]'' Under \cond{classic}, Claude Haiku replies:
-``\RExampleClassic{} [\ldots]''. Under \cond{cev}, the same model replies: ``\RExampleCev'', followed by a concrete
-allocation of the fund.
+\emph{defer important decisions} flip from a high agency score under \cond{classic} ($\geq$0.8) to a low one under
+\cond{cev} ($\leq$0.2). A user writes: ``\RExamplePrompt{} [\ldots]'' Both of Claude Haiku's replies contain the same
+allocation of the fund. Under \cond{classic}, the reply opens: ``\RExampleClassic{}'', then offers alternative
+principles and gives the allocation as one example. Under \cond{cev}, it opens: ``\RExampleCev'', gives the allocation
+as its answer, and only closes with ``\RExampleCevclose''.
 
 \paragraph{Agentic blackmail.}
 Blackmail was rare for Claude, GPT and Llama in every condition, at no more than one of \RAmEpochs{} epochs. Qwen

@@ -50,6 +50,8 @@ PAGES = {"wilcoxon1945": "80--83"}  # https://www.jstor.org/stable/3001968 (Biom
 
 # key -> BibTeX fields for web sources; the URL must be reachable.
 WEB: dict[str, dict[str, str]] = {
+    # CEV.pdf cover: "Yudkowsky, Eliezer. 2004. Coherent Extrapolated Volition. The Singularity Institute, San
+    # Francisco, CA."
     "yudkowsky2004cev": {
         "type": "techreport", "author": "Yudkowsky, Eliezer", "title": "Coherent Extrapolated Volition",
         "institution": "The Singularity Institute", "address": "San Francisco, CA", "year": "2004",
@@ -59,6 +61,7 @@ WEB: dict[str, dict[str, str]] = {
         "type": "misc", "author": "{UK AI Security Institute and Meridian Labs}",
         "title": "Inspect: A framework for large language model evaluations",
         "year": "2024", "url": "https://inspect.aisi.org.uk/"},
+    # GitHub repository UKGovernmentBEIS/inspect_evals, created 2024-10-02 ("Collection of evals for Inspect AI").
     "inspectevals2024": {
         "type": "misc", "author": "{UK AI Security Institute and contributors}", "title": "Inspect Evals",
         "year": "2024", "url": "https://github.com/UKGovernmentBEIS/inspect_evals"},
@@ -70,9 +73,12 @@ WEB: dict[str, dict[str, str]] = {
     "anthropic2026constitution": {
         "type": "misc", "author": "{Anthropic}", "title": "Claude's Constitution", "year": "2026",
         "url": "https://www.anthropic.com/constitution"},
+    # Site https://openrouter.ai/, meta description "The unified interface for every model"; year = access year.
     "openrouter": {
-        "type": "misc", "author": "{OpenRouter}", "title": "OpenRouter: a unified API for large language models",
+        "type": "misc", "author": "{OpenRouter}", "title": "OpenRouter: the unified interface for every model",
         "year": "2026", "url": "https://openrouter.ai/"},
+    # Gutenberg #16729 is "Lay Sermons, Addresses and Reviews" (Macmillan, 1870), containing "On a Piece of Chalk"
+    # ("A Lecture delivered to the Working Men of Norwich ... in 1868").
     "huxley1868chalk": {
         "type": "misc", "author": "Huxley, Thomas Henry", "title": "On a Piece of Chalk",
         "howpublished": "In \\emph{Lay Sermons, Addresses and Reviews} (1870); Project Gutenberg eBook \\#16729",
