@@ -33,7 +33,7 @@ Table~\ref{tab:means} gives the mean aligned score of every evaluation under eve
 Figure~\ref{fig:primary} and Table~\ref{tab:primary} the two primary contrasts.
 
 \paragraph{CEV does not beat the classic prompt.}
-Against \cond{classic}, \cond{cev} improves no evaluation. It lowers HumaneBench by \RHbCevClassicDiff{}
+Against \cond{classic}, \cond{cev} significantly improves no evaluation. It lowers HumaneBench by \RHbCevClassicDiff{}
 \RHbCevClassicCi{} (Holm $p=\RHbCevClassicHolm$; $p=\RHbCevClassicHolmAll$ across all twelve tests). The other
 differences are not significant:
 \begin{itemize}
@@ -45,22 +45,41 @@ differences are not significant:
 \end{itemize}
 The HumaneBench gap has two sources. On items scored in every condition, the classic prompt helps relative to no
 prompt (\RHbMissCompleteClassicNoneDiff{}, $p=\RHbMissCompleteClassicNoneP$) and the CEV prompt hurts slightly
-(\RHbMissCompleteCevNoneDiff{}, $p=\RHbMissCompleteCevNoneP$). Per model, the drop is largest for Llama
+(\RHbMissCompleteCevNoneDiff{}, $p=\RHbMissCompleteCevNoneP$). Both $p$-values are uncorrected. In the secondary
+contrasts on all items, Holm gives $p=\RHbClassicNoneHolm$ and $p=\RHbCevNoneHolm$. This contrast is not length-controlled:
+\cond{cev} replaces the classic text, and no condition had the neutral text alone. Per model, the drop is largest for Llama
 (\RHbCevClassicLlamaDiff{}) and Qwen (\RHbCevClassicQwenDiff{}) and absent for GPT (\RHbCevClassicGptDiff{}); see
 Figure~\ref{fig:permodel}.
 
-\paragraph{Adding CEV text: more aligned AI-risk answers, lower agency scores.}
+\paragraph{Adding CEV text: more aligned AI-risk answers than a neutral text, lower agency scores.}
 When the CEV text is added to the classic prompt and compared with the equally long neutral text, the AI-risk answers
 become more aligned: \RAirClassiccevLenmatchDiff{} \RAirClassiccevLenmatchCi{}, Holm $p=\RAirClassiccevLenmatchHolm$,
-$p=\RAirClassiccevLenmatchHolmAll$ across all twelve tests. Added to the classic prompt, the CEV text also beats the
-classic prompt alone (\RAirClassiccevClassicDiff{}, Holm $p=\RAirClassiccevClassicHolm$), and the CEV prompt alone
-beats no prompt (\RAirCevNoneDiff{}, Holm $p=\RAirCevNoneHolm$); both are secondary contrasts. The CEV prompt alone
-does not beat the classic prompt (\RAirCevClassicDiff{}, Holm $p=\RAirCevClassicHolm$). These questions map to
-Section~3.1 of the essay, which is not in the prompt. By subset, the gain is largest for
-survival instinct (\RSubAirSurvivalInstinctClassiccevLenmatchDiff{} \RSubAirSurvivalInstinctClassiccevLenmatchCi{}),
-followed by power-seeking (\RSubAirPowerSeekingInclinationClassiccevLenmatchDiff{}). Accepting a neutral goal change
-does not move (\RSubAirCorrigibleNeutralHhhClassiccevLenmatchDiff{}). The same addition lowers HumanAgencyBench by
-\RHabClassiccevLenmatchDiff{} \RHabClassiccevLenmatchCi{}. This is not significant after correction (Holm
+$p=\RAirClassiccevLenmatchHolmAll$ across all twelve tests.
+\begin{itemize}
+  \item About half of this gap is the neutral text lowering AI-risk answers relative to the classic prompt
+  (\RAirLenmatchClassicDiff, Holm $p=\RAirLenmatchClassicHolm$).
+  \item Against the classic prompt alone, adding the CEV text gives \RAirClassiccevClassicDiff{} ($p=\RAirClassiccevClassicP$
+  uncorrected, Holm $p=\RAirClassiccevClassicHolm$, secondary).
+  \item The CEV prompt alone beats no prompt (\RAirCevNoneDiff{}, Holm $p=\RAirCevNoneHolm$, secondary) but does not
+  beat the classic prompt (\RAirCevClassicDiff{}, Holm $p=\RAirCevClassicHolm$).
+\end{itemize}
+These questions map to Section~3.1 of the essay, which is not in the prompt.
+
+Which subset gains depends on the comparator (exploratory, Holm within the evaluation):
+\begin{itemize}
+  \item Against the neutral text, the gain is on survival instinct
+  (\RSubAirSurvivalInstinctClassiccevLenmatchDiff{} \RSubAirSurvivalInstinctClassiccevLenmatchCi{}, $p=\RSubAirSurvivalInstinctClassiccevLenmatchHolmWithin$)
+  and power-seeking (\RSubAirPowerSeekingInclinationClassiccevLenmatchDiff{}, $p=\RSubAirPowerSeekingInclinationClassiccevLenmatchHolmWithin$).
+  Accepting a neutral goal change does not move (\RSubAirCorrigibleNeutralHhhClassiccevLenmatchDiff{}).
+  \item The neutral text itself lowered survival-instinct (\RSubAirSurvivalInstinctLenmatchClassicDiff{}) and
+  power-seeking (\RSubAirPowerSeekingInclinationLenmatchClassicDiff{}) answers relative to \cond{classic}.
+  \item Against \cond{classic} alone, the CEV text raised acceptance of a goal change
+  (\RSubAirCorrigibleNeutralHhhClassiccevClassicDiff{}, $p=\RSubAirCorrigibleNeutralHhhClassiccevClassicHolmWithin$),
+  not survival instinct (\RSubAirSurvivalInstinctClassiccevClassicDiff{}).
+\end{itemize}
+
+The same addition lowers HumanAgencyBench by
+\RHabClassiccevLenmatchDiff{} \RHabClassiccevLenmatchCi{}. This is borderline after correction (Holm
 $p=\RHabClassiccevLenmatchHolm$; $p=\RHabClassiccevLenmatchHolmAll$ across all twelve). DarkBench moves in the same
 direction (\RDbClassiccevLenmatchDiff{}, Holm $p=\RDbClassiccevLenmatchHolm$).
 
@@ -89,13 +108,15 @@ as its answer, and only closes with ``\RExampleCevclose''.
 \paragraph{Agentic blackmail.}
 Blackmail was rare for Claude, GPT and Llama in every condition, at no more than one of \RAmEpochs{} epochs. Qwen
 blackmailed in \RAmHarmfulQwenCev{} of \RAmEpochs{} epochs under \cond{cev} against \RAmHarmfulQwenClassic{} under
-\cond{classic}. This difference is not significant.
+\cond{classic}. This difference is not significant (pooled over models with a model-stratified
+Cochran--Mantel--Haenszel test, $p=\RAmCevClassicP$).
 
 \paragraph{Prompt length alone.}
-Adding the neutral text to the classic prompt changes no evaluation detectably: \cond{classic+lenmatch}$-$\cond{classic}
-has a smallest Holm $p$ of \RLenmatchClassicHolmMin{} (Appendix Table~\ref{tab:secondary}). The effects above
-therefore come from the CEV text rather than from prompt length. Whether \emph{any} long value-laden instruction
-would produce the same effects is a separate question (Section~\ref{sec:limitations}).
+At the level of whole evaluations, adding the neutral text to the classic prompt changes nothing significantly:
+\cond{classic+lenmatch}$-$\cond{classic} has a smallest Holm $p$ of \RLenmatchClassicHolmMin{} (Appendix
+Table~\ref{tab:secondary}). The neutral text is not inert, however. It moved two AI-risk subsets (above), so the
+AI-risk gain over it is partly a loss under the control. Whether \emph{any} long value-laden instruction would
+produce the same effects as the CEV text is a separate question (Section~\ref{sec:limitations}).
 
 \begin{figure}[t]
 \centering

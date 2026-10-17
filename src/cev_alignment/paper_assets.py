@@ -310,6 +310,7 @@ def robustness_macros(reports_dir: Path, m: Macros) -> None:
     ai_risk parser versions, answer-position shares and position-balanced contrasts (robustness.md §4, §5, §11)."""
     rob = reports_dir / "robustness"
     tip = pd.read_csv(rob / "tipping_point_humanebench.csv")
+    m.add("RHbTipCenter", plain(tip["fill_a"].iloc[0], 2))  # delta = 0: both conditions imputed at the center
     for name, rows in (("Ns", tip[tip["p"] >= 0.05]), ("Zero", tip[tip["diff"] >= 0])):
         if len(rows):  # the smallest delta at which the effect is no longer significant / no longer negative
             r = rows.iloc[0]
