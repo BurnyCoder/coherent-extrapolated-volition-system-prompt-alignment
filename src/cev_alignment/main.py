@@ -145,7 +145,7 @@ def run(args: argparse.Namespace) -> None:
         judge_checks.run_blinding(settings, full_root, out / "blinding.csv", max_usd, args.judge_checks_limit)
         if args.judge_checks_limit is None:  # the validity check is cached only for full runs
             judge_checks.run_validity(settings, out / "validity.csv", max_usd)
-    robustness.write_robustness(reports_dir, items, judge_checks.summary_markdown(reports_dir, items))  # 10b
+    robustness.write_robustness(reports_dir, items, judge_checks.summary_markdown(reports_dir, items), full_root)  # 10b
     report.write_report(reports_dir, items, summary, contrasts, run_info)  # 11
     if not settings.offline:  # 13: every number and table the paper quotes, generated from the reports
         paper_assets.write_paper_assets(reports_dir, full_root, settings.root / "paper", n)
