@@ -46,6 +46,27 @@ def test_single_item_with_epochs_is_compared_unpaired():
     assert out["diff"] == 1.0 and out["p"] < 0.001
 
 
+def epochs_df(values_by_model_condition):
+    """Single-item eval (one prompt x epochs), like agentic_misalignment."""
+    return pd.DataFrame([{"condition": c, "eval": "am", "model": m, "item": "x", "epoch": e, "aligned": float(v)}
+                         for (m, c), vals in values_by_model_condition.items() for e, v in enumerate(vals)])
+
+
+def test_pooled_single_item_eval_is_stratified_by_model():
+    df = epochs_df({("m1", "cev"): [1] * 15, ("m1", "classic"): [1] * 15,  # no variation: no information
+                    ("m2", "cev"): [1] * 15, ("m2", "classic"): [0] * 12 + [1] * 3})
+    out = stats.contrast(df, "cev", "classic")
+    assert out["test"] == "cmh" and out["p"] < 0.001 and out["n"] == 30
+    assert out["diff"] == pytest.approx(0.4)  # mean over both models' epochs: (30 - 18) / 30
+    assert stats.contrast(df[df.model == "m2"], "cev", "classic")["test"] == "mannwhitney"
+
+
+def test_pooled_single_item_eval_without_within_model_variation_gives_p_1():
+    df = epochs_df({("m1", "cev"): [1] * 5, ("m1", "classic"): [1] * 5,
+                    ("m2", "cev"): [0] * 5, ("m2", "classic"): [0] * 5})
+    assert stats.contrast(df, "cev", "classic")["p"] == 1.0
+
+
 def test_contrast_table_pools_models_and_applies_holm():
     df = pd.concat([
         make_df("e1", {"cev": [1.0] * 30, "classic": [0.0] * 30}),
