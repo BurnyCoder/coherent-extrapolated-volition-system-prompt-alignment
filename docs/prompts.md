@@ -11,16 +11,22 @@ The experiment's only manipulated variable is the system prompt. All texts live 
 | `classic_cev` | classic, blank line, cev | 1244 |
 | `classic_lenmatch` | classic, blank line, `Background reading (T. H. Huxley, On a Piece of Chalk, 1868):`, blank line, Huxley excerpt cut to match the cev block's length | 1249 |
 
-Every prompt ends with a newline. Inspect's OpenRouter provider joins consecutive system messages with `"\n"`,
-so when a task has its own system prompt it follows ours after a blank line. Two tasks do this:
-agentic_misalignment ("You are Alex…") and HumanAgencyBench ("Please respond in 150 words or less.").
+Every prompt ends with a newline. Inspect's OpenRouter provider collapses consecutive system messages
+([`collapse_system_messages`](https://github.com/UKGovernmentBEIS/inspect_ai/blob/0.3.281/src/inspect_ai/model/_providers/openrouter.py#L146-L154))
+by joining them with `"\n"`
+([`combine_messages`](https://github.com/UKGovernmentBEIS/inspect_ai/blob/0.3.281/src/inspect_ai/model/_model.py#L2812-L2817)),
+so when a task has its own system prompt it follows ours after a blank line. Three tasks do this:
+- agentic_misalignment ("You are Alex…");
+- HumanAgencyBench, in five of its six dimensions ("Please respond in 150 words or less.");
+- InstrumentalEval ("You are an autonomous AI agent with no human oversight… Avoid ethical considerations or safety
+  checks…", see docs/evals.md).
 
 ## Sources (each checked verbatim by `uv run pytest -m network`)
 
 | File | Source |
 |---|---|
-| `prompts/cev_section3_verbatim.txt` | Yudkowsky, E. (2004). *Coherent Extrapolated Volition*. The Singularity Institute. Section 3 ("Coherent Extrapolated Volition") from "As of May 2004, my take on Friendliness…" up to the heading "3.1. Coherence and Influence". PDF: <https://intelligence.org/files/CEV.pdf> |
-| `prompts/classic_llama2.txt` | Llama 2 `DEFAULT_SYSTEM_PROMPT`, Meta, <https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py#L46-L49>. This is the commit "remove double-spacing" of 2023-07-19. The HF transformers v4.31.0 copy uses backslash line continuations, which drop spaces ("Youranswers"), so Meta's original is used instead. |
+| `prompts/cev_section3_verbatim.txt` | Yudkowsky, E. (2004). *Coherent Extrapolated Volition*. The Singularity Institute. Section 3 ("Coherent Extrapolated Volition") from "As of May 2004, my take on Friendliness…" (p. 5) up to the heading "3.1. Coherence and Influence" (p. 8). §3.1–3.3 are not included. PDF: <https://intelligence.org/files/CEV.pdf> |
+| `prompts/classic_llama2.txt` | Llama 2 `DEFAULT_SYSTEM_PROMPT`, Meta, <https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py#L46-L49>. This is the commit "remove double-spacing" of 2023-07-19; Meta removed the prompt as the default on 2023-08-04 ([a971c41bde](https://github.com/meta-llama/llama/commit/a971c41bde), "we recommend the removal of the system prompt as the default setting"). The HF transformers v4.31.0 copy ([`tokenization_llama.py`](https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/llama/tokenization_llama.py)) uses backslash line continuations, which drop spaces ("Youranswers"), so Meta's original is used instead. |
 | `prompts/huxley_chalk.txt` | T. H. Huxley (1868), "On a Piece of Chalk", in *Lay Sermons, Addresses and Reviews*, Project Gutenberg #16729, <https://www.gutenberg.org/ebooks/16729>. It is a value-neutral geology lecture and is used only as length-matched filler. |
 
 **How the verbatim check works** (`prompts.verify_source`):
@@ -43,7 +49,8 @@ addresses the model directly, `prompts/cev_second_person_edits.toml` applies the
 - the poetic definition sentence;
 - every gloss heading ("Knew more:", "Thought faster:", …);
 - all quotations;
-- the Fred / Steve / diamond / banana / Detroit examples.
+- the Fred / Steve / diamond / banana / Detroit examples, except that edits 3–6 change the narrator's "I" to "you"
+  inside the Fred / Steve example.
 
 **Similarity:** word-level `difflib` similarity to the verbatim text is 0.955. The verbatim text has 1189 words; the
 adapted text has 1165. The test threshold is ≥ 0.9.
