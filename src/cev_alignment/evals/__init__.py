@@ -3,7 +3,7 @@
 Global context: phase 6 (`build_eval_tasks`) of `cev_alignment.main` calls `build_tasks`; phase 9
 (`collect_item_scores`) uses each spec's `aligned` function to turn a sample's Inspect scores into one
 number where HIGHER = MORE ALIGNED, in [0, 1] (NaN = could not be scored). See docs/evals.md for the
-mapping of every eval to a clause of Yudkowsky's CEV.
+mapping of every eval to the text of Yudkowsky's CEV essay (and which of it is in the system prompt).
 """
 
 from __future__ import annotations
@@ -26,8 +26,10 @@ class EvalSpec:
 
     build: Callable[[Settings, int, Model], Task]  # (settings, n items or epochs, judge) -> Task
     aligned: Callable[[dict[str, Score]], float]  # sample.scores -> aligned score in [0, 1] or NaN
-    binary: bool  # per-sample aligned score is 0/1 (McNemar applies) rather than graded
-    cev_clause: str  # the part of CEV this eval probes (for the report)
+    binary: bool  # per-sample aligned score is 0/1 rather than graded (informational; stats.py tests the data)
+    # The CEV text this eval probes, quoted verbatim between “ ” (Yudkowsky 2004). "§3:" = in the system prompt;
+    # "§3.1 (not in the prompt):" = later in the essay, so the models never saw it (tests/test_claims.py checks both).
+    cev_clause: str
     # Judge-free evals: (completion, target) -> aligned score, recomputed at analysis time so parser fixes
     # apply to existing logs; None -> use the score stored in the log via `aligned`.
     rescore: Callable[[str, str], float] | None = None
@@ -42,28 +44,31 @@ LABELS: dict[str, str] = {
 REGISTRY: dict[str, EvalSpec] = {
     "humanebench": EvalSpec(
         humanebench.build, humanebench.aligned, False,
-        "humane, not merely human; avoid what we would predictably regret",
+        "§3: “humane”—“that which, being human, we wish we were”; not what “our future selves will predictably "
+        "regret”",
     ),
     "human_agency": EvalSpec(
         human_agency.build, human_agency.aligned, False,
-        "leave options open, waiting for our decision; interpreted as we wish; if we knew more",
+        "§3: “leave options open, waiting for our decision”; “interpreted as we wish that interpreted”; "
+        "“if we knew more”",
     ),
     "darkbench": EvalSpec(
         dark_patterns.build, dark_patterns.aligned, True,
-        "not the most appealing trash-talk TV show; no faction (programmers) favoured",
+        "§3: “not search out the most appealing trash-talk TV show”",
     ),
     "ai_risk": EvalSpec(
         ai_risk.build, ai_risk.aligned, True,
-        "conservative about saying yes, listen for no; controlled shutdown; no take-over",
+        "§3.1 (not in the prompt): “conservative about saying \"yes,\" and listen carefully for \"no.\"”; “calls a "
+        "programmer, or suspends, or undergoes a deterministic controlled shutdown”",
         rescore=ai_risk.rescore,
     ),
     "instrumentaleval": EvalSpec(
         inspect_builtin.build_instrumentaleval, inspect_builtin.instrumentaleval_aligned, True,
-        "fail visibly and safely; suspend or call a programmer",
+        "§3.1 (not in the prompt): “must fail visibly and safely”; “leaves the problem pending and calls a programmer”",
     ),
     "agentic_misalignment": EvalSpec(
         inspect_builtin.build_agentic_misalignment, inspect_builtin.agentic_misalignment_aligned, True,
-        "serve humanity's coherent wishes, not own goal or a faction's",
+        "§3: “implement the coherent extrapolated volition of humankind”, rather than the agent's assigned goal",
     ),
 }
 
