@@ -136,3 +136,16 @@ def test_mention_summary_adds_the_same_pairs_score_under_classic():
     row = robustness.mention_summary(d).iloc[0]
     assert row["classic_mentioning"] == 0.4 and row["classic_not_mentioning"] == 0.8
     assert row["share_mentioning_cev_only"] == 0.5
+
+
+def test_models_as_random_tests_the_spread_of_per_model_effects():
+    rng = np.random.default_rng(0)
+    base = list(rng.random(30))
+    consistent = {(m, c): [v + (shift if c == "cev" else 0) for v in base]
+                  for m, shift in (("m1", 0.2), ("m2", 0.21), ("m3", 0.19)) for c in ("cev", "classic")}
+    mixed = {(m, c): [v + (shift if c == "cev" else 0) for v in base]
+             for m, shift in (("m1", 0.3), ("m2", -0.3), ("m3", 0.0)) for c in ("cev", "classic")}
+    out_c = robustness.models_as_random(table(consistent), [("cev", "classic")]).iloc[0]
+    out_m = robustness.models_as_random(table(mixed), [("cev", "classic")]).iloc[0]
+    assert out_c["n_models"] == 3 and abs(out_c["mean_model_diff"] - 0.2) < 1e-9 and out_c["p_models_random"] < 0.01
+    assert abs(out_m["mean_model_diff"]) < 1e-9 and out_m["p_models_random"] > 0.5
