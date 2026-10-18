@@ -93,6 +93,8 @@ def models_as_random(items: pd.DataFrame, pairs: list[tuple[str, str]] = PRIMARY
     Docs: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_1samp.html
     """
     per_model = stats.contrast_table(items, pairs)
+    if per_model.empty:  # e.g. offline mock runs: nothing scorable
+        return per_model
     per_model = per_model[(per_model["model"] != "pooled")].dropna(subset=["diff"])
     rows = [{"contrast": c, "eval": e, "n_models": len(g), "mean_model_diff": g["diff"].mean(),
              "min_model_diff": g["diff"].min(), "max_model_diff": g["diff"].max(),
@@ -402,7 +404,8 @@ Whether an effect depends on a single model. `dropped` is the model left out.
 
 **Models as a random sample.** The pooled tests treat the four models as fixed, so their p-values speak only about
 these models. Below, the unit is the model: a one-sample t-test of the per-model effects (`n_models` = 4) asks
-whether an effect would generalise to other models like them. It has little power with four models.
+whether an effect would generalise to other models like them. With four models (3 degrees of freedom) it is a coarse
+check: four similar small effects can give a small p even when no single model shows a significant effect.
 {_md(checks["models_as_random"])}
 
 ## 4. HumaneBench missing-data sensitivity

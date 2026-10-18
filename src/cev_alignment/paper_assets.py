@@ -306,8 +306,9 @@ PARSER_ABBR = {"v1 (run time)": "Vone", "v2 (after first results)": "Vtwo", "cur
 
 
 def robustness_macros(reports_dir: Path, m: Macros) -> None:
-    """Macros for the audit's robustness checks: HumaneBench tipping point, provider fixed effects, and the
-    ai_risk parser versions, answer-position shares and position-balanced contrasts (robustness.md §4, §5, §11)."""
+    """Macros for the audit's robustness checks: models as random, HumaneBench tipping point, provider fixed
+    effects, and the ai_risk parser versions, answer-position shares and position-balanced contrasts (robustness.md
+    §3, §4, §5, §11)."""
     rob = reports_dir / "robustness"
     tip = pd.read_csv(rob / "tipping_point_humanebench.csv")
     m.add("RHbTipCenter", plain(tip["fill_a"].iloc[0], 2))  # delta = 0: both conditions imputed at the center
@@ -318,6 +319,8 @@ def robustness_macros(reports_dir: Path, m: Macros) -> None:
             add_contrast(m, f"RHbTip{name}", r)
             m.add(f"RHbTip{name}FillA", plain(r["fill_a"], 3))
             m.add(f"RHbTip{name}FillB", plain(r["fill_b"], 3))
+    for _, r in pd.read_csv(rob / "models_as_random.csv").iterrows():  # §3: one-sample t-test over the four models
+        m.add(f"R{EVAL_ABBR[r['eval']]}{contrast_abbr(r['contrast'])}ModelsRandomP", pval(r["p_models_random"]))
     fe = pd.read_csv(rob / "provider_fixed_effects.csv")
     for _, r in fe.iterrows():
         prefix = f"RFe{EVAL_ABBR[r['eval']]}{contrast_abbr(r['contrast'])}{MODEL_ABBR[r['model']]}"
