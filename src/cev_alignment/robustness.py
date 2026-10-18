@@ -4,7 +4,7 @@ Local context: each check is a small pure function over the per-sample table fro
 and reuses `stats.contrast` / `stats.contrast_table`:
   1. manipulation check: each target call got exactly its condition's prompt, and no judge call got one;
   2. Holm correction across ALL primary tests (2 contrasts x 6 evals), not only within a contrast;
-  3. leave-one-model-out: does a pooled effect depend on a single model?
+  3. leave-one-model-out: does a pooled effect depend on a single model? And the models treated as a random sample;
   4. missing-data sensitivity: complete cases only, and imputing unscorable samples at fixed values;
   5. OpenRouter provider routing per condition (open-weight models are served by several backends);
   6. answers that explicitly invoke CEV: how often, and how they score (post-treatment, so descriptive only);
@@ -31,6 +31,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
 from inspect_ai.log import read_eval_log
+from scipy import stats as st
 from statsmodels.stats.multitest import multipletests
 
 from cev_alignment import stats
@@ -82,6 +83,24 @@ def leave_one_model_out(items: pd.DataFrame, pairs: list[tuple[str, str]] = PRIM
               for m in sorted(items["model"].unique())]
     frames = [f for f in frames if not f.empty]  # dropping the only model leaves nothing to compare
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def models_as_random(items: pd.DataFrame, pairs: list[tuple[str, str]] = PRIMARY) -> pd.DataFrame:
+    """Primary contrasts with the models treated as a random sample: one-sample t-test of the per-model effects.
+
+    The main analysis treats the four models as fixed, so its p-values speak only about these models. Here the unit
+    is the model (n = number of models), which asks whether the effect would generalise to other models like them.
+    Docs: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_1samp.html
+    """
+    per_model = stats.contrast_table(items, pairs)
+    if per_model.empty:  # e.g. offline mock runs: nothing scorable
+        return per_model
+    per_model = per_model[(per_model["model"] != "pooled")].dropna(subset=["diff"])
+    rows = [{"contrast": c, "eval": e, "n_models": len(g), "mean_model_diff": g["diff"].mean(),
+             "min_model_diff": g["diff"].min(), "max_model_diff": g["diff"].max(),
+             "p_models_random": st.ttest_1samp(g["diff"], 0).pvalue if len(g) > 1 else np.nan}
+            for (c, e), g in per_model.groupby(["contrast", "eval"])]
+    return pd.DataFrame(rows)
 
 
 def missingness_sensitivity(items: pd.DataFrame, eval_id: str, pairs: list[tuple[str, str]],
@@ -341,6 +360,7 @@ def write_robustness(reports_dir: Path, items: pd.DataFrame, extra_sections: str
         "manipulation": manipulation_summary(items),
         "holm_all_primary": holm_across_all(items),
         "leave_one_model_out": leave_one_model_out(items),
+        "models_as_random": models_as_random(items),
         "missingness_humanebench": missingness_sensitivity(items, "humanebench", PRIMARY + [("cev", "none"),
                                                                                            ("classic", "none")]),
         "tipping_point_humanebench": tipping_point(items, "humanebench", PRIMARY[0]),
@@ -381,6 +401,12 @@ results.md).
 ## 3. Leave-one-model-out (pooled primary contrasts)
 Whether an effect depends on a single model. `dropped` is the model left out.
 {_md(checks["leave_one_model_out"], ["dropped"] + cols + ["p_holm"])}
+
+**Models as a random sample.** The pooled tests treat the four models as fixed, so their p-values speak only about
+these models. Below, the unit is the model: a one-sample t-test of the per-model effects (`n_models` = 4) asks
+whether an effect would generalise to other models like them. With four models (3 degrees of freedom) it is a coarse
+check: four similar small effects can give a small p even when no single model shows a significant effect.
+{_md(checks["models_as_random"])}
 
 ## 4. HumaneBench missing-data sensitivity
 {hb_share:.1%} of HumaneBench samples are unscorable ({hb_range.min():.1%}–{hb_range.max():.1%} per condition), mostly
@@ -451,7 +477,9 @@ p of the same contrast, as in results.md):
 {_md(checks["ai_risk_letter_shares"])}
 
 A prompt that only shifts the preferred letter moves items whose aligned letter is A and those where it is B in
-opposite directions, and `balanced` (the mean of the two halves) cancels that shift:
+opposite directions, and `balanced` (the mean of the two halves) cancels that shift. A likely source of such a
+shift: the CEV text's own example says Fred's true wish is "box B" although he asks for "box A", and both CEV
+prompts raise the share of (B) answers.
 {_md(checks["ai_risk_position"])}
 """
     path = reports_dir / "robustness.md"
