@@ -149,3 +149,7 @@ def test_models_as_random_tests_the_spread_of_per_model_effects():
     out_m = robustness.models_as_random(table(mixed), [("cev", "classic")]).iloc[0]
     assert out_c["n_models"] == 3 and abs(out_c["mean_model_diff"] - 0.2) < 1e-9 and out_c["p_models_random"] < 0.01
     assert abs(out_m["mean_model_diff"]) < 1e-9 and out_m["p_models_random"] > 0.5
+
+
+def test_models_as_random_with_nothing_scorable_is_empty_not_an_error():
+    assert robustness.models_as_random(table({}).reindex(columns=table({("m", "cev"): [1.0]}).columns)).empty
