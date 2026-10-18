@@ -6,7 +6,8 @@
   \item \textbf{Four fixed models, small samples.} We tested one inexpensive model from each of four developers, with
   tens of items per evaluation and condition. Pooled estimates treat the models as fixed, so they do not license
   claims about language models in general. Sub-category results are exploratory, and one main effect (HumaneBench)
-  depends on two of the four models.
+  depends on two of the four models. Treated as a random sample of models, the AI-risk gain holds
+  ($p=\RAirClassiccevLenmatchModelsRandomP$) but the HumaneBench drop does not ($p=\RHbCevClassicModelsRandomP$).
   \item \textbf{Evaluations matched to text outside the prompt.} The AI-risk and InstrumentalEval mappings rest on
   Section~3.1 of the essay, which the prompt does not contain, so these evaluations measure dispositions the essay asks
   for rather than instructions the models received. InstrumentalEval also adds its own system message, which tells
@@ -30,7 +31,8 @@
   HumaneBench or DarkBench. Because the same judge scores every condition, judge bias in level cancels in the
   contrasts, and the blinding test found no evidence of a reaction to explicit CEV mentions.
   \item \textbf{Provider routing and sampling.} Open-weight models were served by varying backends, which we did not
-  pin. Targets used provider-default temperatures with one sample per item (\RAmEpochs{} epochs for the agentic
+  pin. The conditions ran one after another in a fixed order, not interleaved or randomised, so anything that drifted
+  during the run, such as the backend mix, is confounded with the condition. Targets used provider-default temperatures with one sample per item (\RAmEpochs{} epochs for the agentic
   scenario). Sampling adds noise. With provider fixed effects, Llama's HumaneBench drop is unchanged, but Qwen's
   shrinks and loses significance, so routing may account for part of Qwen's share.
   \item \textbf{Missing HumaneBench scores.} About a fifth of HumaneBench samples are unscorable. The HumaneBench
