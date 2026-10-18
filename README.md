@@ -80,6 +80,7 @@ and the logged API requests confirm that no judge call carried it ([robustness.m
   whose per-item means over models are fractional. With ties or zero differences and more than 13 items, as in every
   pooled contrast, SciPy's default computes this p-value from the normal approximation of the rank statistic
   ([`scipy.stats.wilcoxon`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html)).
+  Differences are rounded to 9 decimals first, so differences that are equal in exact arithmetic count as ties.
   Per-model contrasts on binary scores use the exact McNemar test ([McNemar 1947](https://doi.org/10.1007/BF02295996)).
 - 95% percentile bootstrap CIs with 2,000 resamples
   ([`scipy.stats.bootstrap`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html)).

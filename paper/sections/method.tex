@@ -92,7 +92,8 @@ differences with 95\% percentile-bootstrap confidence intervals (2000 resamples)
   test the item-level means with the Wilcoxon signed-rank test \citep{wilcoxon1945}. This applies to binary
   evaluations too, because their per-item means over models are fractional. With ties or zero differences and more
   than 13 items, as in every pooled contrast, SciPy's default computes this $p$-value from the normal approximation
-  of the rank statistic.\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html}}
+  of the rank statistic. Differences are rounded to nine decimals before ranking, so that differences equal in exact
+  arithmetic (such as $0.3-0.1$ and $0.8-0.6$) are treated as ties.\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html}}
   \item Per-model contrasts on binary scores use McNemar's exact test \citep{mcnemar1947}.
   \item The single-prompt agentic evaluation has no item pairing, so its \RAmEpochs{} epochs per cell are compared
   unpaired: with Mann--Whitney per model, and pooled over models with a continuity-corrected Cochran--Mantel--Haenszel
