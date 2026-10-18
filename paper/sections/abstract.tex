@@ -11,13 +11,14 @@ agency, manipulation, corrigibility and power-seeking, instrumental convergence,
 there are \RNSamples{} samples, paired by item except in the single agentic scenario; five of the six evaluations
 are graded by an external LLM judge. Relative to the classic prompt, the CEV prompt significantly improved no
 evaluation and lowered HumaneBench (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). This drop depends on two of the
-four models, and on unscorable answers being alike across conditions. Adding the CEV text to the classic prompt,
+four models, is not significant if the models are treated as a random sample, and assumes that unscorable answers are
+alike across conditions. Adding the CEV text to the classic prompt,
 compared with an equally long neutral text, made answers to AI-risk questions more aligned
 (\RAirClassiccevLenmatchDiff, $p=\RAirClassiccevLenmatchHolmAll$ after correction over all primary tests). This holds
 under every version of the answer parser. About half of the gap is the neutral text lowering scores relative to the
 classic prompt alone, against which the CEV text's gain (\RAirClassiccevClassicDiff) is not significant after
-correction. The same addition gave lower HumanAgencyBench scores (\RHabClassiccevLenmatchDiff), which is not
-significant after correction. On five of six evaluations,
+correction. The same addition gave lower HumanAgencyBench scores (\RHabClassiccevLenmatchDiff), significant within its
+contrast (Holm $p=\RHabClassiccevLenmatchHolm$) but not after correction over all primary tests. On five of six evaluations,
 \RMentionShareMin--\RMentionShareMax{} of answers under the CEV prompts explicitly mention CEV. On
 HumanAgencyBench these score \RHabMentionAligned{} against \RHabNoMentionAligned{} for the rest. Part of this gap was
 already present under the classic prompt, on the same items (\RHabMentionClassicAligned{} against

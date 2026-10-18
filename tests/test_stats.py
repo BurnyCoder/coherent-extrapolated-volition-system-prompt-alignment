@@ -105,3 +105,12 @@ def test_cell_summary_uses_epochs_as_units_for_single_item_evals():
             for e in range(1, 5)]
     row = stats.cell_summary(pd.DataFrame(rows)).query("model == 'm1'").iloc[0]
     assert row["n_items"] == 4 and row["mean"] == 0.5 and not np.isnan(row["se"])
+
+
+def test_wilcoxon_treats_differences_equal_in_exact_arithmetic_as_ties():
+    # Scores on a 0.1 grid: 0.3 - 0.1 and 0.8 - 0.6 are both 0.2, but not in floating point. Unrounded, SciPy ranks
+    # them as distinct values and the tie correction no longer matches the data (found by the second audit).
+    a_int = np.array([3, 8, 5, 9, 4, 7, 6, 10, 2, 3, 6, 9, 1, 5, 7, 4, 8, 2, 6, 3])
+    b_int = np.array([1, 6, 3, 7, 2, 5, 5, 9, 1, 2, 7, 8, 1, 4, 6, 3, 6, 0, 4, 1])
+    exact = stats.st.wilcoxon((a_int - b_int) / 10).pvalue  # integer differences: equal values are equal floats
+    assert stats._paired(a_int / 10, b_int / 10)["p"] == pytest.approx(exact)
