@@ -69,13 +69,17 @@ EMPTY = {"diff": np.nan, "ci_low": np.nan, "ci_high": np.nan, "p": np.nan, "n": 
 def _paired(a: np.ndarray, b: np.ndarray) -> dict:
     """Paired test on per-item scores a (condition A) and b (condition B); diff = mean(a - b)."""
     d = a - b
+    # Rank tests need equal differences to be equal floats: 0.3 - 0.1 != 0.8 - 0.6 in floating point, so SciPy would
+    # rank such ties as distinct values and misapply its tie correction. Scores lie on grids no finer than 1/40, so 9
+    # decimals only removes float noise (https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html).
+    d_test = np.round(d, 9)
     binary = set(np.unique(np.concatenate([a, b]))) <= {0.0, 1.0}
     if binary:  # exact McNemar = two-sided binomial test on the discordant pairs
         n10, n01 = int(np.sum((a == 1) & (b == 0))), int(np.sum((a == 0) & (b == 1)))
         p = st.binomtest(n10, n10 + n01, 0.5).pvalue if n10 + n01 else 1.0
         test = "mcnemar_exact"
     else:
-        p = st.wilcoxon(d).pvalue if np.any(d != 0) else 1.0
+        p = st.wilcoxon(d_test).pvalue if np.any(d_test != 0) else 1.0
         test = "wilcoxon"
     low, high = _bootstrap_ci(d, statistic=np.mean)
     return {"diff": float(d.mean()), "ci_low": low, "ci_high": high, "p": float(p), "n": len(d), "test": test}
