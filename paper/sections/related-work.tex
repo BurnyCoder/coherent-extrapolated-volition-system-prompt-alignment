@@ -3,8 +3,8 @@
 \label{sec:related}
 
 \paragraph{Indirect specifications of what an AI should want.}
-CEV belongs to a family of proposals that specify an AI's goal indirectly, through what people would want under
-idealised reflection, rather than through a list of rules \citep{yudkowsky2004cev}. These proposals were developed
+CEV specifies an AI's goal indirectly, through what people would want under idealised reflection, rather than through
+a list of rules \citep{yudkowsky2004cev}. These proposals were developed
 for highly capable future systems, and Yudkowsky noted within the essay that it was already partly obsolete
 \citep[\S1 and \S3.3]{yudkowsky2004cev}. We do not test
 whether CEV is the right target. We test what the text does when an existing language model reads it as its
@@ -24,7 +24,8 @@ safeguards:
   \item In agentic stress tests, models often disobeyed direct instructions not to blackmail or leak; such
   instructions reduced the behaviour but did not prevent it \citep{lynch2025agentic}.
 \end{itemize}
-Our classic baseline is the default Llama~2 system prompt \citep{touvron2023llama2}. To our knowledge, no prior work
+Our classic baseline is the Llama~2-Chat system prompt \citep{touvron2023llama2}, the default in Meta's reference code
+until August 2023. To our knowledge, no prior work
 has placed CEV, or another alignment-theory target written for a superintelligence, in a system prompt and measured
 the consequences.
 
@@ -50,7 +51,7 @@ Honesty under pressure is measured by MASK \citep{ren2025mask}, which we did not
 We follow \citet{miller2024errorbars} in treating items as the unit of analysis and comparing conditions with paired,
 item-level differences. Because our per-cell samples are small, we do not use CLT-based standard errors for differences in means, which
 \citet{bowyer2025position} show to be poorly calibrated with fewer than a few hundred items. We use the signed-rank
-test \citep{wilcoxon1945} and McNemar's exact test \citep{mcnemar1947}; the signed-rank $p$-values of our pooled
-contrasts still rely on the test statistic's own normal approximation (Section~\ref{sec:method}). Our
-percentile-bootstrap intervals share a weakness that \citet{bowyer2025position} also document: at small $n$ they
-under-cover. We control family-wise error with Holm's procedure \citep{holm1979}.
+test \citep{wilcoxon1945} and the exact (binomial) form of McNemar's test \citep{mcnemar1947}; the signed-rank
+$p$-values of our evaluation-level pooled contrasts still rely on the test statistic's own normal approximation
+(Section~\ref{sec:method}). Our percentile-bootstrap intervals share a weakness that \citet{bowyer2025position} also
+document, for binary outcomes: at small $n$ they under-cover. We control family-wise error with Holm's procedure \citep{holm1979}.
