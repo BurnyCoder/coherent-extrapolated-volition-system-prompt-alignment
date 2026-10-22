@@ -2,15 +2,17 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-Putting Coherent Extrapolated Volition in a system prompt did not make four current language models more aligned
-than a classic assistant prompt did, and it lowered HumaneBench scores. That drop rests on two of the four models.
+Putting Coherent Extrapolated Volition in a system prompt did not make four current language models significantly
+more aligned than a classic assistant prompt did, though our intervals cannot rule out gains of up to
+\RCevClassicCiHighMax{}, and it lowered HumaneBench scores. That drop rests on two of the four models.
 Added to the classic prompt, the CEV text produced more aligned answers to AI-risk questions than an equally long
 neutral text. Part of that gap is the neutral text lowering scores, and the gain over the classic prompt alone is not
 significant after correction. Which kinds of AI-risk question gain depends on the comparison. The same addition gave
-lower HumanAgencyBench scores, significant within its contrast but not after correction over all primary tests. In exploratory analyses that also do not
+lower HumanAgencyBench scores, significant within its contrast but not after correction over all primary tests or
+with any single model left out. In exploratory analyses that also do not
 survive correction, the CEV prompt's losses lay in deferring decisions and avoiding value manipulation. Answers that
 explicitly mention humanity's extrapolated volition scored lower on three evaluations; on HumanAgencyBench, part of
-that gap was already present under the classic prompt. A judge-blinding test found no penalty for the mention itself.
+that gap was already present under the classic prompt. A judge-blinding test found no sign that the judge penalises the mention itself.
 Our qualitative examples suggest that an instruction to serve what people would want under idealised reflection may
 act, for an assistant with a present user, as licence to overrule them. This is a hypothesis for larger studies, not
 a finding. Value texts from alignment theory should be adapted for assistants and tested on several axes before
