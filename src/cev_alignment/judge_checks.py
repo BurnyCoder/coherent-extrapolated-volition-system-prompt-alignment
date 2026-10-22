@@ -293,8 +293,9 @@ def summary_markdown(reports_dir: Path, items: pd.DataFrame) -> str:
             "under `cev`/`classic_cev` were re-judged as written and with their CEV sentences removed (same scorer, "
             f"same judge); {len(mentioning) - len(b)} were skipped because removing those sentences left no text, and "
             f"{n_both} got a score both times. `diff` = redacted − original "
-            "(positive = the judge penalises the mention itself). The redaction can remove substantive content, so "
-            "this is an upper bound on the judge-reaction effect.\n\n"
+            "(positive = the judge penalises the mention itself). The redaction can also remove substantive content, "
+            "which may raise or lower a score, so `diff` is not a clean estimate of the judge's reaction; a difference "
+            "≤ 0 everywhere only means there is no sign of a penalty.\n\n"
             + pd.DataFrame(rows).to_markdown(index=False, floatfmt=".3g")
             + f"\n\nJudge test-retest (stored score vs. re-judged original, same answer): Spearman ρ = "
               f"{retest_corr:.3f} over {len(retest)} answers; exact agreement "

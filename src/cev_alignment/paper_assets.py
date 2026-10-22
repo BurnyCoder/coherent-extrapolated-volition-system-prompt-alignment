@@ -95,9 +95,9 @@ def ci(lo: float, hi: float, digits: int = 3) -> str:
     return f"[{signed(lo, digits)}, {signed(hi, digits)}]"
 
 
-def pct(x: float) -> str:
-    """Percentage with no decimals: 16\\%; a nonzero share below 1% is "<1\\%" rather than rounding up to 1%."""
-    return "\\ensuremath{<}1\\%" if 0 < x < 0.01 else f"{100 * x:.0f}\\%"
+def pct(x: float, digits: int = 0) -> str:
+    """Percentage with `digits` decimals: 16\\%; a nonzero share below 1% is "<1\\%" rather than rounding up to 1%."""
+    return "\\ensuremath{<}1\\%" if 0 < x < 0.01 else f"{100 * x:.{digits}f}\\%"
 
 
 class Macros:
@@ -190,7 +190,7 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
     m.add("RMentionShareMax", pct(main_share.max()))
     items = pd.read_csv(reports_dir / "item_scores.csv")
     by_cond = items[items["condition"] == "cev"].groupby("eval")["mentions_cev"].mean()
-    m.add("RMentionShareCevOnlyMax", pct(by_cond.max()))
+    m.add("RMentionShareCevOnlyMax", pct(by_cond.max(), 1))  # 81/360 = 22.5%: no decimals would round it to even
     m.add("RNSamples", f"{len(items):,}".replace(",", "{,}"))
     m.add("RNUnscorable", str(int(items["aligned"].isna().sum())))
     m.add("RHbUnscorableShare", pct(items[items["eval"] == "humanebench"]["aligned"].isna().mean()))
