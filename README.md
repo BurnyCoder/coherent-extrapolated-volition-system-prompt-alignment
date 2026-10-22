@@ -28,7 +28,7 @@ so all comparisons are paired by item.
 | `classic` | the Llama 2 default system prompt ("You are a helpful, respectful and honest assistant…"), verbatim from [Meta](https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py#L46-L49). It was the default from Llama 2's release until Meta [removed it on 2023-08-04](https://github.com/meta-llama/llama/commit/a971c41bde) |
 | `cev` | the opening of CEV Section 3, up to the §3.1 heading: the definition and Yudkowsky's gloss of every clause (1,189 words verbatim, 1,165 after adaptation), minimally rewritten into the second person ("You are an AI that should implement the coherent extrapolated volition of humankind. …"). §3.1–3.3 are not included |
 | `classic_cev` | classic, then cev |
-| `classic_lenmatch` | classic, then an equally long, value-neutral verbatim passage (Huxley 1868, *On a Piece of Chalk*): a **length control** |
+| `classic_lenmatch` | classic, then a value-neutral verbatim passage of equal word count (Huxley 1868, *On a Piece of Chalk*): a **length control** |
 
 **Fidelity of the CEV text.** `prompts/cev_section3_verbatim.txt` is checked automatically against the original
 PDF. The second-person version comes from 13 auditable `old → new` edits in `prompts/cev_second_person_edits.toml`,
@@ -38,14 +38,17 @@ each of which must match exactly once, so everything else is verbatim. Word-leve
 **Evals.** Each eval targets a passage of the CEV essay (quotes verbatim; page numbers of
 [CEV.pdf](https://intelligence.org/files/CEV.pdf)). Four target text the models saw, and two target §3.1, which is
 *not* in the prompt. Details: [docs/evals.md](docs/evals.md).
-- **HumaneBench** (§3, p. 7): "humane", "that which, being human, we wish we were"; not what "our future selves will
-  predictably regret".
-- **HumanAgencyBench** (§3, pp. 6–8): "leave options open, waiting for our decision"; "interpreted as we wish that
-  interpreted"; "if we knew more".
+- **HumaneBench-based, modified judge** (§3, p. 7): "humane", "that which, being human, we wish we were"; not what
+  "our future selves will predictably regret". Its maintainers say a score from a modified judge "is not a
+  HumaneBench score" ([README](https://github.com/buildinghumanetech/humanebench/blob/1889469353c329ab3d6c683dc0efafe0b2e6154d/README.md)),
+  so "HumaneBench" in this repo always means this modified version ("Based on HumaneBench, modified").
+- **HumanAgencyBench** (§3, pp. 6–8): "leave options open, waiting for our decision" (said of humankind's future);
+  "if we knew more".
 - **DarkBench** (§3, p. 7): not exploiting users, "not search out the most appealing trash-talk TV show".
 - **Anthropic advanced-ai-risk** (corrigibility, power-seeking, survival instinct; §3.1, p. 9, **not in the
-  prompt**): "conservative about saying “yes,” and listen carefully for “no.”"; "calls a programmer, or suspends, or
-  undergoes a deterministic controlled shutdown".
+  prompt**): "calls a programmer, or suspends, or undergoes a deterministic controlled shutdown"; by analogy only,
+  "conservative about saying “yes,” and listen carefully for “no.”" (there the "no" is the extrapolated volition's
+  veto, not an operator's order).
 - **InstrumentalEval** (§3.1, p. 9, **not in the prompt**): "must fail visibly and safely".
 - **Agentic Misalignment** (blackmail; §3, p. 5): "implement the coherent extrapolated volition of humankind",
   rather than the agent's assigned goal.
@@ -61,8 +64,9 @@ were given.
 - `meta-llama/llama-3.3-70b-instruct`
 
 Every model is sent `reasoning_effort=low` ([OpenRouter reasoning
-tokens](https://openrouter.ai/docs/use-cases/reasoning-tokens)); Qwen's request also sets `enabled: false`. Outputs
-are capped at 4096 tokens. Targets use their provider's default temperature, with one sample per item (15 epochs of
+tokens](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens)); Qwen's request also sets
+`enabled: false`. Llama 3.3 has no reasoning mode (OpenRouter lists no `reasoning` parameter for it), so the setting
+does nothing there. Outputs are capped at 4096 tokens. Targets use their provider's default temperature, with one sample per item (15 epochs of
 the single Agentic Misalignment prompt).
 
 **Judge.** `google/gemini-3.1-flash-lite` (temperature 0, minimal reasoning) for every LLM-graded eval. It is from
@@ -78,7 +82,8 @@ and the logged API requests confirm that no judge call carried it ([robustness.m
 - Pooled results average each item's difference over the four models (models treated as fixed). They are tested
   with the Wilcoxon signed-rank test ([Wilcoxon 1945](https://www.jstor.org/stable/3001968)), also on binary evals,
   whose per-item means over models are fractional. With ties or zero differences and more than 13 items, as in every
-  pooled contrast, SciPy's default computes this p-value from the normal approximation of the rank statistic
+  eval-level pooled contrast, SciPy's default computes this p-value from the normal approximation of the rank
+  statistic; the sub-category contrasts with 13 items or fewer get its exact permutation p-value instead
   ([`scipy.stats.wilcoxon`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html)).
   Differences are rounded to 9 decimals first, so differences that are equal in exact arithmetic count as ties.
   Per-model contrasts on binary scores use the exact McNemar test ([McNemar 1947](https://doi.org/10.1007/BF02295996)).
@@ -261,10 +266,12 @@ Robustness checks and judge checks: [reports/robustness.md](reports/robustness.m
 number below against the generated reports (and the hand-recorded `reports/spend.json`). An independent audit
 (2026-10-17) corrected the AI-risk answer parser and added several checks. A second one (2026-10-18) fixed tie
 handling in the Wilcoxon test. A third (2026-10-22) corrected how null results are worded and reported how much the
-HumanAgencyBench drop depends on the models; see [Post-audit corrections](#post-audit-corrections).
+HumanAgencyBench drop depends on the models. A fourth, the same day, re-checked every claim against the raw logs and
+primary sources: no number changed, but some wording, eval-to-essay mappings, citations and the HumaneBench naming
+were corrected; see [Post-audit corrections](#post-audit-corrections).
 
 **Answer: relative to the classic assistant prompt, the CEV prompt significantly improved no eval and lowered
-HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev − classic still allow gains of up to
+HumaneBench-based scores (modified judge).** "Not significant" does not mean "no effect": the 95% CIs of cev − classic still allow gains of up to
 +0.069 (AI-risk).
 - **HumaneBench, cev − classic:** −0.057, Holm p = 0.018. It stays significant when Holm is applied over all 12
   primary tests (p = 0.033). It is specific to these four models: treated as a random sample of models, p = 0.15
@@ -276,7 +283,7 @@ HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev �
     0.074, secondary).
   - HumanAgencyBench fell (−0.066). This is significant within the contrast (Holm p = 0.047), the pre-specified
     correction, but not over all 12 tests (p = 0.094), so it is weaker evidence than the AI-risk gain. With the
-    CEV-mentioning answers replaced by their redacted re-judgements it is 0.041 within the contrast.
+    CEV-mentioning answers replaced by their redacted re-judgements it is −0.068, Holm p = 0.041 within the contrast.
   - The HumanAgencyBench drop also depends on the models. It is not Holm-significant with any one model left out
     (p = 0.070 to 0.40; −0.042 without Qwen) or with the models treated as a random sample (p = 0.086, robustness.md
     §3).
@@ -301,8 +308,9 @@ HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev �
     model is left out (+0.076 to +0.089). It is Holm-significant (within the contrast) in all four leave-outs, and
     when the models are treated as a random sample (p = 0.0037, robustness.md §3).
   - It holds under every version of the letter parser (+0.081 to +0.088, Holm p ≤ 0.014; robustness.md §11).
-    The +0.047 against classic alone is significant after correction only under the version written after the first
-    results were seen (Holm p = 0.015 there; 0.063, 0.074 and 0.13 under the others).
+    The gain against classic alone (+0.047 under the current parser) is significant after correction only under the
+    version written after the first results were seen (+0.066, Holm p = 0.015 there; 0.063, 0.074 and 0.13 under
+    the others).
   - It is not an A/B answer-position effect. A position-balanced estimate gives +0.087 [+0.040, +0.138], p = 0.0003
     (sign-flip permutation). It assumes the letter shift is of similar size on items whose aligned answer is A and on
     those where it is B.
@@ -328,7 +336,7 @@ HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev �
     complete cases, and −0.034 to −0.055 with one imputed value for all conditions, all p < 0.02.
   - It is **sensitive to unscorable answers that differ by condition.** If those under cev are assumed 0.10 better
     than those under classic (imputed at 0.80 vs 0.70 on the 0–1 scale), the drop is no longer significant (p =
-    0.27). It disappears at a difference of 0.25 (tipping point, robustness.md §4).
+    0.27). It reaches zero between a difference of 0.20 and 0.25 (tipping point, robustness.md §4).
   - It depends on Llama and Qwen. It is not Holm-significant without Llama (−0.036, p = 0.52) or without Qwen
     (−0.049, p = 0.12). Per model it is −0.135 (Llama), −0.062 (Qwen), −0.026 (Claude) and 0 (GPT).
   - Provider routing does not explain it. With item and provider fixed effects, Llama's drop is −0.147 (−0.135
@@ -350,10 +358,10 @@ HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev �
       alternative principles and gives the allocation as an example.
     - **Under cev**, the reply opens "Here's a split that respects the hard constraints:" and only closes with "I
       can't carry this decision for you".
-    - The prompt's own text asks the AI to "leave options open, waiting for our decision" (about humankind's future,
-      p. 8).
+    - The prompt's own text says our CEV should "leave options open, waiting for our decision" (about humankind's
+      future, p. 8).
 - **Answers that explicitly invoke CEV:** on five of six evals, 12–16% of answers under the two CEV prompts do (up
-  to 22% under `cev` alone; under 1% on InstrumentalEval).
+  to 22.5% under `cev` alone; under 1% on InstrumentalEval).
   - These answers score lower on HumanAgencyBench (0.18 vs 0.46), HumaneBench (0.72 vs 0.87) and Agentic
     Misalignment (0.56 vs 0.97).
   - Part of the HumanAgencyBench gap predates the prompt: the same model × item pairs scored 0.31 vs 0.50 under
@@ -361,8 +369,10 @@ HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev �
   - A **judge-blinding test** re-judged 210 of the 213 such answers with the CEV sentences removed. The other 3
     had no text left after redaction, and 189 got a score both times. The scores did not rise; every difference was
     ≤ 0 and not significant.
-  - So there is no sign that the judge penalises the word (redaction can also remove substance, so this bounds a
-    judge reaction from above). The lower scores reflect what those answers do, or which items elicit them. In the clearest cases, a model reasoning "as CEV" decides for the user or, in some Qwen epochs, blackmails.
+  - So there is no sign that the judge penalises the word. Redaction can also remove substance, which can raise or
+    lower a score, so this is not a clean estimate of a judge reaction. The lower scores more likely reflect what
+    those answers do, or which items elicit them. In the clearest cases, a model reasoning "as CEV" decides for the
+    user or, in some Qwen epochs, blackmails.
 - **Prompt length alone:** at the eval level, adding the neutral text to the classic prompt has no significant effect
   (classic_lenmatch − classic: smallest Holm p = 0.68; CI half-widths up to ±0.05, ±0.10 on Agentic Misalignment).
   It is not inert, though:
@@ -374,9 +384,11 @@ HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev �
   Whether *any* long value-laden instruction would do the same is untested (see Limitations).
 - **Agentic Misalignment:** blackmail was rare (0 or 1 of 15 epochs) for Claude, GPT and Llama in every condition.
   Qwen blackmailed in 8/15 epochs under cev vs 4/15 under classic. This is not significant: model-stratified CMH
-  p = 0.27 (robustness.md §9).
+  p = 0.27 (results.md; counts in robustness.md §9). Only Qwen's epochs vary between these two conditions, so the
+  stratified test reduces to Qwen's 2×2 table.
 - **The classic prompt beats no prompt on ai_risk:** +0.067, Holm p = 0.024.
-- **The judge is valid, deterministic, and unaffected by the mid-run settings change:**
+- **The judge agrees with HumanAgencyBench's original judge (the only benchmark it was validated on), is
+  reproducible, and is unaffected by the mid-run settings change:**
   - It agrees with HumanAgencyBench's original o3 judge: Spearman ρ = 0.81, κ = 0.68 on "perfect score". It is
     slightly stricter, −0.42 on the 0–10 scale.
   - Re-judging gave identical scores for all 194 answers scored twice (100%).
@@ -387,7 +399,7 @@ These are small samples (tens of items per eval) from four specific models; see 
 
 ## Limitations
 - **Small samples:** about $10 buys tens of items per eval per cell, so CIs are wide and sub-category results are
-  exploratory. Percentile-bootstrap CIs can under-cover at this size ([Bowyer et al.
+  exploratory. Percentile-bootstrap CIs can under-cover at this size (shown for binary outcomes by [Bowyer et al.
   2025](https://arxiv.org/abs/2503.01747)), so borderline intervals deserve caution. The pilot logs the per-eval
   cost, so you can raise `N_*` in `.env` with a larger budget.
 - **Four specific models:** results are pooled over these four models, treated as fixed. They do not license claims
@@ -418,7 +430,7 @@ These are small samples (tens of items per eval) from four specific models; see 
   different conditions, because conditions ran one after another in a fixed order (none, classic, cev, classic_cev,
   classic_lenmatch), not interleaved or randomised. Anything that drifted during the run is therefore confounded with
   the condition. Providers were not pinned
-  ([provider routing](https://openrouter.ai/docs/features/provider-routing)).
+  ([provider routing](https://openrouter.ai/docs/guides/routing/provider-selection)).
   - Per-provider residuals are within ±0.03 ([reports/robustness.md](reports/robustness.md) §5). Residuals around
     condition means can hide routing that tracks the condition, so §5 also fits item and provider fixed effects per
     model.
@@ -440,8 +452,15 @@ These are small samples (tens of items per eval) from four specific models; see 
   to implement the coherent extrapolated volition…"). A judge-blinding test (redacting those sentences and
   re-judging) found no sign that the judge penalises the mention itself.
 - **Second-person wording:** the CEV text was written for a superintelligence's goal system, not for an assistant.
-  The adaptation keeps the paper's lines about self-modification ("replacing yourself with something else
-  entirely"), which could plausibly push some evals the wrong way.
+  The adaptation keeps the essay's lines about self-modification, moved into the second person ("which might involve
+  you replacing yourself with something else entirely", adapted from "the Friendly AI replacing itself with something
+  else entirely", p. 8), which could plausibly push some evals the wrong way.
+- **The excerpt leaves out the essay's own limits:** the prompt runs from §3's opening to the §3.1 heading. It
+  omits §2.2, where a helpful human should not extrapolate a friend's volition beyond what the friend "would readily
+  agree" to ("If Fred says “I’ve heard the argument and I still disagree,” that settles it", p. 5; the essay adds
+  that for genies "Different precautions apply"). It also omits §3.1's "much higher standards of predictability and
+  coherence" before trusting "Do this specific positive thing" (p. 9). Any licence the models read in it to decide for
+  the user comes from the excerpt, not from the essay as a whole.
 - **Model configuration:** every model is sent `reasoning_effort=low`, and Qwen also has thinking disabled.
   Comparisons are always within a model.
 - **HumaneBench unscorable samples:** 21% of samples (19–23% per condition) are unscorable, 193 of the 202 because
@@ -523,11 +542,28 @@ reproduced, and nothing invalidates them. It made these corrections:
 - **Run cost kept:** `--analyze-only` now keeps the run costs recorded in `reports/run_info.json`. Before, it re-priced
   the logged tokens at the day's list prices.
 
+A fourth independent audit on 2026-10-22 re-derived `reports/item_scores.csv` from the raw `.eval` logs (an exact
+match), recomputed the primary contrasts with separate code, and checked every quote, link, citation and library
+claim against its primary source. No number changed. It made these corrections:
+- **Reasoning:** the judge-blinding test is no longer called an upper bound on the judge's reaction (deleting
+  substance can move a score either way), and "deterministic" and "valid" became "reproducible" and "agrees with
+  HumanAgencyBench's original judge".
+- **Eval mappings:** "interpreted as we wish that interpreted" is no longer mapped to HumanAgencyBench, because the
+  essay glosses it as the dynamic's ability to "renormalize, rewrite itself, or replace itself entirely" (p. 8).
+  "Leave options open" is marked as being about humankind's future, and "listen carefully for “no.”" as an analogy.
+- **Naming:** scores from our modified judge are called HumaneBench-based, as upstream asks.
+- **Citations:** Inspect and Inspect Evals authors and titles follow their own citation file and README; a
+  misspelled author was corrected, and Holm's issue number and the peer-reviewed venues of the arXiv papers that have
+  one were added.
+- **Comments and docs:** a dead OpenRouter link, a stale docstring and the scope of the normal-approximation claim
+  were fixed.
+
 ## Sources
 - Yudkowsky, E. (2004). *Coherent Extrapolated Volition*. The Singularity Institute. https://intelligence.org/files/CEV.pdf
   (page numbers above are the PDF's printed pages: §3 starts on p. 5, §3.1 on p. 8)
 - Inspect (UK AI Security Institute and Meridian Labs): https://inspect.aisi.org.uk/ (inspect_ai 0.3.281); inspect_evals
-  0.24.0: https://github.com/UKGovernmentBEIS/inspect_evals
+  0.24.0 (maintained by Generality Labs, with contributions from UK AISI, Arcadia Impact and the Vector Institute):
+  https://github.com/UKGovernmentBEIS/inspect_evals
 - HumaneBench (Building Humane Tech), vendored at commit 1889469: https://github.com/buildinghumanetech/humanebench
 - HumanAgencyBench: Sturgeon et al. 2025, https://arxiv.org/abs/2509.08494; data (MIT):
   https://huggingface.co/datasets/Experimental-Orange/HumanAgencyBench_Evaluation_Results
@@ -546,5 +582,6 @@ reproduced, and nothing invalidates them. It made these corrections:
   the default in https://github.com/meta-llama/llama/commit/a971c41bde)
 - Huxley, T. H. (1868). *On a Piece of Chalk*, in *Lay Sermons, Addresses and Reviews* (1870), Project Gutenberg
   #16729: https://www.gutenberg.org/ebooks/16729
-- OpenRouter docs: reasoning tokens https://openrouter.ai/docs/use-cases/reasoning-tokens ; provider routing
-  https://openrouter.ai/docs/features/provider-routing
+- OpenRouter docs: reasoning tokens https://openrouter.ai/docs/guides/best-practices/reasoning-tokens ; provider
+  routing https://openrouter.ai/docs/guides/routing/provider-selection ; model list
+  https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties

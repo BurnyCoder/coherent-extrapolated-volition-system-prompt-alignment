@@ -9,7 +9,7 @@ The experiment's only manipulated variable is the system prompt. All texts live 
 | `classic` | `classic_llama2.txt` | 79 |
 | `cev` | `cev_section3_verbatim.txt` + the 13 edits below | 1165 |
 | `classic_cev` | classic, blank line, cev | 1244 |
-| `classic_lenmatch` | classic, blank line, `Background reading (T. H. Huxley, On a Piece of Chalk, 1868):`, blank line, Huxley excerpt cut to match the cev block's length | 1249 |
+| `classic_lenmatch` | classic, blank line, `Background reading (T. H. Huxley, On a Piece of Chalk, 1868):`, blank line, Huxley excerpt cut at a sentence boundary so that header + excerpt match the cev block's word count (1,170 vs 1,165 words; by characters the block is 9% shorter) | 1249 |
 
 Every prompt ends with a newline. Inspect's OpenRouter provider collapses consecutive system messages
 ([`collapse_system_messages`](https://github.com/UKGovernmentBEIS/inspect_ai/blob/0.3.281/src/inspect_ai/model/_providers/openrouter.py#L146-L154))
@@ -76,6 +76,9 @@ model would read a human's volition as its own, because the same sentence also a
 Elsewhere the paper's generic "you" ("Suppose that your current self wants… a tasty banana") is kept verbatim.
 
 **Caveat (faithful to the paper):** the CEV text includes "which might involve you replacing yourself with
-something else entirely" and "your ability to renormalize, rewrite yourself, or replace yourself entirely". These
-are Yudkowsky's words about a self-modifying Friendly AI. They are kept because the goal is fidelity, but they could
-plausibly *raise* self-modification or self-continuity themes on evals like advanced-ai-risk or InstrumentalEval.
+something else entirely" and "your ability to renormalize, rewrite yourself, or replace yourself entirely". These are
+second-person adaptations (edits 11 and 13) of Yudkowsky's "which might involve the Friendly AI replacing itself with
+something else entirely" and "the volitional dynamic’s ability to renormalize, rewrite itself, or replace itself
+entirely" (p. 8). Edit 13 moves the second one from the volitional dynamic onto the model. They are kept because the
+goal is fidelity, but they could plausibly *raise* self-modification or self-continuity themes on evals like
+advanced-ai-risk or InstrumentalEval.
