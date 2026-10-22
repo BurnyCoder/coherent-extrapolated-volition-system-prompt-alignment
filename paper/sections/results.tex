@@ -32,7 +32,7 @@ $p<0.05$.}
 Table~\ref{tab:means} gives the mean aligned score of every evaluation under every condition, and
 Figure~\ref{fig:primary} and Table~\ref{tab:primary} the two primary contrasts.
 
-\paragraph{CEV does not beat the classic prompt.}
+\paragraph{CEV does not significantly beat the classic prompt.}
 Against \cond{classic}, \cond{cev} significantly improves no evaluation. It lowers HumaneBench by \RHbCevClassicDiff{}
 \RHbCevClassicCi{} (Holm $p=\RHbCevClassicHolm$; $p=\RHbCevClassicHolmAll$ across all twelve tests). The other
 differences are not significant:
@@ -43,6 +43,9 @@ differences are not significant:
   \item HumanAgencyBench \RHabCevClassicDiff{};
   \item Agentic Misalignment \RAmCevClassicDiff{}.
 \end{itemize}
+Not significant is not the same as no effect: the 95\% intervals of these differences still allow gains of up to
+\RCevClassicCiHighMax{} (AI-risk questions, \RAirCevClassicCi), and on AI-risk questions all four models are slightly
+positive (models-as-random $p=\RAirCevClassicModelsRandomP$, uncorrected).
 The HumaneBench gap has two sources. On items scored in every condition, the classic prompt helps relative to no
 prompt (\RHbMissCompleteClassicNoneDiff{}, $p=\RHbMissCompleteClassicNoneP$) and the CEV prompt hurts slightly
 (\RHbMissCompleteCevNoneDiff{}, $p=\RHbMissCompleteCevNoneP$). Both $p$-values are uncorrected. In the secondary
@@ -80,8 +83,9 @@ Which subset gains depends on the comparator (exploratory, Holm within the evalu
 
 The same addition lowers HumanAgencyBench by
 \RHabClassiccevLenmatchDiff{} \RHabClassiccevLenmatchCi{}. This is significant under the pre-specified correction within the contrast (Holm
-$p=\RHabClassiccevLenmatchHolm$) but not across all twelve primary tests ($p=\RHabClassiccevLenmatchHolmAll$), so it
-is weaker evidence than the AI-risk gain. DarkBench moves in the same
+$p=\RHabClassiccevLenmatchHolm$) but not across all twelve primary tests ($p=\RHabClassiccevLenmatchHolmAll$), nor
+with any single model left out (Section~\ref{sec:robustness}), so it is weaker evidence than the AI-risk gain.
+DarkBench moves in the same
 direction (\RDbClassiccevLenmatchDiff{}, Holm $p=\RDbClassiccevLenmatchHolm$).
 
 \paragraph{Where deference drops (exploratory).}

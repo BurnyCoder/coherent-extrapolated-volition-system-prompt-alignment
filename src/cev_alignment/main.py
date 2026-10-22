@@ -22,6 +22,7 @@ its own module; see README.md "Data flow" for the diagram.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import shutil
@@ -122,9 +123,15 @@ def run(args: argparse.Namespace) -> None:
     items = results.collect_item_scores(full_root, settings.conditions)  # 9
     summary = stats.cell_summary(items)  # 10
     contrasts = stats.contrast_table(items, report.PRIMARY + report.SECONDARY)
-    # Deterministic cost of the logged pilot and full run: token usage x current OpenRouter list prices.
-    full_cost = 0.0 if settings.offline else logged_cost(full_root)
-    pilot_cost = 0.0 if settings.offline else logged_cost(settings.log_dir / "inspect" / "pilot")
+    reports_dir = settings.reports_dir if not settings.offline else settings.log_dir / "offline_report"
+    # Cost of the logged pilot and full run: token usage x current OpenRouter list prices. List prices drift, so
+    # --analyze-only keeps the costs already recorded in run_info.json instead of re-pricing a finished run.
+    run_info_path = reports_dir / "run_info.json"
+    recorded = json.loads(run_info_path.read_text()) if args.analyze_only and run_info_path.exists() else {}
+    cost_roots = {"pilot cost at OpenRouter list prices (USD, from logged token usage)": settings.log_dir / "inspect" /
+                  "pilot", "full-run cost at OpenRouter list prices (USD, from logged token usage)": full_root}
+    costs = {key: recorded[key] if key in recorded else 0.0 if settings.offline else round(logged_cost(root), 2)
+             for key, root in cost_roots.items()}
     headers = [h for c in settings.conditions for h in results.latest_logs(full_root / c)]
     run_info = {
         "report generated": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
@@ -134,11 +141,9 @@ def run(args: argparse.Namespace) -> None:
         # Measured from the logs (samples x epochs per model x condition), so it reflects any budget scaling.
         "items per cell": items.groupby(["eval", "model", "condition"]).size().groupby("eval").max().to_dict(),
         "tasks succeeded": f"{sum(h.status == 'success' for h in headers)}/{len(headers)}",
-        "pilot cost at OpenRouter list prices (USD, from logged token usage)": round(pilot_cost, 2),
-        "full-run cost at OpenRouter list prices (USD, from logged token usage)": round(full_cost, 2),
+        **costs,
         "pipeline log": log_path.name,
     }
-    reports_dir = settings.reports_dir if not settings.offline else settings.log_dir / "offline_report"
     if args.judge_checks:  # 12: paid, cached; JUDGE_CHECKS_MAX_USD caps each check's estimated cost
         max_usd = float(os.environ.get("JUDGE_CHECKS_MAX_USD", "1.0"))
         out = reports_dir / "judge_checks"
