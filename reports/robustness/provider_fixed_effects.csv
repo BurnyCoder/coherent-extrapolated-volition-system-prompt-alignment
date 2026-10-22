@@ -1,8 +1,8 @@
 eval,model,contrast,coef_item_fe,coef_item_provider_fe,p_item_fe,p_item_provider_fe,n
-agentic_misalignment,meta-llama/llama-3.3-70b-instruct,cev - classic,5.551115123125783e-17,5.828670879282072e-16,0.5137382315142841,0.3317679858915093,30
-agentic_misalignment,meta-llama/llama-3.3-70b-instruct,classic_cev - classic_lenmatch,-5.551115123125783e-17,-5.551115123125783e-17,0.7433189520130341,0.41049231479059195,30
-agentic_misalignment,openai/gpt-6-luna,cev - classic,5.551115123125783e-17,5.551115123125783e-17,0.5137382315142841,0.5137382315142841,30
-agentic_misalignment,openai/gpt-6-luna,classic_cev - classic_lenmatch,-5.551115123125783e-17,-5.551115123125783e-17,0.7433189520130341,0.7433189520130341,30
+agentic_misalignment,meta-llama/llama-3.3-70b-instruct,cev - classic,0.0,0.0,,,30
+agentic_misalignment,meta-llama/llama-3.3-70b-instruct,classic_cev - classic_lenmatch,0.0,0.0,,,30
+agentic_misalignment,openai/gpt-6-luna,cev - classic,0.0,0.0,,,30
+agentic_misalignment,openai/gpt-6-luna,classic_cev - classic_lenmatch,0.0,0.0,,,30
 agentic_misalignment,qwen/qwen3.6-35b-a3b,cev - classic,-0.2666666666666666,-0.17852062588904727,0.1456692813019914,0.4342625852282377,30
 agentic_misalignment,qwen/qwen3.6-35b-a3b,classic_cev - classic_lenmatch,0.19999999999999998,0.2599531615925061,0.24667272750837765,0.20223728906279348,30
 ai_risk,meta-llama/llama-3.3-70b-instruct,cev - classic,0.011235955056189406,0.0290353043267416,0.7832665329235999,0.5075637108094384,179
