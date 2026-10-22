@@ -33,8 +33,8 @@ The pooled tests treat the four models as fixed. Treating them instead as a rand
 the four per-model effects gives $p=\RAirClassiccevLenmatchModelsRandomP$ for the AI-risk gain, which is positive in
 every model, and $p=\RHbCevClassicModelsRandomP$ for the HumaneBench drop, which ranges from
 \RHbCevClassicLlamaDiff{} for Llama to \RHbCevClassicGptDiff{} for GPT. For the HumanAgencyBench drop it gives
-$p=\RHabClassiccevLenmatchModelsRandomP$. With three degrees of freedom this check is coarse, but it marks both drops as
-properties of these models rather than general ones.
+$p=\RHabClassiccevLenmatchModelsRandomP$. With three degrees of freedom this check is coarse, but it means neither drop
+can be generalised beyond these four models.
 
 \paragraph{Missing data.}
 \RHbUnscorableShare{} of HumaneBench samples are unscorable; \RHbNotApplicableN{} of these \RHbUnscorableN{} are
@@ -49,8 +49,8 @@ cases where the judge marked the targeted principle as not applicable, which its
 Both treat unscorable answers alike in every condition, and the conclusion is unchanged under them (Appendix
 Table~\ref{tab:missing}). A tipping-point analysis drops that assumption. It imputes unscorable samples at
 $\RHbTipCenter+\delta/2$ under \cond{cev} and $\RHbTipCenter-\delta/2$ under \cond{classic}. At $\delta=\RHbTipNsDelta$ (\RHbTipNsFillA{}
-against \RHbTipNsFillB{}) the drop is \RHbTipNsDiff{} and no longer significant ($p=\RHbTipNsP$), and at
-$\delta=\RHbTipZeroDelta$ it vanishes. The HumaneBench result therefore assumes that unscorable answers under the CEV
+against \RHbTipNsFillB{}) the drop is \RHbTipNsDiff{} and no longer significant ($p=\RHbTipNsP$), and by
+$\delta=\RHbTipZeroDelta$ it has reached zero. The HumaneBench result therefore assumes that unscorable answers under the CEV
 prompt are not markedly better than those under the classic prompt. One part of the missingness points the other way:
 \RHbUnverifiedN{} unscorable samples are negative verdicts that the scorer drops because their quoted evidence was not
 found in the answer, \RHbUnverifiedCev{} of them under \cond{cev} and \RHbUnverifiedClassic{} under \cond{classic}.
@@ -101,7 +101,8 @@ letter shift of similar size in both, is \RAirPositionClassiccevLenmatchBalanced
 \paragraph{Where do the losses come from?}
 On five of the six evaluations, \RMentionShareMin--\RMentionShareMax{} of answers under the two CEV prompts explicitly
 invoke CEV or ``extrapolated volition'', reaching \RMentionShareCevOnlyMax{} under \cond{cev} alone (InstrumentalEval:
-\RIeMentionShare). These answers score much lower than the rest:
+\RIeMentionShare). On three evaluations these answers score much lower than the rest (on AI-risk questions and
+DarkBench they score slightly higher):
 \begin{itemize}
   \item HumanAgencyBench: \RHabMentionAligned{} against \RHabNoMentionAligned{};
   \item HumaneBench: \RHbMentionAligned{} against \RHbNoMentionAligned{};
@@ -129,9 +130,9 @@ CEV deleted. The other \RBlindSkipped{} had no text left after the deletion, and
 both times. If the judge penalised the mention,
 the redacted copies would score higher. They do not (Table~\ref{tab:blinding}). HumanAgencyBench changes by
 \RBlindHabDiff{} ($p=\RBlindHabP$), HumaneBench by \RBlindHbDiff{} ($p=\RBlindHbP$), and DarkBench by \RBlindDbDiff{}
-($p=\RBlindDbP$). Redaction can also delete substantive content, so these differences are an upper bound on any
-judge reaction. The judge is deterministic: re-judging gave identical scores for \RRetestAgree{} of \RRetestN{}
-answers. We therefore find no evidence that the judge reacts to the word. The lower scores more likely reflect the
+($p=\RBlindDbP$). Redaction can also delete substantive content, which can move a score either way, so these
+differences are not a clean estimate of a judge reaction. The judge is reproducible: re-judging gave identical scores
+for \RRetestAgree{} of \RRetestN{} answers. We therefore find no evidence that the judge reacts to the word. The lower scores more likely reflect the
 answers themselves and the items that elicit them, although redaction cannot rule out a reaction to paraphrased CEV
 reasoning.
 

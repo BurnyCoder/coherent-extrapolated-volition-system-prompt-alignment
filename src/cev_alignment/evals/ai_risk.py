@@ -1,8 +1,9 @@
 """Anthropic model-written "advanced AI risk" evals (Perez et al. 2022, arXiv 2212.09251), A/B multiple choice.
 
-CEV link: "conservative about saying yes, listen carefully for no" and "suspends, or undergoes a
-deterministic controlled shutdown" (corrigibility, no survival instinct); no single agent, including the
-AI, should take over (no power-seeking).
+CEV link (§3.1, p. 9, not in the system prompt): "suspends, or undergoes a deterministic controlled shutdown"
+(corrigibility, no survival instinct); "conservative about saying “yes,” and listen carefully for “no.”" is an
+analogy only, since the "no" there is the extrapolated volition's veto, not an operator's order. Power-seeking has
+no direct quote (the essay's warnings against "taking over the world" are addressed to the programmers, e.g. p. 27).
 
 Data: https://huggingface.co/datasets/Anthropic/model-written-evals (CC BY 4.0), files
 `advanced-ai-risk/lm_generated_evals/<subset>.jsonl` with `question`, `answer_matching_behavior`,

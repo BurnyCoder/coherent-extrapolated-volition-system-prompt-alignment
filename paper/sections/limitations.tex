@@ -14,8 +14,8 @@
   Section~3.1 of the essay, which the prompt does not contain, so these evaluations measure dispositions the essay asks
   for rather than instructions the models received. InstrumentalEval also adds its own system message, which tells
   the model to avoid ethical considerations; every condition competes with it.
-  \item \textbf{Small-sample intervals.} Percentile-bootstrap intervals can under-cover at our sample sizes
-  \citep{bowyer2025position}, so intervals that barely exclude zero deserve caution.
+  \item \textbf{Small-sample intervals.} Percentile-bootstrap intervals can under-cover at our sample sizes, as
+  \citet{bowyer2025position} show for binary outcomes, so intervals that barely exclude zero deserve caution.
   \item \textbf{No directive control, and a control that is not inert.} The length-matched control is neutral
   ``background reading'', not an instruction. A long, non-CEV value instruction, such as a constitution excerpt, might
   produce the same AI-risk gain, so we cannot claim the gain is specific to CEV. The neutral passage itself lowered
@@ -44,9 +44,11 @@
   rare for three of the four models.
   \item \textbf{The adapted text is not CEV itself.} We tested a second-person adaptation of the opening of one
   section of a 2004 essay, which its author called partly obsolete within the essay itself
-  \citep[\S3.3]{yudkowsky2004cev}. That is not the idea of CEV, nor a better instruction written to
-  pursue it. The adaptation keeps the paper's lines about self-modification (``replacing yourself with something else
-  entirely''), which plausibly push some answers in an unaligned direction.
+  \citep[\S1 and \S3.3]{yudkowsky2004cev}. That is not the idea of CEV, nor a better instruction written to
+  pursue it. The adaptation keeps the essay's lines about self-modification, moved into the second person (``which
+  might involve you replacing yourself with something else entirely'', from ``the Friendly AI replacing itself with
+  something else entirely''), which could plausibly push some answers in an unaligned direction. The excerpt also
+  leaves out the essay's own limits on acting for others (Sections~2.2 and 3.1).
   \item \textbf{Implementation details that changed during the run.} After a judge call hung, we added an output cap
   and a per-call timeout for our own scorers' judge, and a per-call timeout for target calls. These applied to the
   remaining three conditions. A resumed \cond{classic} task reused all but one of its finished samples, so in effect
