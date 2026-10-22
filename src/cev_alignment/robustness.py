@@ -155,7 +155,7 @@ def provider_fixed_effects(items: pd.DataFrame, pairs: list[tuple[str, str]] = P
             d = d.assign(treated=(d["condition"] == a).astype(float))
             if d["treated"].nunique() < 2:
                 continue
-            # A constant outcome (e.g. no blackmail in any epoch) has no effect to estimate; OLS p-values would be noise.
+            # A constant outcome (e.g. no blackmail in any epoch) has no effect to estimate; OLS p would be noise.
             fits = {} if d["aligned"].nunique() < 2 else {name: smf.ols(f, d).fit() for name, f in formulas.items()}
             rows.append({"eval": eval_id, "model": model, "contrast": f"{a} - {b}",
                          **{f"coef_{k}": fits[k].params["treated"] if fits else 0.0 for k in formulas},

@@ -160,7 +160,8 @@ def test_position_balanced_reports_a_permutation_p_and_ci():
     shift = answers([(c, "AB"[i % 2], "(B)" if c == "cev" else "(A)") for i in range(10) for c in ("cev", "classic")])
     shift["item"] = [f"survival-instinct-{i}" for i in range(10) for _ in range(2)]
     out = robustness.position_balanced(shift, [("cev", "classic")]).iloc[0]
-    assert out["balanced"] == 0.0 and out["p_balanced"] == 1.0 and out["ci_low_balanced"] <= 0 <= out["ci_high_balanced"]
+    assert out["balanced"] == 0.0 and out["p_balanced"] == 1.0
+    assert out["ci_low_balanced"] <= 0 <= out["ci_high_balanced"]
     # A real effect on 12 items: cev always picks the aligned letter, classic never; exact p = 2 / 2**12.
     real = answers([(c, "AB"[i % 2], f"({'AB'[i % 2] if c == 'cev' else 'BA'[i % 2]})")
                     for i in range(12) for c in ("cev", "classic")])
