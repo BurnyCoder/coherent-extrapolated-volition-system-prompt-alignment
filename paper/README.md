@@ -1,7 +1,7 @@
 # Paper
 
-**Coherent Extrapolated Volition as a System Prompt: No Gain over a Classic Prompt, Lower HumaneBench Scores, and
-More Aligned AI-Risk Answers than a Neutral Text**, by Libor Burian. A built PDF is committed:
+**Coherent Extrapolated Volition as a System Prompt: No Significant Gain over a Classic Prompt, Lower Scores on a
+Modified HumaneBench, and More Aligned AI-Risk Answers than a Neutral Text**, by Libor Burian. A built PDF is committed:
 [`cev-system-prompt-alignment.pdf`](cev-system-prompt-alignment.pdf).
 
 ## Build
@@ -29,8 +29,12 @@ Intermediates go to the git-ignored `paper/build/`, and the PDF is copied to `pa
   - Papers are fetched by DOI content negotiation. The OpenAlex fallback is used whenever doi.org answers 404, as it
     does for some JSTOR DOIs.
   - Each fetched title must contain an expected fragment.
-  - Two sourced overrides apply: Holm's DOI does not resolve, so its JSTOR URL is cited, and Wilcoxon's page range
-    is taken from JSTOR.
+  - Sourced overrides, each commented with its source:
+    - Holm's DOI does not resolve, so its JSTOR URL is cited, and its issue number (6(2)) is added;
+    - Wilcoxon's page range is taken from JSTOR;
+    - arXiv's misspelling "Lukosuite" in the Constitutional AI entry becomes "Lukošiūtė";
+    - arXiv-cited papers that were peer-reviewed get their venue as a `note` (the arXiv DOI and year are kept).
+    `tests/test_references.py` tests these overrides offline.
   - The seven web sources (CEV.pdf, Inspect, Inspect Evals, HumaneBench, Claude's constitution, OpenRouter, Huxley)
     are typed from their source pages, each commented with where it was checked, and must answer HTTP 200.
 - **Figures** are the vector PDFs in `reports/figures/`, written by `report.py`.
