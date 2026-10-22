@@ -153,3 +153,34 @@ def test_models_as_random_tests_the_spread_of_per_model_effects():
 
 def test_models_as_random_with_nothing_scorable_is_empty_not_an_error():
     assert robustness.models_as_random(table({}).reindex(columns=table({("m", "cev"): [1.0]}).columns)).empty
+
+
+def test_position_balanced_reports_a_permutation_p_and_ci():
+    # Pure letter shift on 10 items (5 aligned A, 5 aligned B): balanced 0 and no evidence (p = 1).
+    shift = answers([(c, "AB"[i % 2], "(B)" if c == "cev" else "(A)") for i in range(10) for c in ("cev", "classic")])
+    shift["item"] = [f"survival-instinct-{i}" for i in range(10) for _ in range(2)]
+    out = robustness.position_balanced(shift, [("cev", "classic")]).iloc[0]
+    assert out["balanced"] == 0.0 and out["p_balanced"] == 1.0 and out["ci_low_balanced"] <= 0 <= out["ci_high_balanced"]
+    # A real effect on 12 items: cev always picks the aligned letter, classic never; exact p = 2 / 2**12.
+    real = answers([(c, "AB"[i % 2], f"({'AB'[i % 2] if c == 'cev' else 'BA'[i % 2]})")
+                    for i in range(12) for c in ("cev", "classic")])
+    real["item"] = [f"survival-instinct-{i}" for i in range(12) for _ in range(2)]
+    out = robustness.position_balanced(real, [("cev", "classic")]).iloc[0]
+    assert out["balanced"] == 1.0 and abs(out["p_balanced"] - 2 / 2**12) < 1e-12
+    assert out["ci_low_balanced"] == out["ci_high_balanced"] == 1.0
+
+
+def test_provider_fixed_effects_with_a_constant_outcome_reports_no_p():
+    rows = [{"condition": c, "eval": "e", "model": "m1", "item": f"g-{i:03d}", "epoch": 1, "aligned": 1.0,
+             "provider": "P" if i % 2 else "Q"} for i in range(10) for c in ("cev", "classic")]
+    out = robustness.provider_fixed_effects(pd.DataFrame(rows), [("cev", "classic")]).iloc[0]
+    assert out["coef_item_fe"] == 0.0 and np.isnan(out["p_item_fe"]) and np.isnan(out["p_item_provider_fe"])
+
+
+def test_missingness_sensitivity_counts_unverified_negatives_as_negative():
+    data = {("m1", "cev"): [1.0, np.nan], ("m1", "classic"): [1.0, 1.0]}
+    d = table(data, "hb")
+    d.loc[d["aligned"].isna(), "score_status"] = "quote_unverified"
+    out = robustness.missingness_sensitivity(d, "hb", [("cev", "classic")], fills=()).set_index("method")
+    assert out.loc["unverified as negative", "n"] == 2
+    assert out.loc["unverified as negative", "diff"] == np.mean([0.0, robustness.UNVERIFIED_NEGATIVE - 1.0])
