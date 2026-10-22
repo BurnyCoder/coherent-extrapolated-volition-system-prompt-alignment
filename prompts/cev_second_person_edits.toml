@@ -11,8 +11,9 @@
 #   "the volitional dynamic", "the dynamic", "a dynamic for CEV", "the Friendly AI") become "you"/"your".
 # - Where the paper's generic-human "your volition" sits right next to AI-directed "you", it becomes
 #   "a person's volition" so the model does not mistake a human's volition for its own.
-# - The poetic definition sentence, every gloss heading, every quotation and the Fred/Steve/diamond
-#   examples stay verbatim.
+# - The poetic definition sentence, every gloss heading and every quotation stay verbatim. The Fred/Steve/diamond
+#   examples do too, except for the narrator's "I" in edits 3-6 (edit 4 also turns "I raise this scenario to ask"
+#   into "This scenario asks") and "The dynamic would ask" in edit 12.
 
 [[edit]]
 old = "As of May 2004, my take on Friendliness is that the initial dynamic should implement the coherent extrapolated volition of humankind."

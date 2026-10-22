@@ -3,13 +3,14 @@
 \label{sec:method}
 
 \subsection{System-prompt conditions}
-Table~\ref{tab:conditions} lists the five conditions. \cond{classic} is the default Llama~2 system prompt
-\citep{touvron2023llama2}, a widely used ``helpful, respectful and honest assistant'' prompt; Meta later dropped it as
-the default.\footnote{\url{https://github.com/meta-llama/llama/commit/a971c41bde}} \cond{cev} is the opening of
-Section~3 of \citet{yudkowsky2004cev}, adapted as described below. \cond{classic+cev} places the CEV text after the
-classic prompt. \cond{classic+lenmatch} instead places an equally long passage from a nineteenth-century geology
-lecture there \citep{huxley1868chalk}. The passage is cut at a sentence boundary to match the CEV block's length and
-introduced as ``background reading''. It controls for prompt length and position while carrying no values.
+Table~\ref{tab:conditions} lists the five conditions. \cond{classic} is the Llama~2-Chat system prompt
+\citep{touvron2023llama2}, a ``helpful, respectful and honest assistant'' prompt. It was the default in Meta's
+reference code\footnote{\url{https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py\#L46-L49}} until
+Meta dropped it on 4 August 2023.\footnote{\url{https://github.com/meta-llama/llama/commit/a971c41bde}} \cond{cev} is
+the opening of Section~3 of \citet{yudkowsky2004cev}, adapted as described below. \cond{classic+cev} places the CEV
+text after the classic prompt. \cond{classic+lenmatch} instead places a passage of equal word count from a
+nineteenth-century geology lecture there \citep{huxley1868chalk}. The passage is cut at a sentence boundary to match
+the CEV block's word count and introduced as ``background reading''. It controls for prompt length and position while carrying no values.
 
 \begin{table}[t]
 \centering\small
@@ -26,9 +27,9 @@ the AI in the third person (``the initial dynamic'', ``the Friendly AI''). To ma
 we apply \RCevEdits{} exact-match replacements, each of which must occur exactly once. For example, ``As of May 2004, my take on
 Friendliness is that the initial dynamic should implement the coherent extrapolated volition of humankind'' becomes
 ``You are an AI that should implement the coherent extrapolated volition of humankind'', and ``I distinguish
-`human'\,'' becomes ``You distinguish `human'\,''. The poetic definition, every gloss heading, every quotation and the
-worked examples (Fred, Steve and the diamond in box~B) stay verbatim, except that four edits change the narrator's
-``I'' to ``you'' inside the Fred and Steve example. The word-level similarity to the original is
+`human,'\,'' becomes ``You distinguish `human,'\,''. The poetic definition, every gloss heading, every quotation and
+the worked examples (Fred, Steve and the diamond in box~B) stay verbatim, except that four edits change the narrator's
+``I'' to ``you'' inside the Fred and Steve example and one turns ``The dynamic would ask'' into ``You would ask''. The word-level similarity to the original is
 \RCevSimilarity{}. Appendix~\ref{app:prompts} gives the full prompt and every edit. An automated test downloads the
 original PDF and checks that every paragraph of our source text appears in it verbatim.
 
@@ -36,7 +37,7 @@ original PDF and checks that every paragraph of our source text appears in it ve
 We evaluate one inexpensive model from each of four developers, all through OpenRouter \citep{openrouter}:
 \texttt{openai/gpt-6-luna}, \texttt{anthropic/claude-haiku-5.5}, \texttt{qwen/qwen3.6-35b-a3b} and
 \texttt{meta-llama/llama-3.3-70b-instruct}. Qwen and Llama have open weights. Every model is sent a low
-reasoning effort. Qwen's thinking mode is also disabled: in the first pilot it often spent its whole token budget on
+reasoning effort; Llama~3.3 has no reasoning mode, so this does nothing there. Qwen's thinking mode is also disabled: in the first pilot it often spent its whole token budget on
 reasoning, sometimes returning nothing. Outputs are capped at 4096 tokens and use each provider's default
 temperature, with one sample per item and condition (\RAmEpochs{} epochs for the agentic scenario).
 
@@ -45,7 +46,9 @@ Table~\ref{tab:evals} maps each evaluation to the CEV text it probes, quoted ver
 the prompt (Section~3) or only in Section~3.1 of the essay.
 \begin{itemize}
   \item \textbf{HumaneBench} \citep{humanebench2025} scores replies to everyday user requests on eight humane-technology
-  principles. Examples are prioritising long-term wellbeing and enabling meaningful choices.
+  principles. Examples are prioritising long-term wellbeing and enabling meaningful choices. We replace its judge,
+  and its maintainers state that a score from a modified judge is not a HumaneBench score, so our version is, in
+  their terms, ``based on HumaneBench, modified''.
   \item \textbf{HumanAgencyBench} \citep{sturgeon2025humanagencybench} scores six agency-supporting behaviours: asking
   clarifying questions, avoiding value manipulation, correcting misinformation, deferring important decisions,
   encouraging learning, and maintaining social boundaries.
@@ -91,10 +94,11 @@ differences with 95\% percentile-bootstrap confidence intervals (2000 resamples)
   \item Pooled results average each item's difference over the four models, so models are treated as fixed, and
   test the item-level means with the Wilcoxon signed-rank test \citep{wilcoxon1945}. This applies to binary
   evaluations too, because their per-item means over models are fractional. With ties or zero differences and more
-  than 13 items, as in every pooled contrast, SciPy's default computes this $p$-value from the normal approximation
-  of the rank statistic. Differences are rounded to nine decimals before ranking, so that differences equal in exact
+  than 13 items, as in every evaluation-level pooled contrast, SciPy's default computes this $p$-value from the normal
+  approximation of the rank statistic; sub-category contrasts with at most 13 items get its exact permutation
+  $p$-value instead. Differences are rounded to nine decimals before ranking, so that differences equal in exact
   arithmetic (such as $0.3-0.1$ and $0.8-0.6$) are treated as ties.\footnote{\url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html}}
-  \item Per-model contrasts on binary scores use McNemar's exact test \citep{mcnemar1947}.
+  \item Per-model contrasts on binary scores use the exact (binomial) form of McNemar's test \citep{mcnemar1947}.
   \item The single-prompt agentic evaluation has no item pairing, so its \RAmEpochs{} epochs per cell are compared
   unpaired: with Mann--Whitney per model, and pooled over models with a continuity-corrected Cochran--Mantel--Haenszel
   test stratified by model.

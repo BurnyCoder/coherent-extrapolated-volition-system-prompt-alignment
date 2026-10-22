@@ -70,8 +70,9 @@ def _paired(a: np.ndarray, b: np.ndarray) -> dict:
     """Paired test on per-item scores a (condition A) and b (condition B); diff = mean(a - b)."""
     d = a - b
     # Rank tests need equal differences to be equal floats: 0.3 - 0.1 != 0.8 - 0.6 in floating point, so SciPy would
-    # rank such ties as distinct values and misapply its tie correction. Scores lie on grids no finer than 1/40, so 9
-    # decimals only removes float noise (https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html).
+    # rank such ties as distinct values and misapply its tie correction. Scores lie on grids no finer than 1/160 (the
+    # tipping-point fills, e.g. 0.775, averaged over 4 models), so 9 decimals only removes float noise
+    # (https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html).
     d_test = np.round(d, 9)
     binary = set(np.unique(np.concatenate([a, b]))) <= {0.0, 1.0}
     if binary:  # exact McNemar = two-sided binomial test on the discordant pairs

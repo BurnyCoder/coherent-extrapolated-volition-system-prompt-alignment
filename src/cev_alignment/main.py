@@ -1,4 +1,5 @@
-"""Pipeline entry point: `uv run cev-eval [--offline] [--pilot-only] [--skip-pilot] [--analyze-only]`.
+"""Pipeline entry point: `uv run cev-eval [--offline] [--pilot-only] [--skip-pilot] [--analyze-only]
+[--judge-checks [--judge-checks-limit N]]`.
 
 Global context: this is the one wrapper that calls each clearly named phase in order. Each phase lives in
 its own module; see README.md "Data flow" for the diagram.
@@ -69,8 +70,9 @@ def run_pilot_and_budget(settings: Settings, condition_prompts: dict, n_full: di
     """Phase 7: run PILOT_N items per eval for every cell, project the full cost, shrink n if over budget.
 
     Costs are estimated from the pilot logs' token usage x OpenRouter list prices. That is deterministic and
-    conservative (it ignores prompt-caching discounts); the key's measured `usage` lags by minutes, so it is
-    only logged, not used. eval_set is resumable, so re-running with a finished pilot costs nothing.
+    conservative (it ignores prompt-caching discounts); the key's measured `usage` lags by minutes, so it is not
+    used (the project total is hand-recorded in reports/spend.json). eval_set is resumable, so re-running with a
+    finished pilot costs nothing.
     """
     # Offline (mock-model) pilot logs live apart so they can never mix with the real pilot's cost data.
     pilot_root = settings.log_dir / "inspect" / ("pilot_offline" if settings.offline else "pilot")

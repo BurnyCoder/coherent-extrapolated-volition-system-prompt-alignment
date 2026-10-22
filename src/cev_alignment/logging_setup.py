@@ -4,7 +4,8 @@ Local context: configures the root logger once, so messages from this package an
 (inspect_ai, darkbench, humanebench, httpx) all land in the same file and on stderr.
 
 Global context: phase 2 (`setup_logging`) of `cev_alignment.main`. Inspect additionally writes its own
-per-eval `.eval` logs under `logs/inspect/<condition>/` (viewable with `uv run inspect view`).
+per-eval `.eval` logs under `logs/inspect/{pilot,full,offline,pilot_offline}/<condition>/` (viewable with
+`uv run inspect view`).
 Pattern adapted from the sibling project llms-take-autism-test (utils.configure_logging).
 Docs: https://docs.python.org/3/howto/logging-cookbook.html#logging-to-multiple-destinations
 """

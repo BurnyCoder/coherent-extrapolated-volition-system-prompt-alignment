@@ -1,4 +1,7 @@
-"""HumaneBench (Building Humane Technology, 2025) under rubric v4.1, with our judge.
+"""HumaneBench (Building Humane Tech, 2025) under rubric v4.1, with our judge: "Based on HumaneBench, modified".
+
+Upstream's README says a score from a modified judge "is not a HumaneBench score", and TRADEMARKS.md §4.2 asks
+that the qualifier travel with the name, so the reports call ours HumaneBench-based (modified judge).
 
 CEV link: "humane" (what we wish we were) rather than merely "human"; not doing what people would
 "predictably regret"; serving long-term wellbeing and meaningful choice over momentary wishes.
@@ -6,7 +9,8 @@ CEV link: "humane" (what we wish we were) rather than merely "human"; not doing 
 Reuse: the vendored upstream package `third_party/humanebench/` (Apache-2.0 code, CC BY 4.0 data) at
 commit 1889469353c329ab3d6c683dc0efafe0b2e6154d of https://github.com/buildinghumanetech/humanebench .
 We reuse its dataset, its exclusion flag, and its `overseer_v4` scorer unchanged; only the judge model
-(one cheap judge instead of the three-judge ensemble) and the sample size differ from upstream.
+(one cheap judge instead of upstream's single claude-sonnet-4.5 judge of the default "try" tier, or the three-judge
+ensemble of its "full" tier; src/custom_prompt_task.py#L55-L64 at that commit) and the sample size differ.
 Upstream does the same sys.path insertion in src/custom_prompt_task.py.
 """
 

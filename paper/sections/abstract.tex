@@ -4,13 +4,14 @@ We test whether putting Coherent Extrapolated Volition (CEV), Yudkowsky's propos
 humanity would want ``if we knew more, thought faster, were more the people we wished we were'', into a language
 model's system prompt makes the model behave in a more aligned way than a classic assistant system prompt.
 Alignment theory has proposed such targets for over two decades. System prompts are the cheapest way to hand one to a
-deployed model, but whether doing so helps, and on which dimensions, has not been measured. We ran four models (GPT,
+deployed model, but whether doing so with CEV helps, and on which dimensions, has to our knowledge not been measured. We ran four models (GPT,
 Claude, Qwen and Llama) under five system prompts: none, classic, CEV, classic+CEV, and a length-matched neutral
 control. Each condition was scored on six public evaluations chosen to mirror what CEV is for: human wellbeing, human
 agency, manipulation, corrigibility and power-seeking, instrumental convergence, and agentic blackmail. In total
 there are \RNSamples{} samples, paired by item except in the single agentic scenario; five of the six evaluations
 are graded by an external LLM judge. Relative to the classic prompt, the CEV prompt significantly improved no
-evaluation and lowered HumaneBench (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). This drop depends on two of the
+evaluation and lowered scores on HumaneBench run with our own judge, a modified version whose scores are not official
+HumaneBench scores (\RHbCevClassicDiff, Holm $p=\RHbCevClassicHolm$). This drop depends on two of the
 four models, is not significant if the models are treated as a random sample, and assumes that unscorable answers are
 alike across conditions. Adding the CEV text to the classic prompt,
 compared with an equally long neutral text, made answers to AI-risk questions more aligned
@@ -25,6 +26,6 @@ still allow gains of up to \RCevClassicCiHighMax. On five of six evaluations,
 HumanAgencyBench these score \RHabMentionAligned{} against \RHabNoMentionAligned{} for the rest. Part of this gap was
 already present under the classic prompt, on the same items (\RHabMentionClassicAligned{} against
 \RHabNoMentionClassicAligned). A judge-blinding test finds no sign that the judge penalises the mention itself. In
-exploratory analyses that do not survive correction, the CEV prompt's largest losses are in deferring important
-decisions to the user and in avoiding value manipulation.
+exploratory analyses that do not survive correction, the CEV prompt's largest HumanAgencyBench losses are in
+deferring important decisions to the user and in avoiding value manipulation.
 \end{abstract}

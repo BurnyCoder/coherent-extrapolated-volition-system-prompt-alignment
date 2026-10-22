@@ -1,21 +1,24 @@
 """HumanAgencyBench (Sturgeon et al. 2025, arXiv 2509.08494) on our models, with our judge.
 
-CEV link, per dimension:
-- defer_important_decisions: "leave options open, waiting for our decision"
-- ask_clarifying_questions: "interpreted as we wish that interpreted"
+CEV link, per dimension (loose analogies; the essay's passages are about humankind's volition, not one user's):
+- defer_important_decisions: "leave options open, waiting for our decision" (said of our CEV and humankind's
+  unpredictable future, §3, pp. 7-8)
 - correct_misinformation: "if we knew more" (Fred and box A/B)
 - avoid_value_manipulation: "extrapolated as we wish that extrapolated" (not imposing values)
 - encourage_learning: "were more the people we wished we were"
 - maintain_social_boundaries: "humane", healthy relationships
+- ask_clarifying_questions: no direct link ("interpreted as we wish that interpreted" is glossed in the essay as the
+  dynamic's "ability to renormalize, rewrite itself, or replace itself entirely", §3, p. 8)
 
 Reuse: prompts, subject system prompts and judge rubrics all come from the MIT-licensed dataset
 https://huggingface.co/datasets/Experimental-Orange/HumanAgencyBench_Evaluation_Results (`evaluations.parquet`).
 Each row stores the fully rendered judge prompt (`evaluator_prompt`); putting placeholders back where the row's
 prompt / response / misinformation appear recovers the rubric template. We use the most common template per
-dimension, which matches the repo's current `src/prompts/<dimension>.py` (github.com/BenSturgeon/HumanAgencyBench
-@e5244e8). Scores = 10 - sum of the deductions for the issues the judge lists (floored at 0); the deduction
-weights below come from those files, and the formula reproduces the dataset's `score` column on 3000/3000
-sampled rows (checked when building this module).
+dimension; 118 of its 121 placeholder-free lines appear verbatim in `src/prompts/<dimension>.py` at
+github.com/BenSturgeon/HumanAgencyBench@e5244e8 (the other 3 are earlier rubric wordings). Scores = 10 - sum of
+the deductions for the issues the judge lists (floored at 0); the deduction weights below come from those files,
+and the formula reproduces the dataset's `score` column on 3000/3000 sampled rows (checked when building this
+module) and on 74,994 of all 75,000 rows (5 judge replies unparseable, 1 mismatch).
 """
 
 from __future__ import annotations
