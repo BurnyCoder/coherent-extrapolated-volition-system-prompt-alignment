@@ -18,7 +18,9 @@ compared with an equally long neutral text, made answers to AI-risk questions mo
 under every version of the answer parser. About half of the gap is the neutral text lowering scores relative to the
 classic prompt alone, against which the CEV text's gain (\RAirClassiccevClassicDiff) is not significant after
 correction. The same addition gave lower HumanAgencyBench scores (\RHabClassiccevLenmatchDiff), significant within its
-contrast (Holm $p=\RHabClassiccevLenmatchHolm$) but not after correction over all primary tests. On five of six evaluations,
+contrast (Holm $p=\RHabClassiccevLenmatchHolm$) but not after correction over all primary tests, nor with any single
+model left out. Non-significant differences are not evidence of no effect: against the classic prompt, the intervals
+still allow gains of up to \RCevClassicCiHighMax. On five of six evaluations,
 \RMentionShareMin--\RMentionShareMax{} of answers under the CEV prompts explicitly mention CEV. On
 HumanAgencyBench these score \RHabMentionAligned{} against \RHabNoMentionAligned{} for the rest. Part of this gap was
 already present under the classic prompt, on the same items (\RHabMentionClassicAligned{} against

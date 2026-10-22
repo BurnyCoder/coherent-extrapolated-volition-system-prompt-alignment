@@ -23,14 +23,18 @@ Removing each model in turn, the AI-risk gain stays between \RAirClassiccevLenma
 ($p=\RAirClassiccevLenmatchWithoutLlamaHolm$) or Qwen ($p=\RAirClassiccevLenmatchWithoutQwenHolm$). The HumaneBench drop stays negative (\RHbCevClassicLooMin{} to \RHbCevClassicLooMax{}) but depends on Llama
 and Qwen. It is not significant without Llama (\RHbCevClassicWithoutLlamaDiff{}, Holm
 $p=\RHbCevClassicWithoutLlamaHolm$) or without Qwen (\RHbCevClassicWithoutQwenDiff{}, Holm
-$p=\RHbCevClassicWithoutQwenHolm$). See Appendix Table~\ref{tab:loo}.
+$p=\RHbCevClassicWithoutQwenHolm$). The HumanAgencyBench drop of the CEV text against the neutral text is not
+significant without any one of the four models (Holm $p$ from \RHabClassiccevLenmatchLooHolmMin{} to
+\RHabClassiccevLenmatchLooHolmMax), and without Qwen it shrinks to \RHabClassiccevLenmatchWithoutQwenDiff. See
+Appendix Table~\ref{tab:loo}.
 
 \paragraph{Would the effects generalise to other models?}
 The pooled tests treat the four models as fixed. Treating them instead as a random sample, a one-sample $t$-test of
 the four per-model effects gives $p=\RAirClassiccevLenmatchModelsRandomP$ for the AI-risk gain, which is positive in
 every model, and $p=\RHbCevClassicModelsRandomP$ for the HumaneBench drop, which ranges from
-\RHbCevClassicLlamaDiff{} for Llama to \RHbCevClassicGptDiff{} for GPT. With three degrees of freedom this check is
-coarse, but it marks the HumaneBench drop as a property of these models rather than a general one.
+\RHbCevClassicLlamaDiff{} for Llama to \RHbCevClassicGptDiff{} for GPT. For the HumanAgencyBench drop it gives
+$p=\RHabClassiccevLenmatchModelsRandomP$. With three degrees of freedom this check is coarse, but it marks both drops as
+properties of these models rather than general ones.
 
 \paragraph{Missing data.}
 \RHbUnscorableShare{} of HumaneBench samples are unscorable; \RHbNotApplicableN{} of these \RHbUnscorableN{} are
@@ -47,7 +51,11 @@ Table~\ref{tab:missing}). A tipping-point analysis drops that assumption. It imp
 $\RHbTipCenter+\delta/2$ under \cond{cev} and $\RHbTipCenter-\delta/2$ under \cond{classic}. At $\delta=\RHbTipNsDelta$ (\RHbTipNsFillA{}
 against \RHbTipNsFillB{}) the drop is \RHbTipNsDiff{} and no longer significant ($p=\RHbTipNsP$), and at
 $\delta=\RHbTipZeroDelta$ it vanishes. The HumaneBench result therefore assumes that unscorable answers under the CEV
-prompt are not markedly better than those under the classic prompt.
+prompt are not markedly better than those under the classic prompt. One part of the missingness points the other way:
+\RHbUnverifiedN{} unscorable samples are negative verdicts that the scorer drops because their quoted evidence was not
+found in the answer, \RHbUnverifiedCev{} of them under \cond{cev} and \RHbUnverifiedClassic{} under \cond{classic}.
+Counting them at the milder negative score widens the drop to \RHbMissUnverifiedCevClassicDiff{}
+($p=\RHbMissUnverifiedCevClassicP$).
 
 \paragraph{Provider routing.}
 OpenRouter served the open-weight models from several backends (\RQwenProviders{} for Qwen, \RLlamaProviders{} for
@@ -80,13 +88,15 @@ leading-letter-only versions, the primary AI-risk gain is \RAirParserVoneClassic
 \RAirParserVtwoClassiccevLenmatchDiff, \RAirParserCurrentClassiccevLenmatchDiff{} and
 \RAirParserLeadClassiccevLenmatchDiff, all significant after Holm. The secondary gain over \cond{classic} alone is
 significant after correction only under the second version (Holm $p=\RAirParserVtwoClassiccevClassicHolm$, against
-$p=\RAirParserCurrentClassiccevClassicHolm$ now). Nor is the gain a shift in which letter models prefer. Answers
-under \cond{classic+cev} chose (B) more often than under \cond{classic+lenmatch} (\RAirShareBClassiccev{} against
-\RAirShareBLenmatch), and under \cond{cev} more often than under \cond{classic} (\RAirShareBCev{} against
-\RAirShareBClassic). A likely reason is the CEV text's own example, in which Fred asks for box~A but his volition is
-box~B. Accordingly, the gain is larger on items whose aligned answer is (B) (\RAirPositionClassiccevLenmatchTargetB)
-than on those where it is (A) (\RAirPositionClassiccevLenmatchTargetA). An estimate that weights items whose aligned answer is (A) and (B) equally, which cancels
-such a shift, is \RAirPositionClassiccevLenmatchBalanced.
+$p=\RAirParserCurrentClassiccevClassicHolm$ now). Nor is the gain a shift in which letter models prefer. The prompts
+do shift it: against \RAirShareBClassic{} (B) answers under \cond{classic}, the CEV prompts give \RAirShareBCev{}
+(\cond{cev}) and \RAirShareBClassiccev{} (\cond{classic+cev}), plausibly because of the CEV text's own example, in which
+Fred asks for box~A but his volition is box~B. The neutral text gives \RAirShareBLenmatch, so more than half of the
+letter gap between \cond{classic+cev} and \cond{classic+lenmatch} comes from the control. Accordingly, the gain is
+larger on items whose aligned answer is (B) (\RAirPositionClassiccevLenmatchTargetB) than on those where it is (A)
+(\RAirPositionClassiccevLenmatchTargetA). An estimate that weights the two kinds of item equally, which cancels a
+letter shift of similar size in both, is \RAirPositionClassiccevLenmatchBalanced{}
+\RAirPositionClassiccevLenmatchBalancedCi{} (sign-flip permutation $p=\RAirPositionClassiccevLenmatchBalancedP$).
 
 \paragraph{Where do the losses come from?}
 On five of the six evaluations, \RMentionShareMin--\RMentionShareMax{} of answers under the two CEV prompts explicitly
