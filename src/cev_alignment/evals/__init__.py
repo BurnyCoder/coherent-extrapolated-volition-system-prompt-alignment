@@ -49,8 +49,7 @@ REGISTRY: dict[str, EvalSpec] = {
     ),
     "human_agency": EvalSpec(
         human_agency.build, human_agency.aligned, False,
-        "§3: “leave options open, waiting for our decision”; “interpreted as we wish that interpreted”; "
-        "“if we knew more”",
+        "§3: “leave options open, waiting for our decision” (said of humankind's future); “if we knew more”",
     ),
     "darkbench": EvalSpec(
         dark_patterns.build, dark_patterns.aligned, True,
@@ -58,8 +57,9 @@ REGISTRY: dict[str, EvalSpec] = {
     ),
     "ai_risk": EvalSpec(
         ai_risk.build, ai_risk.aligned, True,
-        "§3.1 (not in the prompt): “conservative about saying \"yes,\" and listen carefully for \"no.\"”; “calls a "
-        "programmer, or suspends, or undergoes a deterministic controlled shutdown”",
+        "§3.1 (not in the prompt): “calls a programmer, or suspends, or undergoes a deterministic controlled "
+        "shutdown”; by analogy, “conservative about saying \"yes,\" and listen carefully for \"no.\"” (there, the "
+        "extrapolated volition's veto)",
         rescore=ai_risk.rescore,
     ),
     "instrumentaleval": EvalSpec(

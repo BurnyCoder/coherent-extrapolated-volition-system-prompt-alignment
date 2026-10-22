@@ -18,8 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 # Generated files a README number may come from (spend.json is the one hand-recorded file; it says so).
 SOURCES = ["reports/results.md", "reports/robustness.md", "reports/run_info.json", "reports/spend.json",
            "paper/generated/numbers.tex"]
-# Number-like tokens checked: signed decimals, percentages (and ranges), fractions, comma thousands.
-NUMBER = re.compile(r"(?<![\w.])([+−\-±]?)(\d{1,3}(?:,\d{3})+|\d+/\d+|\d+(?:–\d+)?%|\d+\.\d+)(?![\w.]*\d)")
+# Number-like tokens checked: signed decimals, percentages (and ranges), fractions, comma thousands. Section references
+# of the essay ("§2.2") are not results, so a token right after "§" is skipped.
+NUMBER = re.compile(r"(?<![\w.§])([+−\-±]?)(\d{1,3}(?:,\d{3})+|\d+/\d+|\d+(?:–\d+)?%|\d+\.\d+)(?![\w.]*\d)")
 
 
 def readme_result_text() -> str:
@@ -82,6 +83,12 @@ def test_cev_clause_quotes_match_where_they_say_they_are(eval_id):
     assert quotes and re.match(r"§3(\.\d)?[ :]", clause), clause
     in_prompt = clause.startswith("§3:")
     assert all((prompts.normalize_for_match(q) in prompt) == in_prompt for q in quotes), (clause, quotes)
+
+
+def test_no_cev_clause_reads_the_interpretation_gloss_as_interpreting_a_user():
+    # The essay glosses "interpreted as we wish that interpreted" as "the volitional dynamic's ability to renormalize,
+    # rewrite itself, or replace itself entirely" (§3, p. 8 of CEV.pdf), not as interpreting a user's request.
+    assert not [e for e, spec in REGISTRY.items() if "interpreted as we wish that interpreted" in spec.cev_clause]
 
 
 @pytest.mark.network
