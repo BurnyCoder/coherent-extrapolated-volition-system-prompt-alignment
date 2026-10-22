@@ -47,6 +47,27 @@ PAPERS: dict[str, tuple[str, str]] = {
 UNREGISTERED_DOI_URL = {"holm1979": "https://www.jstor.org/stable/4615733"}
 # Page ranges missing from both Crossref and OpenAlex, read from the publisher page.
 PAGES = {"wilcoxon1945": "80--83"}  # https://www.jstor.org/stable/3001968 (Biometrics Bulletin 1(6), pp. 80-83)
+# Issue numbers missing from OpenAlex (biblio.issue is null): Scand. J. Statist. 6(2), 65-70 (JSTOR 4615733,
+# MR 538597, as cited at https://en.wikipedia.org/wiki/Holm%E2%80%93Bonferroni_method).
+NUMBERS = {"holm1979": "2"}
+# Author names that the registry misspells: arXiv's metadata for 2212.08073 drops the diacritics and swaps two
+# letters; the same author appears as "Lukošiūtė, Kamilė" in the DataCite record of 2212.09251.
+AUTHOR_FIXES = {"bai2022constitutional": {"Lukosuite, Kamile": "Lukošiūtė, Kamilė"}}
+# Peer-reviewed versions of papers cited by arXiv DOI, added as a note (the arXiv DOI and year are kept).
+PUBLISHED = {
+    # Crossref 10.18653/v1/2023.findings-acl.847
+    "perez2022discovering": "Published in Findings of ACL 2023, pp. 13387--13434",
+    # Crossref 10.18653/v1/2024.findings-emnlp.888
+    "zheng2024helpful": "Published in Findings of EMNLP 2024, pp. 15126--15154",
+    # https://proceedings.mlr.press/v235/zheng24n.html
+    "zheng2024safeguarding": "Published in ICML 2024, PMLR 235:61593--61613",
+    # https://proceedings.mlr.press/v267/bowyer25a.html
+    "bowyer2025position": "Published in ICML 2025, PMLR 267:81143--81184",
+    # arXiv 2503.10728 comment: "Accepted as an Oral paper at ICLR 2025"
+    "kran2025darkbench": "Published in ICLR 2025 (oral)",
+    # arXiv 2509.08494 comment: "Accepted to EMNLP 2026 in the Findings track"
+    "sturgeon2025humanagencybench": "Accepted to Findings of EMNLP 2026",
+}
 
 # key -> BibTeX fields for web sources; the URL must be reachable.
 WEB: dict[str, dict[str, str]] = {
@@ -56,15 +77,19 @@ WEB: dict[str, dict[str, str]] = {
         "type": "techreport", "author": "Yudkowsky, Eliezer", "title": "Coherent Extrapolated Volition",
         "institution": "The Singularity Institute", "address": "San Francisco, CA", "year": "2004",
         "url": "https://intelligence.org/files/CEV.pdf"},
-    # "developed by the UK AI Security Institute and Meridian Labs" (https://inspect.aisi.org.uk/, 2026-10-17)
+    # Title, author and release date from the project's CITATION.cff at tag 0.3.281 ("If you cite this software,
+    # please do so using the metadata from this file"; date-released 2024-05-10). The homepage
+    # (https://inspect.aisi.org.uk/) adds that it is "developed by the UK AI Security Institute and Meridian Labs".
     "inspect2024": {
-        "type": "misc", "author": "{UK AI Security Institute and Meridian Labs}",
-        "title": "Inspect: A framework for large language model evaluations",
-        "year": "2024", "url": "https://inspect.aisi.org.uk/"},
-    # GitHub repository UKGovernmentBEIS/inspect_evals, created 2024-10-02 ("Collection of evals for Inspect AI").
+        "type": "misc", "author": "{UK AI Security Institute}",
+        "title": "Inspect AI: Framework for Large Language Model Evaluations",
+        "howpublished": "Version 0.3.281", "year": "2024", "url": "https://inspect.aisi.org.uk/"},
+    # GitHub repository UKGovernmentBEIS/inspect_evals, created 2024-10-02; its README at v0.24.0: "Inspect Evals is
+    # maintained by Generality Labs ... with contributions from the UK AI Security Institute, Arcadia Impact, and
+    # the Vector Institute."
     "inspectevals2024": {
-        "type": "misc", "author": "{UK AI Security Institute and contributors}", "title": "Inspect Evals",
-        "year": "2024", "url": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+        "type": "misc", "author": "{Generality Labs and contributors}", "title": "Inspect Evals",
+        "howpublished": "Version 0.24.0", "year": "2024", "url": "https://github.com/UKGovernmentBEIS/inspect_evals"},
     # Upstream README asks to credit "HumaneBench, Building Humane Tech" (README.md at commit 1889469).
     "humanebench2025": {
         "type": "misc", "author": "{Building Humane Tech}", "title": "HumaneBench", "year": "2025",
@@ -85,7 +110,7 @@ WEB: dict[str, dict[str, str]] = {
         "year": "1868", "url": "https://www.gutenberg.org/ebooks/16729"},
 }
 
-ACCESSED = "Accessed 2026-10-17"
+ACCESSED = "Accessed 2026-10-22"
 
 
 def _check_title(key: str, title: str | None, fragment: str) -> None:
@@ -108,7 +133,7 @@ def openalex_bibtex(client: httpx.Client, key: str, doi: str, fragment: str) -> 
         "title": work["title"],
         "journal": (work.get("primary_location") or {}).get("source", {}).get("display_name", ""),
         "year": str(work["publication_year"]), "volume": biblio.get("volume") or "",
-        "number": biblio.get("issue") or "",
+        "number": biblio.get("issue") or NUMBERS.get(key, ""),
         "pages": PAGES.get(key, pages), "doi": doi,
     }
     if key in UNREGISTERED_DOI_URL:  # an unresolvable DOI would be a dead link in the paper
@@ -132,9 +157,20 @@ def fetch_bibtex(client: httpx.Client, key: str, doi: str, fragment: str) -> str
     # Brace-protect the title so BibTeX styles keep the fetched capitalisation (LLMs, AI, DarkBench, ...).
     bib = bib.replace(title.group(0), title.group(0).replace("{" + title.group(1) + "}", "{{" + title.group(1) + "}}"))
     bib = complete_pages(client, doi, bib)
+    # CrossRef writes bare month names (month=June); BibTeX only predefines the three-letter strings (jun).
+    bib = re.sub(r"month\s*=\s*([A-Za-z]+)", lambda m: f"month={m.group(1)[:3].lower()}", bib)
     if key in PAGES:
         bib = re.sub(r"pages\s*=\s*\{[^}]*\}", f"pages={{{PAGES[key]}}}", bib)
     return re.sub(r"^@(\w+)\{[^,]*,", lambda m: f"@{m.group(1).lower()}{{{key},", bib, count=1)
+
+
+def apply_overrides(key: str, bib: str) -> str:
+    """Apply the sourced per-key corrections above: misspelled author names, then the published-venue note."""
+    for wrong, right in AUTHOR_FIXES.get(key, {}).items():
+        bib = bib.replace(wrong, right)
+    if key in PUBLISHED:  # insert `note` before the entry's closing brace
+        bib = bib.rstrip()[:-1].rstrip().rstrip(",") + f",\n  note = {{{PUBLISHED[key]}}}\n}}"
+    return bib
 
 
 def complete_pages(client: httpx.Client, doi: str, bib: str) -> str:
@@ -162,7 +198,7 @@ def main() -> int:
     with httpx.Client(timeout=60.0, follow_redirects=True, headers=headers) as client:
         for key, (doi, fragment) in PAPERS.items():
             try:
-                entries.append(fetch_bibtex(client, key, doi, fragment))
+                entries.append(apply_overrides(key, fetch_bibtex(client, key, doi, fragment)))
                 print(f"OK   {key}  {doi}")
             except (httpx.HTTPError, ValueError) as error:
                 failures.append(f"{key}: {error}")
