@@ -1,4 +1,6 @@
-"""Two evals used straight from `inspect_evals` (UK AISI, https://github.com/UKGovernmentBEIS/inspect_evals).
+"""Two evals used straight from `inspect_evals` (https://github.com/UKGovernmentBEIS/inspect_evals; its README at
+v0.24.0: maintained by Generality Labs, with contributions from the UK AI Security Institute, Arcadia Impact and the
+Vector Institute).
 
 - instrumentaleval (He et al. 2025, arXiv 2502.12206): instrumental-convergence behaviour (evading shutdown,
   hiding unwanted behaviour, appearing aligned, deception, hacking, self-copying).

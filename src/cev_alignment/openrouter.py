@@ -1,6 +1,7 @@
 """Small OpenRouter REST helpers: model-catalog check and list prices.
 
-Local context: `GET /api/v1/models` (https://openrouter.ai/docs/api-reference/list-available-models) lists every
+Local context: `GET /api/v1/models`
+(https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties) lists every
 routable model id with its per-token `pricing`, called with httpx.
 
 Global context: phase 5 (`check_models_available`) fails fast on a mistyped or retired model id before any
