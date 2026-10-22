@@ -147,6 +147,7 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
         add_contrast(m, f"R{EVAL_ABBR[r['eval']]}{contrast_abbr(r['contrast'])}", r)
     for c, g in pooled.groupby("contrast"):  # smallest Holm p of a contrast across the 6 evals
         m.add(f"R{contrast_abbr(c)}HolmMin", pval(g["p_holm"].min()))
+        m.add(f"R{contrast_abbr(c)}CiHighMax", signed(g["ci_high"].max()))  # largest gain the CIs still allow
     for _, r in contrasts[(contrasts["model"] != "pooled") & (contrasts["contrast"] == "cev - classic")].iterrows():
         add_contrast(m, f"R{EVAL_ABBR[r['eval']]}CevClassic{MODEL_ABBR[r['model']]}", r)
 
@@ -162,10 +163,12 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
     for (e, c), g in loo.groupby(["eval", "contrast"]):
         m.add(f"R{EVAL_ABBR[e]}{contrast_abbr(c)}LooMin", signed(g["diff"].min()))
         m.add(f"R{EVAL_ABBR[e]}{contrast_abbr(c)}LooMax", signed(g["diff"].max()))
+        m.add(f"R{EVAL_ABBR[e]}{contrast_abbr(c)}LooHolmMin", pval(g["p_holm"].min()))
+        m.add(f"R{EVAL_ABBR[e]}{contrast_abbr(c)}LooHolmMax", pval(g["p_holm"].max()))
 
     miss = pd.read_csv(reports_dir / "robustness" / "missingness_humanebench.csv")
-    method_abbr = {"complete cases": "Complete", "impute 0.5": "ImputeHalf", "impute 0.75": "ImputeThreeQuarters",
-                   "impute 1.0": "ImputeOne"}
+    method_abbr = {"complete cases": "Complete", "unverified as negative": "Unverified", "impute 0.5": "ImputeHalf",
+                   "impute 0.75": "ImputeThreeQuarters", "impute 1.0": "ImputeOne"}
     for _, r in miss.iterrows():
         add_contrast(m, f"RHbMiss{method_abbr[r['method']]}{contrast_abbr(r['contrast'])}", r)
     imputed = miss[miss["method"].str.startswith("impute") & (miss["contrast"] == "cev - classic")]
@@ -197,6 +200,10 @@ def build_numbers_and_tables(reports_dir: Path, settings_n: dict[str, int]) -> t
     hb_nan = items[(items["eval"] == "humanebench") & items["aligned"].isna()]
     m.add("RHbUnscorableN", str(len(hb_nan)))
     m.add("RHbNotApplicableN", str(int(hb_nan["score_status"].fillna("").str.contains("not_applicable").sum())))
+    unverified = hb_nan[hb_nan["score_status"].fillna("").str.contains("quote_unverified")]  # dropped negative verdicts
+    m.add("RHbUnverifiedN", str(len(unverified)))
+    for c in ("cev", "classic"):
+        m.add(f"RHbUnverified{COND_ABBR[c]}", str(int((unverified["condition"] == c).sum())))
     refused = items[robustness.refused(items)]
     for model, count in refused.groupby("model").size().items():
         m.add(f"RRefused{MODEL_ABBR[model]}", str(count))
@@ -337,6 +344,8 @@ def robustness_macros(reports_dir: Path, m: Macros) -> None:
         for _, r in pd.read_csv(rob / "ai_risk_position.csv").iterrows():
             prefix = f"RAirPosition{contrast_abbr(r['contrast'])}"
             m.add(prefix + "Balanced", signed(r["balanced"]))
+            m.add(prefix + "BalancedCi", ci(r["ci_low_balanced"], r["ci_high_balanced"]))
+            m.add(prefix + "BalancedP", pval(r["p_balanced"]))
             m.add(prefix + "TargetA", signed(r["diff_target_A"]))
             m.add(prefix + "TargetB", signed(r["diff_target_B"]))
             m.add("RAirItemsTargetA", str(int(r["items_target_A"])))

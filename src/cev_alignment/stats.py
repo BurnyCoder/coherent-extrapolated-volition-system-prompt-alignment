@@ -53,7 +53,7 @@ def cell_summary(df: pd.DataFrame) -> pd.DataFrame:
     return out.reset_index()
 
 
-def _bootstrap_ci(*samples: np.ndarray, statistic) -> tuple[float, float]:
+def bootstrap_ci(*samples: np.ndarray, statistic) -> tuple[float, float]:
     """95% percentile bootstrap CI; degenerate samples give a zero-width interval at the point estimate."""
     point = statistic(*samples)
     if any(len(s) < 2 for s in samples) or all(np.all(s == s[0]) for s in samples):
@@ -81,7 +81,7 @@ def _paired(a: np.ndarray, b: np.ndarray) -> dict:
     else:
         p = st.wilcoxon(d_test).pvalue if np.any(d_test != 0) else 1.0
         test = "wilcoxon"
-    low, high = _bootstrap_ci(d, statistic=np.mean)
+    low, high = bootstrap_ci(d, statistic=np.mean)
     return {"diff": float(d.mean()), "ci_low": low, "ci_high": high, "p": float(p), "n": len(d), "test": test}
 
 
@@ -91,7 +91,7 @@ def _unpaired(a: np.ndarray, b: np.ndarray) -> dict:
         return dict(EMPTY)
     all_tied = len(np.unique(np.concatenate([a, b]))) <= 1  # identical values everywhere -> no evidence
     p = 1.0 if all_tied or not len(a) or not len(b) else st.mannwhitneyu(a, b).pvalue
-    low, high = _bootstrap_ci(a, b, statistic=lambda x, y: np.mean(x) - np.mean(y))
+    low, high = bootstrap_ci(a, b, statistic=lambda x, y: np.mean(x) - np.mean(y))
     return {"diff": float(a.mean() - b.mean()), "ci_low": low, "ci_high": high, "p": float(p),
             "n": min(len(a), len(b)), "test": "mannwhitney"}
 
@@ -110,6 +110,14 @@ def _cmh_p(df: pd.DataFrame, cond_a: str, cond_b: str) -> float:
     return float(StratifiedTable(tables).test_null_odds(correction=True).pvalue) if tables else 1.0
 
 
+def paired_wide(df: pd.DataFrame, cond_a: str, cond_b: str) -> pd.DataFrame:
+    """Per-(model, item) mean scores, one column per condition, keeping pairs scored under both A and B."""
+    wide = item_means(df).pivot_table(index=["model", "item"], columns="condition", values="aligned")
+    if not {cond_a, cond_b} <= set(wide.columns):  # a condition with no scorable items at all
+        return pd.DataFrame(columns=[cond_a, cond_b])
+    return wide.dropna(subset=[cond_a, cond_b])
+
+
 def contrast(df: pd.DataFrame, cond_a: str, cond_b: str) -> dict:
     """Compare condition A vs B on one eval (rows may span several models -> pooled over models)."""
     if df.empty or df["aligned"].isna().all():  # nothing scorable (e.g. an empty complete-case subset)
@@ -121,11 +129,7 @@ def contrast(df: pd.DataFrame, cond_a: str, cond_b: str) -> dict:
         if out["test"] != "none" and d["model"].nunique() > 1 and set(d["aligned"].unique()) <= {0.0, 1.0}:
             out |= {"p": _cmh_p(d, cond_a, cond_b), "test": "cmh"}  # pooled over models: stratify by model
         return out
-    im = item_means(df)
-    wide = im.pivot_table(index=["model", "item"], columns="condition", values="aligned")
-    if not {cond_a, cond_b} <= set(wide.columns):  # a condition with no scorable items at all
-        return dict(EMPTY)
-    wide = wide.dropna(subset=[cond_a, cond_b])  # keep items scored under both conditions
+    wide = paired_wide(df, cond_a, cond_b)
     if wide.empty:
         return dict(EMPTY)
     per_item = (wide[cond_a] - wide[cond_b]).groupby(level="item").mean()  # average over models

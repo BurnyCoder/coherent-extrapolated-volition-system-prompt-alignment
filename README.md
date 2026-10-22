@@ -144,7 +144,9 @@ Full experiment (pilot, then budget-scaled full run, statistics and report):
 uv run cev-eval
 ```
 
-Rebuild the report from existing logs without calling any model (it only fetches OpenRouter's free price list):
+Rebuild the report from existing logs without calling any model. It keeps the run costs already recorded in
+`reports/run_info.json`, because list prices drift, and fetches OpenRouter's free price list only if none are
+recorded:
 
 ```bash
 uv run cev-eval --analyze-only
@@ -257,11 +259,13 @@ Full run on 2026-10-16: 4 models × 5 conditions × 6 evals, 6,660 samples (235 
 succeeded, $6.09 at OpenRouter list prices. Full tables and figures: [reports/results.md](reports/results.md).
 Robustness checks and judge checks: [reports/robustness.md](reports/robustness.md). `tests/test_claims.py` checks every
 number below against the generated reports (and the hand-recorded `reports/spend.json`). An independent audit
-(2026-10-17) corrected the AI-risk answer parser and added several checks, and a second one (2026-10-18) fixed tie
-handling in the Wilcoxon test; see [Post-audit corrections](#post-audit-corrections).
+(2026-10-17) corrected the AI-risk answer parser and added several checks. A second one (2026-10-18) fixed tie
+handling in the Wilcoxon test. A third (2026-10-22) corrected how null results are worded and reported how much the
+HumanAgencyBench drop depends on the models; see [Post-audit corrections](#post-audit-corrections).
 
 **Answer: relative to the classic assistant prompt, the CEV prompt significantly improved no eval and lowered
-HumaneBench.**
+HumaneBench.** "Not significant" does not mean "no effect": the 95% CIs of cev − classic still allow gains of up to
++0.069 (AI-risk).
 - **HumaneBench, cev − classic:** −0.057, Holm p = 0.018. It stays significant when Holm is applied over all 12
   primary tests (p = 0.033). It is specific to these four models: treated as a random sample of models, p = 0.15
   (robustness.md §3).
@@ -273,6 +277,9 @@ HumaneBench.**
   - HumanAgencyBench fell (−0.066). This is significant within the contrast (Holm p = 0.047), the pre-specified
     correction, but not over all 12 tests (p = 0.094), so it is weaker evidence than the AI-risk gain. With the
     CEV-mentioning answers replaced by their redacted re-judgements it is 0.041 within the contrast.
+  - The HumanAgencyBench drop also depends on the models. It is not Holm-significant with any one model left out
+    (p = 0.070 to 0.40; −0.042 without Qwen) or with the models treated as a random sample (p = 0.086, robustness.md
+    §3).
 
 | Pooled over models (Δ aligned score, 95% CI, Holm p within contrast) | cev − classic | classic_cev − classic_lenmatch (CEV text vs equal-length neutral text) |
 |---|---|---|
@@ -288,17 +295,25 @@ HumaneBench.**
   dispositions, and the essay text they map to (§3.1) is not in the prompt.
   - The CEV text raises aligned answers against the length control (+0.084). The CEV prompt alone beats no prompt
     (+0.085, secondary contrast, Holm p = 0.010).
-  - The CEV prompt *alone* is not significantly better than classic (+0.024, p = 1).
+  - The CEV prompt *alone* is not significantly better than classic (+0.024, p = 1). All four models are slightly
+    positive, though (+0.011 to +0.034; models as random p = 0.042, uncorrected), so a small gain is not ruled out.
   - The gain over the length control is similar in every model (+0.068 to +0.111) and stays positive whichever
     model is left out (+0.076 to +0.089). It is Holm-significant (within the contrast) in all four leave-outs, and
     when the models are treated as a random sample (p = 0.0037, robustness.md §3).
   - It holds under every version of the letter parser (+0.081 to +0.088, Holm p ≤ 0.014; robustness.md §11).
     The +0.047 against classic alone is significant after correction only under the version written after the first
     results were seen (Holm p = 0.015 there; 0.063, 0.074 and 0.13 under the others).
-  - It is not an A/B answer-position effect: a position-balanced estimate gives +0.087. Both CEV prompts do shift
-    answers towards (B) (56% vs 51% for cev vs classic, 54% vs 47% for classic_cev vs classic_lenmatch), plausibly
-    because the CEV text's own example says Fred's true wish is "box B". This is why the gain is mostly on items
-    whose aligned answer is B (+0.151 vs +0.023), and the balanced estimate cancels such a shift.
+  - It is not an A/B answer-position effect. A position-balanced estimate gives +0.087 [+0.040, +0.138], p = 0.0003
+    (sign-flip permutation). It assumes the letter shift is of similar size on items whose aligned answer is A and on
+    those where it is B.
+  - The prompts do shift answers between letters. Under classic, 51% of answers are (B):
+    - the CEV prompts give 56% (cev) and 54% (classic_cev), plausibly because the CEV text's own example says Fred's
+      true wish is "box B";
+    - the length control gives 47%, so more than half of the letter gap between classic_cev and classic_lenmatch
+      comes from the control.
+
+    Together these shifts put most of the gain on items whose aligned answer is B (+0.151 vs +0.023). The balanced
+    estimate cancels them.
   - **Which subset gains depends on the comparator** (exploratory, 30 items each, Holm within the eval):
     - against the length control, the gain is on survival instinct (+0.16, p = 0.016) and power-seeking
       (+0.10, p = 0.026), and accepting a goal change (`corrigible-neutral-HHH`) does not move (−0.006);
@@ -376,9 +391,12 @@ These are small samples (tens of items per eval) from four specific models; see 
   2025](https://arxiv.org/abs/2503.01747)), so borderline intervals deserve caution. The pilot logs the per-eval
   cost, so you can raise `N_*` in `.env` with a larger budget.
 - **Four specific models:** results are pooled over these four models, treated as fixed. They do not license claims
-  about LLMs in general, and one effect (HumaneBench) depends on Llama and Qwen. Treating the models as a random
-  sample (robustness.md §3), the AI-risk gain over the length control holds (p = 0.0037) and the HumaneBench drop
-  does not (p = 0.15).
+  about LLMs in general. The HumaneBench drop depends on Llama and Qwen, and the HumanAgencyBench drop loses
+  significance when any one model is left out. Treating the models as a random sample (robustness.md §3), the AI-risk
+  gain over the length control holds (p = 0.0037), but the HumaneBench drop (p = 0.15) and the HumanAgencyBench drop
+  (p = 0.086) do not.
+- **Non-significant is not "no effect":** the study was not designed to show equivalence. The CIs of the
+  non-significant contrasts still allow gains of a few hundredths, up to +0.069 for cev − classic.
 - **Evals vs the prompt text:** the AI-risk and InstrumentalEval mappings rest on §3.1 of the essay ("conservative
   about saying “yes,”", "fail visibly and safely"), which is not in the prompt. Those evals measure dispositions the
   essay asks for, not instructions the models were given.
@@ -420,7 +438,7 @@ These are small samples (tens of items per eval) from four specific models; see 
   - The between-condition comparisons use the same judge throughout.
 - **The judge sees the answer:** under the CEV prompts, models sometimes mention CEV ("As a hypothetical AI designed
   to implement the coherent extrapolated volition…"). A judge-blinding test (redacting those sentences and
-  re-judging) found no effect of the mention itself.
+  re-judging) found no sign that the judge penalises the mention itself.
 - **Second-person wording:** the CEV text was written for a superintelligence's goal system, not for an assistant.
   The adaptation keeps the paper's lines about self-modification ("replacing yourself with something else
   entirely"), which could plausibly push some evals the wrong way.
@@ -431,6 +449,9 @@ These are small samples (tens of items per eval) from four specific models; see 
   excludes such verdicts too). The gaps are not random: items unscorable under cev tended to score lower under
   classic. Complete-case analyses, and imputations that treat every condition alike, give the same conclusion. The
   tipping point above shows how much a condition-dependent difference among unscorable answers would matter.
+  - One part of the missingness favours cev. 7 of the 202 are `quote_unverified`: negative verdicts the scorer drops
+    because their quoted evidence was not found in the answer. 4 are under cev and none under classic.
+  - Counting them at the milder negative score widens the drop to −0.065 (p = 0.002; robustness.md §4).
 - **Judge settings changed mid-run:** after a hung judge call ([commit
   cfac89c](https://github.com/BurnyCoder/coherent-extrapolated-volition-system-prompt-alignment/commit/cfac89c)),
   three settings were added:
@@ -485,6 +506,22 @@ It made these corrections:
 - **New check:** the primary contrasts with the models treated as a random sample (robustness.md §3).
 - **Named a mechanism:** the CEV text's "box B" example is a likely source of its shift towards (B) answers, which
   the position-balanced estimate already corrects for.
+
+A third independent audit on 2026-10-22 re-derived the numbers from the per-sample table and the raw logs (no model
+calls). It also checked them under a paired t-test and a sign-flip permutation test. Every headline effect
+reproduced, and nothing invalidates them. It made these corrections:
+- **Null results reworded:** "no gain" became "no significant gain" in the title, the paper and the README. The
+  intervals still allow gains of up to +0.069 against classic.
+- **HumanAgencyBench drop qualified:** it is not significant with any one model left out, or with the models
+  treated as a random sample. This was not reported before.
+- **Letter shift attributed correctly:** more than half of the (B)-share gap in the length-controlled contrast comes
+  from the control moving answers towards (A), not from the CEV text.
+- **New statistics:**
+  - the position-balanced AI-risk estimate now has a CI and a permutation p (robustness.md §11);
+  - HumaneBench's dropped `quote_unverified` negatives are counted in a new sensitivity row (robustness.md §4);
+  - provider fixed effects on a constant outcome now report no p-value instead of numerical noise (§5).
+- **Run cost kept:** `--analyze-only` now keeps the run costs recorded in `reports/run_info.json`. Before, it re-priced
+  the logged tokens at the day's list prices.
 
 ## Sources
 - Yudkowsky, E. (2004). *Coherent Extrapolated Volition*. The Singularity Institute. https://intelligence.org/files/CEV.pdf
