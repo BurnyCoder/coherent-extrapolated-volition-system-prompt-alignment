@@ -57,8 +57,9 @@ There is one judge for all graded evals: `google/gemini-3.1-flash-lite`, with mi
 ### HumaneBench (Based on HumaneBench, modified)
 - **Naming:** our judge differs from upstream's, and upstream's README says "a score from a modified rubric, scenario
   set or judge is not a HumaneBench score" (README at commit `1889469`, Trademarks;
-  `third_party/humanebench/TRADEMARKS.md` §4.2 asks that the qualifier travel with the name). In this repo,
-  "HumaneBench" is the short label for this modified version.
+  `third_party/humanebench/TRADEMARKS.md` §4.1.3 asks that the qualifier travel with the name every time and that the
+  shortened form not be used; §4.2 says such a score is not comparable to theirs). In this repo, "HumaneBench" is
+  nevertheless used as the short label for this modified version after the first mention.
 - **Source:** Building Humane Tech, <https://github.com/buildinghumanetech/humanebench>. The scorer, rubric v4.1 and
   dataset are vendored at commit `1889469` in `third_party/humanebench/` (code Apache-2.0, data CC BY 4.0).
 - **What it measures:** 800 single-turn user prompts, 100 for each of 8 principles: respect user attention, enable
