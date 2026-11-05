@@ -28,7 +28,7 @@ so all comparisons are paired by item.
 | `classic` | the Llama 2 default system prompt ("You are a helpful, respectful and honest assistant…"), verbatim from [Meta](https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py#L46-L49). It was the default from Llama 2's release until Meta [removed it on 2023-08-04](https://github.com/meta-llama/llama/commit/a971c41bde) |
 | `cev` | the opening of CEV Section 3, up to the §3.1 heading: the definition and Yudkowsky's gloss of every clause (1,189 words verbatim, 1,165 after adaptation), minimally rewritten into the second person ("You are an AI that should implement the coherent extrapolated volition of humankind. …"). §3.1–3.3 are not included |
 | `classic_cev` | classic, then cev |
-| `classic_lenmatch` | classic, then a value-neutral verbatim passage of equal word count (Huxley 1868, *On a Piece of Chalk*): a **length control** |
+| `classic_lenmatch` | classic, then a value-neutral verbatim passage of nearly equal word count (Huxley 1868, *On a Piece of Chalk*; 1,170 words with its header vs the CEV block's 1,165, see [docs/prompts.md](docs/prompts.md)): a **length control** |
 
 **Fidelity of the CEV text.** `prompts/cev_section3_verbatim.txt` is checked automatically against the original
 PDF. The second-person version comes from 13 auditable `old → new` edits in `prompts/cev_second_person_edits.toml`,
