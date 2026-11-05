@@ -8,7 +8,7 @@ Table~\ref{tab:conditions} lists the five conditions. \cond{classic} is the Llam
 reference code\footnote{\url{https://github.com/meta-llama/llama/blob/6c7fe27657/llama/generation.py\#L46-L49}} until
 Meta dropped it on 4 August 2023.\footnote{\url{https://github.com/meta-llama/llama/commit/a971c41bde}} \cond{cev} is
 the opening of Section~3 of \citet{yudkowsky2004cev}, adapted as described below. \cond{classic+cev} places the CEV
-text after the classic prompt. \cond{classic+lenmatch} instead places a passage of equal word count from a
+text after the classic prompt. \cond{classic+lenmatch} instead places a passage of nearly equal word count (\RWordsLenmatch{} against \RWordsClassiccev{} words for the whole prompt) from a
 nineteenth-century geology lecture there \citep{huxley1868chalk}. The passage is cut at a sentence boundary to match
 the CEV block's word count and introduced as ``background reading''. It controls for prompt length and position while carrying no values.
 
